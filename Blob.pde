@@ -23,16 +23,18 @@ class Blob {
     maxy = y;
   }
     
-  void show() {
-    stroke(0);
-    fill(255, 100);
+  void show(color col) {
+    stroke(col);
+    // fill(col);
+    noFill();
     strokeWeight(2);
     rectMode(CORNERS);
     rect(minx, miny, maxx, maxy);
     
     textAlign(CENTER);
     textSize(64);
-    fill(0);
+    noStroke();
+    fill(col);
     text(id, minx + (maxx-minx)*0.5, maxy - 10);
   }
 

@@ -5,7 +5,7 @@ class Lines {
     Lines() {}
 
 
-    createLineAt(
+    void createLineAt(
         int identity,
         int x, 
         int y
@@ -16,34 +16,34 @@ class Lines {
         this.lines.put(this.lines.size(), line);
     }
 
-    getLine(
+    Line getLine(
         int identity
     ) {
         return this.lines.get(identity);
     }
 
-    updateLine(
+    void updateLine(
         int identity,
         int x, 
         int y
     ) {
         Line line = this.lines.get(identity);
 
-        if ( line ) {
+        // if ( line !== null ) {
             PVector p = new PVector(x, y);
             line.add(p);
-        }
+        // }
 
     }
 
-    endLine(
+    void endLine(
         int identity
     ) {
         Line line = this.lines.get( identity );
 
-        if ( line ) {
+        // if ( line ) {
             line.draw();
-        }
+        //}
 
     }
 

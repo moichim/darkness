@@ -19,14 +19,28 @@ ArrayList<Blob> blobs = new ArrayList<Blob>();
 
 Lines lines = new Lines();
 
+Trackers trackers;
+
 void setup() {
   size(640, 360);
   String[] cameras = Capture.list();
   printArray(cameras);
-  video = new Capture(this, cameras[1]);
+  video = new Capture(this, cameras[0]);
   video.start();
   // 183.0 12.0 83.0
   trackColor = color(183, 12, 83);
+
+  // ************
+  trackers = new Trackers( video );
+
+  trackers.create(87, 181, 222);
+  trackers.create( 168, 43, 20 );
+
+  println( trackers.size() );
+
+  frameRate(5);
+
+
 }
 
 void captureEvent(Capture video) {
@@ -47,6 +61,16 @@ void keyPressed() {
 }
 
 void draw() {
+
+  video.loadPixels();
+
+  image(video, 0, 0);
+
+  trackers.update();
+
+  // End of *************************
+
+/*
   video.loadPixels();
   image(video, 0, 0);
 
@@ -162,6 +186,8 @@ void draw() {
   for (Blob b : blobs) {
     b.show();
   } 
+
+  */
 
 
 
