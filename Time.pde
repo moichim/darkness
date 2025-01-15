@@ -55,8 +55,6 @@ class Time {
         }
       }
 
-      println( this.currentTime );
-
     }
   }
 

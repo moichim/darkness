@@ -50,7 +50,31 @@ class Effect {
     this.remapSamples();
   }
 
+  void lookForFirstSample( int time ) {
+
+    if ( this.samples.size() == 0 ) {
+      return;
+    }
+
+    Sample sample = this.samples.get( 0 );
+
+    if ( sample != null ) {
+      if ( sample.timeRelative < time ) {
+        sample.draw();
+        this.samples.remove( 0 );
+        lookForFirstSample( time );
+      }
+    }
+
+  }
+
     void setTime( int time ) {
+
+      lookForFirstSample( time );
+
+
+
+      /*
 
         if ( time < this.start ) {
             setIndex( 0 );
@@ -60,6 +84,7 @@ class Effect {
             float index = map( time, this.start, this.end, 0, 1 );
             setIndex( index );
         }
+        */
 
     }
 
@@ -73,7 +98,7 @@ class Effect {
 
     public void draw() {
         for ( Sample sample : this.samples ) {
-            sample.draw();
+            // sample.draw();
         }
     }
 

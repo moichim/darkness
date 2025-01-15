@@ -37,11 +37,11 @@ class Sample extends AbstractPoint {
     float size = this.maxSize * this.index;
 
     noStroke();
-    fill( 30 );
+    fill( 255, 0, 255 );
 
     PVector output = this.mapping.output( this );
 
-    ellipse( output.x, output.y, size, size );
+    ellipse( output.x, output.y, 100, 100 );
 
     fill( 255 );
     text( this.index, output.x, output.y );

@@ -56,11 +56,11 @@ void captureEvent(Capture video) {
 
 void draw() {
 
-  background( 50 );
-
   if ( playback == null ) {
 
     /** Tracking */
+
+    background( 50 );
 
     video.loadPixels();
     image(video, 0, 0);
@@ -94,9 +94,14 @@ void draw() {
 
   }
 
+  fill( 0 );
+  // rect( width - 120, 0, 200, 30 );
+
 
   fill( 255 );
+  textSize( 20 );
   text( frameRate, width - 100, 20 );
+  text( time.currentTime, 20, 20 );
 
 
   /** Keyboard input */
@@ -122,4 +127,8 @@ float distSq(float x1, float y1, float x2, float y2) {
 float distSq(float x1, float y1, float z1, float x2, float y2, float z2) {
   float d = (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) +(z2-z1)*(z2-z1);
   return d;
+}
+
+void stopPlayback() {
+  playback = null;
 }

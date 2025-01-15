@@ -39,8 +39,10 @@ class Trackers extends ArrayList<Tracker> {
     this.recording = false;
     println( "recording ended" );
     time.end();
-    playback = new Playback( series, 10 * 1000);
+    playback = new Playback( series );
     playback.start();
+
+    background( 0 );
 
   }
 

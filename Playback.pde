@@ -17,11 +17,34 @@ class Playback {
     println( "Creating playback" );
   }
 
+  Playback(
+    Series series
+  ) {
+    this.series = series;
+
+    int max = 0;
+
+    for ( Serie serie : this.series.series ) {
+      if ( serie.getDuration() > max ) {
+        max = serie.getDuration();
+      }
+    }
+
+    this.time.setDuration( max );
+
+  }
+
 
   protected void init() {
     for ( Serie serie : this.series.series ) {
       Effect effect = new Effect( serie, this );
       this.effects.add( effect );
+
+      int difference = effect.start;
+
+      effect.mapToTime( 0, effect.duration );
+
+
       // effect.mapToTime( 100, 2000 );
       println( "creating effect from", serie.id, serie, effect );
     }
@@ -32,11 +55,12 @@ class Playback {
   void start() {
     this.init();
     this.time.start();
-    println( "starting playback" );
+    println( "starting playback", this.time.duration );
   }
 
   void end() {
     this.time.end();
+    stopPlayback();
   }
 
   void update() {

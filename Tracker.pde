@@ -188,7 +188,7 @@ class Tracker {
   protected void storeSeries() {
 
     for ( Blob b : this.blobs ) {
-      series.addOrUpdateSerie( b.id, this, b.getCenter().x, b.getCenter().y, millis() );
+      series.addOrUpdateSerie( b.id, this, b.getCenter().x, b.getCenter().y, time.currentTime );
     }
 
   }
