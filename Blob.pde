@@ -36,6 +36,7 @@ class Blob {
     noStroke();
     fill(col);
     text(id, minx + (maxx-minx)*0.5, maxy - 10);
+    textSize(20);
   }
 
 

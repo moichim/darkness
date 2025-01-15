@@ -5,199 +5,111 @@
 
 import processing.video.*;
 
+// Tracking
 Capture video;
-
-int blobCounter = 0;
-
-int maxLife = 200;
-
-color trackColor; 
-float threshold = 40;
-float distThreshold = 50;
-
-ArrayList<Blob> blobs = new ArrayList<Blob>();
-
-Lines lines = new Lines();
-
 Trackers trackers;
 
+// Serialising
+Mapping mapping;
+Time time = new Time();
+Series series;
+Playback playback;
+
+float distThreshold = 50;
+float maxLife = 200;
+float threshold = 40;
+
 void setup() {
-  size(640, 360);
+  size( 1920, 1080 );
+
   String[] cameras = Capture.list();
+
   printArray(cameras);
+
+  // Tracking
+
   video = new Capture(this, cameras[0]);
   video.start();
-  // 183.0 12.0 83.0
-  trackColor = color(183, 12, 83);
 
-  // ************
   trackers = new Trackers( video );
 
-  trackers.create(87, 181, 222);
-  trackers.create( 168, 43, 20 );
+  // trackers.create( 255, 255, 255, 20 );
 
-  println( trackers.size() );
+  // trackers.create( 87, 181, 222, 40 );
+  // trackers.create( 168, 43, 20, 40 );
 
-  frameRate(5);
+  trackers.create( 10, 10, 255, 100 );
 
+  // Serialising
 
+  mapping = new Mapping(
+    new PVector( video.width, video.height ),
+    new PVector( 1920, 1080 )
+    );
+
+  series = new Series( mapping );
 }
 
 void captureEvent(Capture video) {
   video.read();
 }
 
-void keyPressed() {
-  if (key == 'a') {
-    distThreshold+=5;
-  } else if (key == 'z') {
-    distThreshold-=5;
-  }
-  if (key == 's') {
-    threshold+=5;
-  } else if (key == 'x') {
-    threshold-=5;
-  }
-}
-
 void draw() {
 
-  video.loadPixels();
+  background( 50 );
 
-  image(video, 0, 0);
+  if ( playback == null ) {
 
-  trackers.update();
+    /** Tracking */
 
-  // End of *************************
+    video.loadPixels();
+    image(video, 0, 0);
+    trackers.update();
 
-/*
-  video.loadPixels();
-  image(video, 0, 0);
+    /** Serialising */
 
-  ArrayList<Blob> currentBlobs = new ArrayList<Blob>();
+    time.update();
 
-  // Begin loop to walk through every pixel
-  for (int x = 0; x < video.width; x++ ) {
-    for (int y = 0; y < video.height; y++ ) {
-      int loc = x + y * video.width;
-      // What is current color
-      color currentColor = video.pixels[loc];
-      float r1 = red(currentColor);
-      float g1 = green(currentColor);
-      float b1 = blue(currentColor);
-      float r2 = red(trackColor);
-      float g2 = green(trackColor);
-      float b2 = blue(trackColor);
+    series.drawInput();
+    series.drawOutput();
 
-      float d = distSq(r1, g1, b1, r2, g2, b2); 
-
-      if (d < threshold*threshold) {
-
-        boolean found = false;
-        for (Blob b : currentBlobs) {
-          if (b.isNear(x, y)) {
-            b.add(x, y);
-            found = true;
-            break;
-          }
-        }
-
-        if (!found) {
-          Blob b = new Blob(x, y);
-          currentBlobs.add(b);
-        }
-      }
-    }
   }
 
-  for (int i = currentBlobs.size()-1; i >= 0; i--) {
-    if (currentBlobs.get(i).size() < 500) {
-      currentBlobs.remove(i);
-    }
+
+  /** Visualisation */
+  if ( playback != null ) {
+    playback.update();
+    playback.draw();
   }
 
-  // There are no blobs!
-  if (blobs.isEmpty() && currentBlobs.size() > 0) {
-    println("Adding blobs!");
-    for (Blob b : currentBlobs) {
-      b.id = blobCounter;
-      blobs.add(b);
-      blobCounter++;
-    }
-  } else if (blobs.size() <= currentBlobs.size()) {
-    // Match whatever blobs you can match
-    for (Blob b : blobs) {
-      float recordD = 1000;
-      Blob matched = null;
-      for (Blob cb : currentBlobs) {
-        PVector centerB = b.getCenter();
-        PVector centerCB = cb.getCenter();         
-        float d = PVector.dist(centerB, centerCB);
-        if (d < recordD && !cb.taken) {
-          recordD = d; 
-          matched = cb;
-        }
-      }
-      matched.taken = true;
-      b.become(matched);
-    }
 
-    // Whatever is leftover make new blobs
-    for (Blob b : currentBlobs) {
-      if (!b.taken) {
-        b.id = blobCounter;
-        blobs.add(b);
-        blobCounter++;
-      }
-    }
-  } else if (blobs.size() > currentBlobs.size()) {
-    for (Blob b : blobs) {
-      b.taken = false;
-    }
+  if ( trackers.recording == true ) {
 
+    noStroke();
+    fill( 255, 0, 0 );
+    ellipse( 50, 50, 20, 20 );
+    float w = map( trackers.ticks, 0, trackers.duration, 0, mapping.input.x );
+    rect(0, 0, w, 10 );
+    noFill();
 
-    // Match whatever blobs you can match
-    for (Blob cb : currentBlobs) {
-      float recordD = 1000;
-      Blob matched = null;
-      for (Blob b : blobs) {
-        PVector centerB = b.getCenter();
-        PVector centerCB = cb.getCenter();         
-        float d = PVector.dist(centerB, centerCB);
-        if (d < recordD && !b.taken) {
-          recordD = d; 
-          matched = b;
-        }
-      }
-      if (matched != null) {
-        matched.taken = true;
-        matched.become(cb);
-      }
-    }
-
-    for (int i = blobs.size() - 1; i >= 0; i--) {
-      Blob b = blobs.get(i);
-      if (!b.taken) {
-        blobs.remove(i);
-      }
-    }
   }
 
-  for (Blob b : blobs) {
-    b.show();
-  } 
 
-  */
+  fill( 255 );
+  text( frameRate, width - 100, 20 );
 
 
+  /** Keyboard input */
+  if ( keyPressed ) {
+    if ( key == 'r' ) {
+      series.flush();
+      time.start();
+      trackers.startRecording( 500 );
+    }
 
-  textAlign(RIGHT);
-  fill(0);
-  //text(currentBlobs.size(), width-10, 40);
-  //text(blobs.size(), width-10, 80);
-  textSize(24);
-  text("color threshold: " + threshold, width-10, 50);  
-  text("distance threshold: " + distThreshold, width-10, 25);
+  }
+
+
 }
 
 
@@ -210,11 +122,4 @@ float distSq(float x1, float y1, float x2, float y2) {
 float distSq(float x1, float y1, float z1, float x2, float y2, float z2) {
   float d = (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) +(z2-z1)*(z2-z1);
   return d;
-}
-
-void mousePressed() {
-  // Save color where the mouse is clicked in trackColor variable
-  int loc = mouseX + mouseY*video.width;
-  trackColor = video.pixels[loc];
-  println(red(trackColor), green(trackColor), blue(trackColor));
 }

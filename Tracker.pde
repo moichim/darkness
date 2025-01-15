@@ -10,25 +10,26 @@ class Tracker {
   /** @deprecated */
   color trackColor;
   float threshold = 40;
-  float distThreshold = 50;
+  float distThreshold = 300;
 
   float r;
   float g;
   float b;
 
   Tracker(
-    color trackColor
-    ) {
-      // this.trackColor = trackColor;
-      this.setColor( trackColor );
-  }
-
-  Tracker(
     int r,
     int g,
-    int b
+    int b,
+    float threshold
   ) {
     this.setColor( r, g, b );
+    this.threshold = threshold;
+  }
+
+  void reset() {
+    this.blobs.clear();
+    this.temp.clear();
+    this.blobCounter = 0;
   }
 
   void setColor( color col ) {
@@ -81,22 +82,9 @@ class Tracker {
   public void postPoxelsProcessed() {
 
     this.matchBlobs();
+    this.storeSeries();
 
   }
-
-  /*
-  protected void reduceBlobsBySize() {
-
-    for (int i = this.temp.size()-1; i >= 0; i--) {
-      if (this.temp.get(i).size() < 500) {
-        this.temp.remove(i);
-      }
-    }
-
-    println( this.temp.size() );
-
-  }
-  */
 
   protected void matchBlobs() {
 
@@ -192,6 +180,15 @@ class Tracker {
         }
       }
 
+    }
+
+  }
+
+
+  protected void storeSeries() {
+
+    for ( Blob b : this.blobs ) {
+      series.addOrUpdateSerie( b.id, this, b.getCenter().x, b.getCenter().y, millis() );
     }
 
   }
