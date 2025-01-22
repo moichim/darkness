@@ -5,8 +5,8 @@ class Trackers extends ArrayList<Tracker> {
   Capture video;
 
   boolean recording = false;
-  protected int duration = 0;
-  protected int ticks = 0;
+
+  Particles particles = new Particles( this );
 
   Trackers(
     Capture video
@@ -21,17 +21,15 @@ class Trackers extends ArrayList<Tracker> {
     float threshold
     ) {
 
-    this.add( new Tracker( r, g, b, threshold ) );
+    this.add( new Tracker( r, g, b, threshold, this ) );
   }
 
 
-  void startRecording( int duration ) {
+  void startRecording( ) {
     for ( Tracker tracker : this ) {
       tracker.reset();
     }
     this.recording = true;
-    this.duration = duration;
-    this.ticks = 0;
     println( "recording started" );
   }
 
@@ -39,28 +37,18 @@ class Trackers extends ArrayList<Tracker> {
     this.recording = false;
     println( "recording ended" );
     time.end();
-    playback = new Playback( series );
-    playback.start();
-
-    background( 0 );
 
   }
 
 
   void update() {
 
+    this.particles.update();
+    this.particles.draw();
+
     if ( this.recording == false ) {
       // do nothing
     } else {
-
-      // Update local ticks if recording
-      this.ticks++;
-
-      if ( this.ticks >= this.duration ) {
-        this.endRecording();
-      }
-
-      // this.video.loadPixels();
 
       // Popsprocess every trackes
       for ( Tracker tracker : this ) {
@@ -83,6 +71,7 @@ class Trackers extends ArrayList<Tracker> {
       // Popsprocess every trackes
       for ( Tracker tracker : this ) {
         tracker.postPoxelsProcessed();
+        tracker.update();
         tracker.debug();
         tracker.draw();
       }

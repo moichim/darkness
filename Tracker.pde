@@ -16,14 +16,18 @@ class Tracker {
   float g;
   float b;
 
+  Trackers trackers;
+
   Tracker(
     int r,
     int g,
     int b,
-    float threshold
+    float threshold,
+    Trackers trackers
   ) {
     this.setColor( r, g, b );
     this.threshold = threshold;
+    this.trackers = trackers;
   }
 
   void reset() {
@@ -83,6 +87,16 @@ class Tracker {
 
     this.matchBlobs();
     this.storeSeries();
+
+  }
+
+  public void update() {
+
+    for ( Blob b: this.blobs ) {
+
+      b.update( this );
+
+    }
 
   }
 
@@ -176,6 +190,7 @@ class Tracker {
       for ( int i = this.blobs.size() - 1; i >= 0; i-- ) {
         Blob b = this.blobs.get(i);
         if (!b.taken) {
+          b.remove();
           this.blobs.remove(i);
         }
       }
@@ -187,9 +202,11 @@ class Tracker {
 
   protected void storeSeries() {
 
+    /*
     for ( Blob b : this.blobs ) {
       series.addOrUpdateSerie( b.id, this, b.getCenter().x, b.getCenter().y, time.currentTime );
     }
+    */
 
   }
 

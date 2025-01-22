@@ -15,6 +15,8 @@ Time time = new Time();
 Series series;
 Playback playback;
 
+Particles particles;
+
 float distThreshold = 50;
 float maxLife = 200;
 float threshold = 40;
@@ -32,22 +34,20 @@ void setup() {
   video.start();
 
   trackers = new Trackers( video );
+  particles = new Particles( trackers );
 
   // trackers.create( 255, 255, 255, 20 );
-
-  // trackers.create( 87, 181, 222, 40 );
-  // trackers.create( 168, 43, 20, 40 );
-
-  trackers.create( 10, 10, 255, 100 );
-
-  // Serialising
+  trackers.create( 87, 181, 222, 50 );
+  trackers.create( 168, 43, 20, 50 );
+  trackers.create( 10, 10, 255, 75 );
 
   mapping = new Mapping(
     new PVector( video.width, video.height ),
-    new PVector( 1920, 1080 )
-    );
+    new PVector( width, height )
+  );
 
-  series = new Series( mapping );
+  background(0);
+
 }
 
 void captureEvent(Capture video) {
@@ -56,64 +56,29 @@ void captureEvent(Capture video) {
 
 void draw() {
 
-  if ( playback == null ) {
+  video.loadPixels();
+  // image(video, 0, 0);
+  trackers.update();
 
-    /** Tracking */
+  fill( 0, 0, 0, 25 );
+  rect( 0, 0, width, height );
 
-    background( 50 );
+  // background( 0, 0, 0, 50 );
 
-    video.loadPixels();
-    image(video, 0, 0);
-    trackers.update();
-
-    /** Serialising */
-
-    time.update();
-
-    series.drawInput();
-    series.drawOutput();
-
-  }
-
-
-  /** Visualisation */
-  if ( playback != null ) {
-    playback.update();
-    playback.draw();
-  }
-
-
-  if ( trackers.recording == true ) {
-
-    noStroke();
-    fill( 255, 0, 0 );
-    ellipse( 50, 50, 20, 20 );
-    float w = map( trackers.ticks, 0, trackers.duration, 0, mapping.input.x );
-    rect(0, 0, w, 10 );
-    noFill();
-
-  }
-
-  fill( 0 );
-  // rect( width - 120, 0, 200, 30 );
-
-
-  fill( 255 );
-  textSize( 20 );
-  text( frameRate, width - 100, 20 );
-  text( time.currentTime, 20, 20 );
-
+  particles.update();
+  particles.draw();
 
   /** Keyboard input */
   if ( keyPressed ) {
     if ( key == 'r' ) {
-      series.flush();
       time.start();
-      trackers.startRecording( 500 );
+      trackers.startRecording();
     }
-
+    if ( key == 'e' ) {
+      time.end();
+      trackers.endRecording();
+    }
   }
-
 
 }
 

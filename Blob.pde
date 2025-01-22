@@ -7,6 +7,7 @@
  * Documentation file for `Blob`
  */
 class Blob {
+
   float minx;
   float miny;
   float maxx;
@@ -16,11 +17,47 @@ class Blob {
   
   boolean taken = false;
 
+  ArrayList<AbstractParticle> particles = new ArrayList<AbstractParticle>();
+
+  int tick = 0;
+
   Blob(float x, float y) {
     minx = x;
     miny = y;
     maxx = x;
     maxy = y;
+  }
+
+  void update(
+    Tracker tracker
+  ) {
+
+    float life = map( this.diameter(), 0, video.width, 5, 1 );
+
+    // if ( this.tick >= life ) {
+
+      PVector center = this.getCenter();
+      AbstractParticle item = tracker.trackers.particles.emit( center.x, center.y, tracker, this );
+
+      this.particles.add( item );
+
+      // this.tick = 0;
+
+    // }
+
+    this.tick++;
+
+  }
+
+
+  void remove() {
+
+    for ( AbstractParticle particle: this.particles ) {
+      trackers.particles.remove( particle );
+    }
+
+    this.particles.clear();
+
   }
     
   void show(color col) {
@@ -37,6 +74,18 @@ class Blob {
     fill(col);
     text(id, minx + (maxx-minx)*0.5, maxy - 10);
     textSize(20);
+  }
+
+  float width() {
+    return this.maxx - this.minx;
+  }
+
+  float height() {
+    return this.maxy - this.miny;
+  }
+
+  float diameter() {
+    return sqrt( ( this.width() * this.width() ) + ( this.height() * this.height() ) );
   }
 
 
