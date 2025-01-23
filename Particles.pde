@@ -1,77 +1,86 @@
 class Particles {
 
-    Trackers trackers;
+  Trackers trackers;
 
-    ArrayList<AbstractParticle> points = new ArrayList<AbstractParticle>();
+  ArrayList<Particle> points = new ArrayList<Particle>();
 
-    int max = 200;
+  int max = 200;
 
-    Particles(
-        Trackers trackers
+  Particles(
+    Trackers trackers
     ) {
-        this.trackers = trackers;
+    this.trackers = trackers;
+  }
+
+  Particle emit(
+    Blob blob
+    ) {
+    Particle item = new Particle(blob);
+    this.points.add( item );
+
+    if ( this.points.size() >= this.max ) {
+      this.points.remove( 0 );
     }
+    return item;
+  }
 
-    AbstractParticle emit(
-        float x,
-        float y,
-        Tracker tracker,
-        Blob blob
+  void remove(
+    Particle particle
     ) {
-        AbstractParticle item = new AbstractParticle(x,y,tracker, blob);
-        this.points.add( item );
 
-        if ( this.points.size() >= this.max ) {
-            this.points.remove( 0 );
+    PVector position = particle.position;
+
+    Blob nearestBlob = null;
+    float nearestDiff = 0;
+  }
+
+  void update() {
+
+    if ( this.points.size() > 0 ) {
+
+
+      // First, perform updates with the particles
+      for ( int i = this.points.size() - 1; i >= 0; i-- ) {
+        Particle p = this.points.get( i );
+
+        // Remove the dead or reached
+        if ( p.phase == LIFE.DEAD || p.phase == LIFE.REACHED ) {
+          // println( "Point", i, "from", this.points.size(), "just died" );
+          // p.blob.particles.remove( p );
+          this.points.remove( p );
+          // this.points.remove( p );
         }
-        return item;
-    }
 
-    void remove(
-        AbstractParticle particle
-    ) {
+        // Reassign the lost
+        else if ( p.phase == LIFE.LOST ) {
 
-        PVector position = particle.position;
+          for ( Tracker tracker : this.trackers ) {
 
-        Blob nearestBlob = null;
-        float nearestDiff = 0;
-        for ( Blob blob : particle.tracker.blobs ) {
+            if ( p.phase == LIFE.LOST ) {
 
-            if ( nearestBlob == null ) {
-                nearestBlob = blob;
+              for ( Blob blob : tracker.blobs ) {
 
-                nearestDiff = blob.getCenter().dist( particle.position );
+                float distance = blob.center.dist( p.position );
 
-            } else {
-
-                float diff = blob.getCenter().dist( particle.position );
-
-                if ( diff < nearestDiff ) {
-                    nearestBlob = blob;
-                    nearestDiff = diff;
+                if ( distance <= 800 ) {
+                  p.assignToBlob( blob );
                 }
-
+              }
             }
-
+          }
         }
+      }
 
-        if ( nearestBlob != null ) {
-            particle.blob = nearestBlob;
-        } else {
-            this.points.remove( particle );   
-        }
+
+      for ( Particle p : this.points ) {
+        p.update();
+      }
     }
+  }
 
-    void update() {
-        for ( AbstractParticle p : this.points ) {
-            p.update();
-        }
+  void draw() {
+    for ( Particle p : this.points ) {
+      p.draw();
     }
-
-    void draw() {
-        for ( AbstractParticle p : this.points ) {
-            p.draw();
-        }
-    }
-
+  }
 }

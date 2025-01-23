@@ -37,8 +37,18 @@ void setup() {
   particles = new Particles( trackers );
 
   // trackers.create( 255, 255, 255, 20 );
+  
+  // Green
+  trackers.create( 14, 84, 8, 40 );
+  
+  // Red
+  trackers.create( 176, 11, 11, 70 );
+
+
+  // Blue
   trackers.create( 87, 181, 222, 50 );
-  trackers.create( 168, 43, 20, 50 );
+
+  trackers.create( 245, 237, 5, 50 );
   trackers.create( 10, 10, 255, 75 );
 
   mapping = new Mapping(
@@ -47,6 +57,8 @@ void setup() {
   );
 
   background(0);
+
+  fullScreen();
 
 }
 
@@ -57,10 +69,10 @@ void captureEvent(Capture video) {
 void draw() {
 
   video.loadPixels();
-  // image(video, 0, 0);
+  image(video, 0, 0);
   trackers.update();
 
-  fill( 0, 0, 0, 25 );
+  fill( 0, 0, 0, 15 );
   rect( 0, 0, width, height );
 
   // background( 0, 0, 0, 50 );

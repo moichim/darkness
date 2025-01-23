@@ -17,33 +17,68 @@ class Blob {
   
   boolean taken = false;
 
-  ArrayList<AbstractParticle> particles = new ArrayList<AbstractParticle>();
+  ArrayList<Particle> particles = new ArrayList<Particle>();
+
+  float movement;
+  PVector prev;
+  PVector center;
+  float diameter;
+  float width;
+  float height;
 
   int tick = 0;
 
-  Blob(float x, float y) {
+  Tracker tracker;
+
+  Blob(float x, float y, Tracker tracker) {
     minx = x;
     miny = y;
     maxx = x;
     maxy = y;
+    this.tracker = tracker;
+    this.recalculate();
+  }
+
+  PVector getCenter() {
+    float x = (maxx - minx)* 0.5 + minx;
+    float y = (maxy - miny)* 0.5 + miny;    
+    return new PVector(x,y); 
+  }
+
+  protected void recalculate() {
+
+    PVector c = (PVector) this.getCenter();
+
+    if ( this.prev == null && c != null ) {
+      this.prev = c.copy();
+    } else {
+      this.prev = this.center.copy();
+    }
+
+    // this.prev = this.center.clone();
+    this.center = mapping.output( c );
+    this.movement = this.prev.dist( this.center );
+    this.width = mapping.xoutput( this.maxx - this.minx );
+    this.height = mapping.youtput( this.maxy - this.miny );
+    this.diameter = sqrt( ( this.width * this.width ) + ( this.height * this.height ) );
+
   }
 
   void update(
     Tracker tracker
   ) {
 
-    float life = map( this.diameter(), 0, video.width, 5, 1 );
+    float life = map( this.diameter, 0, video.width, 5, 1 );
 
-    // if ( this.tick >= life ) {
+    this.particles.add( tracker.trackers.particles.emit( this ) );
 
-      PVector center = this.getCenter();
-      AbstractParticle item = tracker.trackers.particles.emit( center.x, center.y, tracker, this );
+    if ( this.tick >= life ) {
 
-      this.particles.add( item );
+      this.particles.add( 
+        tracker.trackers.particles.emit( this )
+      );
 
-      // this.tick = 0;
-
-    // }
+    }
 
     this.tick++;
 
@@ -52,8 +87,9 @@ class Blob {
 
   void remove() {
 
-    for ( AbstractParticle particle: this.particles ) {
-      trackers.particles.remove( particle );
+    for ( Particle particle: this.particles ) {
+      particle.setLost();
+      this.tracker.trackers.particles.remove( particle );
     }
 
     this.particles.clear();
@@ -84,6 +120,7 @@ class Blob {
     return this.maxy - this.miny;
   }
 
+  /** @deprecated */
   float diameter() {
     return sqrt( ( this.width() * this.width() ) + ( this.height() * this.height() ) );
   }
@@ -94,6 +131,7 @@ class Blob {
     miny = min(miny, y);
     maxx = max(maxx, x);
     maxy = max(maxy, y);
+    this.recalculate();
   }
   
   void become(Blob other) {
@@ -101,17 +139,14 @@ class Blob {
     maxx = other.maxx;
     miny = other.miny;
     maxy = other.maxy;
+    this.recalculate();
   }
 
   float size() {
     return (maxx-minx)*(maxy-miny);
   }
   
-  PVector getCenter() {
-    float x = (maxx - minx)* 0.5 + minx;
-    float y = (maxy - miny)* 0.5 + miny;    
-    return new PVector(x,y); 
-  }
+  
 
   boolean isNear(float x, float y) {
 

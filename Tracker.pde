@@ -77,7 +77,7 @@ class Tracker {
         }
       }
       if ( !found ) {
-        Blob b = new Blob(x, y);
+        Blob b = new Blob(x, y, this );
         this.temp.add(b);
       }
     }
@@ -86,7 +86,6 @@ class Tracker {
   public void postPoxelsProcessed() {
 
     this.matchBlobs();
-    this.storeSeries();
 
   }
 
@@ -152,7 +151,7 @@ class Tracker {
         }
       }
 
-    } 
+    }
     // Is less blobs were found than before
     else if ( this.blobs.size() > this.temp.size() ) {
 
@@ -200,28 +199,32 @@ class Tracker {
   }
 
 
-  protected void storeSeries() {
-
-    /*
-    for ( Blob b : this.blobs ) {
-      series.addOrUpdateSerie( b.id, this, b.getCenter().x, b.getCenter().y, time.currentTime );
-    }
-    */
-
-  }
-
-
   public void debug() {
-    println( this.blobs.size() );
-    for ( Blob b : this.blobs ) {
-      print( b.id + " " );
-    }
   }
 
   public void draw() {
     for ( Blob b : this.blobs ) {
       b.show( this.trackColor );
     }
+  }
+
+
+  public void analyseForSound() {
+
+    if ( this.blobs.size() > 0 ) {
+
+      float movementSum = 0;
+
+      for ( Blob blob : this.blobs ) {
+        movementSum += blob.movement;
+      }
+
+      float averageMovement = movementSum / this.blobs.size();
+
+      println( this.trackColor, averageMovement );
+
+    }
+
   }
 
 

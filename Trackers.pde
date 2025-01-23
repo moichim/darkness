@@ -76,5 +76,27 @@ class Trackers extends ArrayList<Tracker> {
         tracker.draw();
       }
     }
+
+    int blobCount = 0;
+
+    // Analyse for sound
+    for ( Tracker tracker: this ) {
+      tracker.analyseForSound();
+      blobCount += tracker.blobs.size();
+    }
+
+    if ( blobCount == 0 ) {
+      // this.particles.points.clear();
+      for ( Particle p : this.particles.points ) {
+
+        if ( p.phase == LIFE.DEAD ) {
+          // this.particles.points.remove( p );
+        } else {
+          p.setLost();
+        }
+      }
+    }
+
+
   }
 }
