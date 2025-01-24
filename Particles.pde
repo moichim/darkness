@@ -4,13 +4,13 @@ class Particles {
 
   int max = 200;
 
-  public PGraphics canvas;
+  // public PGraphics canvas;
 
   Particles(
     int w,
     int h
   ) {
-    this.canvas = createGraphics( w, h );
+    // this.canvas = createGraphics( w, h );
   }
 
   Particle emit(
@@ -81,18 +81,18 @@ class Particles {
 
   void draw() {
 
-    this.canvas.beginDraw();
+    // this.canvas.beginDraw();
 
-    this.canvas.fill( 0, 0, 0, controller.bga() );
-    this.canvas.rect( 0, 0, width, height );
+    fill( 0, 0, 0, controller.bga() );
+    rect( 0, 0, width, height );
 
     for ( Particle p : this.points ) {
-      p.draw( this.canvas );
+      p.draw( );
     }
 
-    this.canvas.endDraw();
+    // this.canvas.endDraw();
 
-    image( this.canvas, 0, 0 );
+    // image( this.canvas, 0, 0 );
 
 
   }

@@ -224,19 +224,18 @@ class Particle {
   }
 
   public void draw(
-    PGraphics target
   ) {
 
-    target.push();
+    push();
 
-    target.strokeWeight(2);
-    target.stroke( this.col );
-    target.line( this.prev.x, this.prev.y, this.position.x, this.position.y );
+    strokeWeight(2);
+    stroke( this.col );
+    line( this.prev.x, this.prev.y, this.position.x, this.position.y );
 
-    target.noStroke();
+    noStroke();
     //fill( this.col );
     // ellipse( this.position.x, this.position.y, 10, 10 );
 
-    target.pop();
+    pop();
   }
 }

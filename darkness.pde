@@ -5,19 +5,14 @@
 
 import processing.video.*;
 
-import uibooster.*;
-import uibooster.model.*;
-
 // Tracking
 Capture video;
 Controller controller;
-UiBooster ui;
 
 
 void setup() {
   size( 1920, 1080 );
 
-  ui = new UiBooster();
 
   String[] cameras = Capture.list();
 

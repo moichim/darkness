@@ -10,8 +10,6 @@ class Controller {
 
   FloatControl distThreshold = new FloatControl( "Tracker Dist Threshold", 50 );
 
-  Form state;
-
   Controller(
     Capture video,
     int outputWidth,
@@ -27,18 +25,10 @@ class Controller {
       new PVector( video.width, video.height ),
       new PVector( outputWidth, outputHeight )
       );
-
-    this.state = ui
-      .createForm( "Blablátořík" )
-      .addSlider("Background opacity?", 0, 255, 15, 10, 1)
-      .run();
-
-    this.state.close();
-      // .run();
   }
 
   public float bga() {
-    return this.state.getByIndex(0).asFloat();
+    return 15; // this.state.getByIndex(0).asFloat();
   }
 
 
@@ -54,11 +44,11 @@ class Controller {
             }
 
             if ( key == 'u' ) {
-                this.state.show();
+                // this.state.show();
             }
 
             if ( key == 'z' ) {
-                this.state.close();
+                // this.state.close();
             }
         }
 
