@@ -7,13 +7,6 @@ import processing.video.*;
 
 // Tracking
 Capture video;
-
-// Serialising
-Time time = new Time();
-
-// float distThreshold = 50;
-// float maxLife = 200;
-
 Controller controller;
 
 void setup() {
@@ -79,11 +72,9 @@ void draw() {
   /** Keyboard input */
   if ( keyPressed ) {
     if ( key == 'r' ) {
-      time.start();
       controller.trackers.startRecording();
     }
     if ( key == 'e' ) {
-      time.end();
       controller.trackers.endRecording();
     }
   }

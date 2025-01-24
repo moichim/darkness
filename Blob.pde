@@ -31,17 +31,17 @@ class Blob {
   Tracker tracker;
 
   Blob(float x, float y, Tracker tracker) {
-    minx = x;
-    miny = y;
-    maxx = x;
-    maxy = y;
+    this.minx = x;
+    this.miny = y;
+    this.maxx = x;
+    this.maxy = y;
     this.tracker = tracker;
     this.recalculate();
   }
 
   PVector getCenter() {
-    float x = (maxx - minx)* 0.5 + minx;
-    float y = (maxy - miny)* 0.5 + miny;    
+    float x = (this.maxx - this.minx)* 0.5 + this.minx;
+    float y = (this.maxy - this.miny)* 0.5 + this.miny;    
     return new PVector(x,y); 
   }
 
@@ -102,13 +102,13 @@ class Blob {
     noFill();
     strokeWeight(2);
     rectMode(CORNERS);
-    rect(minx, miny, maxx, maxy);
+    rect(this.minx, this.miny, this.maxx, this.maxy);
     
     textAlign(CENTER);
     textSize(64);
     noStroke();
     fill(col);
-    text(id, minx + (maxx-minx)*0.5, maxy - 10);
+    text(this.id, this.minx + (this.maxx-this.minx)*0.5, this.maxy - 10);
     textSize(20);
   }
 
@@ -127,31 +127,31 @@ class Blob {
 
 
   void add(float x, float y) {
-    minx = min(minx, x);
-    miny = min(miny, y);
-    maxx = max(maxx, x);
-    maxy = max(maxy, y);
+    this.minx = min(this.minx, x);
+    this.miny = min(this.miny, y);
+    this.maxx = max(this.maxx, x);
+    this.maxy = max(this.maxy, y);
     this.recalculate();
   }
   
   void become(Blob other) {
-    minx = other.minx;
-    maxx = other.maxx;
-    miny = other.miny;
-    maxy = other.maxy;
+    this.minx = other.minx;
+    this.maxx = other.maxx;
+    this.miny = other.miny;
+    this.maxy = other.maxy;
     this.recalculate();
   }
 
   float size() {
-    return (maxx-minx)*(maxy-miny);
+    return (this.maxx-this.minx)*(this.maxy-this.miny);
   }
   
   
 
   boolean isNear(float x, float y) {
 
-    float cx = max(min(x, maxx), minx);
-    float cy = max(min(y, maxy), miny);
+    float cx = max(min(x, this.maxx), this.minx);
+    float cy = max(min(y, this.maxy), this.miny);
     float d = distSq(cx, cy, x, y);
 
     float distThreshold = controller.distThreshold.value();

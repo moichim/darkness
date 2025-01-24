@@ -34,8 +34,6 @@ class Trackers extends ArrayList<Tracker> {
   void endRecording() {
     this.recording = false;
     println( "recording ended" );
-    time.end();
-
   }
 
 
