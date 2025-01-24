@@ -4,7 +4,14 @@ class Particles {
 
   int max = 200;
 
-  Particles() {}
+  public PGraphics canvas;
+
+  Particles(
+    int w,
+    int h
+  ) {
+    this.canvas = createGraphics( w, h );
+  }
 
   Particle emit(
     Blob blob
@@ -73,8 +80,20 @@ class Particles {
   }
 
   void draw() {
+
+    this.canvas.beginDraw();
+
+    this.canvas.fill( 0, 0, 0, controller.bga() );
+    this.canvas.rect( 0, 0, width, height );
+
     for ( Particle p : this.points ) {
-      p.draw();
+      p.draw( this.canvas );
     }
+
+    this.canvas.endDraw();
+
+    image( this.canvas, 0, 0 );
+
+
   }
 }

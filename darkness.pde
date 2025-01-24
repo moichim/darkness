@@ -5,12 +5,19 @@
 
 import processing.video.*;
 
+import uibooster.*;
+import uibooster.model.*;
+
 // Tracking
 Capture video;
 Controller controller;
+UiBooster ui;
+
 
 void setup() {
   size( 1920, 1080 );
+
+  ui = new UiBooster();
 
   String[] cameras = Capture.list();
 
@@ -55,29 +62,28 @@ void captureEvent(Capture video) {
 void draw() {
 
   video.loadPixels();
-  image(video, 0, 0);
+  // image(video, 0, 0);
 
 
   controller.trackers.update();
   controller.particles.update();
 
-  fill( 0, 0, 0, 15 );
-  rect( 0, 0, width, height );
+  
 
   // background( 0, 0, 0, 50 );
 
   
   controller.particles.draw();
 
-  /** Keyboard input */
-  if ( keyPressed ) {
-    if ( key == 'r' ) {
-      controller.trackers.startRecording();
-    }
-    if ( key == 'e' ) {
-      controller.trackers.endRecording();
-    }
-  }
+  controller.listenKeyboard();
+
+
+  fill( 0 );
+  rect( 0, 0, 50, 20 );
+  fill( 255 );
+  textSize( 10 );
+  text( frameRate, 10, 10 );
+  
 
 }
 
