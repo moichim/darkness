@@ -216,7 +216,7 @@ class Tracker {
 
       float averageMovement = movementSum / this.blobs.size();
 
-      println( this.trackColor, averageMovement );
+      // println( this.trackColor, averageMovement );
 
     }
 
