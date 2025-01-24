@@ -1,16 +1,10 @@
 class Particles {
 
-  Trackers trackers;
-
   ArrayList<Particle> points = new ArrayList<Particle>();
 
   int max = 200;
 
-  Particles(
-    Trackers trackers
-    ) {
-    this.trackers = trackers;
-  }
+  Particles() {}
 
   Particle emit(
     Blob blob
@@ -54,7 +48,7 @@ class Particles {
         // Reassign the lost
         else if ( p.phase == LIFE.LOST ) {
 
-          for ( Tracker tracker : this.trackers ) {
+          for ( Tracker tracker : controller.trackers ) {
 
             if ( p.phase == LIFE.LOST ) {
 

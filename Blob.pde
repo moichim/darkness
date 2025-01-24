@@ -56,10 +56,10 @@ class Blob {
     }
 
     // this.prev = this.center.clone();
-    this.center = mapping.output( c );
+    this.center = controller.mapping.output( c );
     this.movement = this.prev.dist( this.center );
-    this.width = mapping.xoutput( this.maxx - this.minx );
-    this.height = mapping.youtput( this.maxy - this.miny );
+    this.width = controller.mapping.xoutput( this.maxx - this.minx );
+    this.height = controller.mapping.youtput( this.maxy - this.miny );
     this.diameter = sqrt( ( this.width * this.width ) + ( this.height * this.height ) );
 
   }
@@ -70,12 +70,12 @@ class Blob {
 
     float life = map( this.diameter, 0, video.width, 5, 1 );
 
-    this.particles.add( tracker.trackers.particles.emit( this ) );
+    this.particles.add( controller.particles.emit( this ) );
 
     if ( this.tick >= life ) {
 
       this.particles.add( 
-        tracker.trackers.particles.emit( this )
+        controller.particles.emit( this )
       );
 
     }
@@ -89,7 +89,7 @@ class Blob {
 
     for ( Particle particle: this.particles ) {
       particle.setLost();
-      this.tracker.trackers.particles.remove( particle );
+      controller.particles.remove( particle );
     }
 
     this.particles.clear();
@@ -153,6 +153,8 @@ class Blob {
     float cx = max(min(x, maxx), minx);
     float cy = max(min(y, maxy), miny);
     float d = distSq(cx, cy, x, y);
+
+    float distThreshold = controller.distThreshold.value();
 
     if (d < distThreshold*distThreshold) {
       return true;

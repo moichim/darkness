@@ -124,9 +124,9 @@ class Particle {
 
     if (
       this.position.x < -1 * this.screenBoundary
-      || this.position.x > mapping.output.x + this.screenBoundary
+      || this.position.x > controller.mapping.output.x + this.screenBoundary
       || this.position.y < -1 * this.screenBoundary
-      || this.position.y > mapping.output.y + this.screenBoundary
+      || this.position.y > controller.mapping.output.y + this.screenBoundary
       ) {
       this.phase = LIFE.DEAD;
     }
@@ -151,7 +151,7 @@ class Particle {
 
       if ( this.blob.movement != 0 ) {
 
-        float movement = map( this.blob.movement, 0, mapping.output.x / 10, 0, 1 );
+        float movement = map( this.blob.movement, 0, controller.mapping.output.x / 10, 0, 1 );
 
         float distance = this.position.dist( this.blob.center );
 

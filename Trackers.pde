@@ -6,8 +6,6 @@ class Trackers extends ArrayList<Tracker> {
 
   boolean recording = false;
 
-  Particles particles = new Particles( this );
-
   Trackers(
     Capture video
     ) {
@@ -21,7 +19,7 @@ class Trackers extends ArrayList<Tracker> {
     float threshold
     ) {
 
-    this.add( new Tracker( r, g, b, threshold, this ) );
+    this.add( new Tracker( r, g, b, threshold ) );
   }
 
 
@@ -42,9 +40,6 @@ class Trackers extends ArrayList<Tracker> {
 
 
   void update() {
-
-    this.particles.update();
-    this.particles.draw();
 
     if ( this.recording == false ) {
       // do nothing
@@ -86,11 +81,11 @@ class Trackers extends ArrayList<Tracker> {
     }
 
     if ( blobCount == 0 ) {
-      // this.particles.points.clear();
-      for ( Particle p : this.particles.points ) {
+      // controller.particles.points.clear();
+      for ( Particle p : controller.particles.points ) {
 
         if ( p.phase == LIFE.DEAD ) {
-          // this.particles.points.remove( p );
+          // controller.particles.points.remove( p );
         } else {
           p.setLost();
         }

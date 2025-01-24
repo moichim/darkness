@@ -5,29 +5,24 @@ class Tracker {
 
   int blobCounter = 0;
 
-  int maxLife = 200;
+  // int maxLife = 200;
 
   /** @deprecated */
   color trackColor;
   float threshold = 40;
-  float distThreshold = 300;
 
   float r;
   float g;
   float b;
 
-  Trackers trackers;
-
   Tracker(
     int r,
     int g,
     int b,
-    float threshold,
-    Trackers trackers
+    float threshold
   ) {
     this.setColor( r, g, b );
     this.threshold = threshold;
-    this.trackers = trackers;
   }
 
   void reset() {
