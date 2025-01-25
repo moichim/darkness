@@ -161,7 +161,7 @@ class Particle {
           2 
         );
 
-        this.speed = 1 + ( 7 * movement );
+        this.speed = controller.minSpeed() + ( controller.maxSpeed() * movement );
         this.speed *= d;
 
       }
@@ -182,10 +182,11 @@ class Particle {
   protected color deviation(
     Tracker tracker
     ) {
+      float t = controller.colorDeviationThreshold();
     return color(
-      this.deviateChannel( tracker.r, 100 ),
-      this.deviateChannel( tracker.g, 100 ),
-      this.deviateChannel( tracker.b, 100 )
+      this.deviateChannel( tracker.r, t ),
+      this.deviateChannel( tracker.g, t ),
+      this.deviateChannel( tracker.b, t )
       );
   }
 

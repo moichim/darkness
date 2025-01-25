@@ -65,8 +65,6 @@ class Trackers extends ArrayList<Tracker> {
       for ( Tracker tracker : this ) {
         tracker.postPoxelsProcessed();
         tracker.update();
-        tracker.debug();
-        tracker.draw();
       }
     }
 
@@ -92,4 +90,15 @@ class Trackers extends ArrayList<Tracker> {
 
 
   }
+
+  public void draw() {
+
+    // Popsprocess every trackes
+      for ( Tracker tracker : this ) {
+        tracker.draw();
+      }
+
+  }
+
+
 }

@@ -4,11 +4,13 @@
 // Code for: https://youtu.be/r0lvsMPGEoY
 
 import processing.video.*;
+import uibooster.*;
+import uibooster.model.*;
 
 // Tracking
 Capture video;
 Controller controller;
-
+UiBooster ui;
 
 void setup() {
   size( 1920, 1080 );
@@ -17,6 +19,8 @@ void setup() {
   String[] cameras = Capture.list();
 
   printArray(cameras);
+
+  ui = new UiBooster();
 
   // Tracking
 
@@ -56,6 +60,8 @@ void captureEvent(Capture video) {
 
 void draw() {
 
+  controller.updateUi();
+
   video.loadPixels();
   // image(video, 0, 0);
 
@@ -73,11 +79,7 @@ void draw() {
   controller.listenKeyboard();
 
 
-  fill( 0 );
-  rect( 0, 0, 50, 20 );
-  fill( 255 );
-  textSize( 10 );
-  text( frameRate, 10, 10 );
+  controller.drawDebug();
   
 
 }

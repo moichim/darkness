@@ -63,7 +63,7 @@ class Particles {
 
                 float distance = blob.center.dist( p.position );
 
-                if ( distance <= 800 ) {
+                if ( distance <= controller.lostParticlesDistance() ) {
                   p.assignToBlob( blob );
                 }
               }
