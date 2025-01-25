@@ -5,8 +5,6 @@ class Trackers extends ArrayList<Tracker> {
   Capture video;
 
   boolean recording = false;
-  protected int duration = 0;
-  protected int ticks = 0;
 
   Trackers(
     Capture video
@@ -25,23 +23,17 @@ class Trackers extends ArrayList<Tracker> {
   }
 
 
-  void startRecording( int duration ) {
+  void startRecording( ) {
     for ( Tracker tracker : this ) {
       tracker.reset();
     }
     this.recording = true;
-    this.duration = duration;
-    this.ticks = 0;
     println( "recording started" );
   }
 
   void endRecording() {
     this.recording = false;
     println( "recording ended" );
-    time.end();
-    playback = new Playback( series, 10 * 1000);
-    playback.start();
-
   }
 
 
@@ -50,15 +42,6 @@ class Trackers extends ArrayList<Tracker> {
     if ( this.recording == false ) {
       // do nothing
     } else {
-
-      // Update local ticks if recording
-      this.ticks++;
-
-      if ( this.ticks >= this.duration ) {
-        this.endRecording();
-      }
-
-      // this.video.loadPixels();
 
       // Popsprocess every trackes
       for ( Tracker tracker : this ) {
@@ -81,9 +64,41 @@ class Trackers extends ArrayList<Tracker> {
       // Popsprocess every trackes
       for ( Tracker tracker : this ) {
         tracker.postPoxelsProcessed();
-        tracker.debug();
-        tracker.draw();
+        tracker.update();
       }
     }
+
+    int blobCount = 0;
+
+    // Analyse for sound
+    for ( Tracker tracker: this ) {
+      tracker.analyseForSound();
+      blobCount += tracker.blobs.size();
+    }
+
+    if ( blobCount == 0 ) {
+      // controller.particles.points.clear();
+      for ( Particle p : controller.particles.points ) {
+
+        if ( p.phase == LIFE.DEAD ) {
+          // controller.particles.points.remove( p );
+        } else {
+          p.setLost();
+        }
+      }
+    }
+
+
   }
+
+  public void draw() {
+
+    // Popsprocess every trackes
+      for ( Tracker tracker : this ) {
+        tracker.draw();
+      }
+
+  }
+
+
 }

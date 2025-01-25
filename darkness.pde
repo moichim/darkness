@@ -4,50 +4,54 @@
 // Code for: https://youtu.be/r0lvsMPGEoY
 
 import processing.video.*;
+import uibooster.*;
+import uibooster.model.*;
 
 // Tracking
 Capture video;
-Trackers trackers;
-
-// Serialising
-Mapping mapping;
-Time time = new Time();
-Series series;
-Playback playback;
-
-float distThreshold = 50;
-float maxLife = 200;
-float threshold = 40;
+Controller controller;
+UiBooster ui;
 
 void setup() {
   size( 1920, 1080 );
 
+
   String[] cameras = Capture.list();
 
   printArray(cameras);
+
+  ui = new UiBooster();
 
   // Tracking
 
   video = new Capture(this, cameras[0]);
   video.start();
 
-  trackers = new Trackers( video );
+  controller = new Controller(
+    video,
+    width,
+    height
+  );
 
-  // trackers.create( 255, 255, 255, 20 );
+  // controller.trackers.create( 255, 255, 255, 20 );
+  
+  // Green
+  controller.trackers.create( 14, 84, 8, 40 );
+  
+  // Red
+  controller.trackers.create( 176, 11, 11, 70 );
 
-  // trackers.create( 87, 181, 222, 40 );
-  // trackers.create( 168, 43, 20, 40 );
 
-  trackers.create( 10, 10, 255, 100 );
+  // Blue
+  controller.trackers.create( 87, 181, 222, 50 );
 
-  // Serialising
+  controller.trackers.create( 245, 237, 5, 50 );
+  controller.trackers.create( 10, 10, 255, 75 );
 
-  mapping = new Mapping(
-    new PVector( video.width, video.height ),
-    new PVector( 1920, 1080 )
-    );
+  background(0);
 
-  series = new Series( mapping );
+  fullScreen();
+
 }
 
 void captureEvent(Capture video) {
@@ -56,59 +60,27 @@ void captureEvent(Capture video) {
 
 void draw() {
 
-  background( 50 );
+  controller.updateUi();
 
-  if ( playback == null ) {
-
-    /** Tracking */
-
-    video.loadPixels();
-    image(video, 0, 0);
-    trackers.update();
-
-    /** Serialising */
-
-    time.update();
-
-    series.drawInput();
-    series.drawOutput();
-
-  }
+  video.loadPixels();
+  // image(video, 0, 0);
 
 
-  /** Visualisation */
-  if ( playback != null ) {
-    playback.update();
-    playback.draw();
-  }
+  controller.trackers.update();
+  controller.particles.update();
+
+  
+
+  // background( 0, 0, 0, 50 );
+
+  
+  controller.particles.draw();
+
+  controller.listenKeyboard();
 
 
-  if ( trackers.recording == true ) {
-
-    noStroke();
-    fill( 255, 0, 0 );
-    ellipse( 50, 50, 20, 20 );
-    float w = map( trackers.ticks, 0, trackers.duration, 0, mapping.input.x );
-    rect(0, 0, w, 10 );
-    noFill();
-
-  }
-
-
-  fill( 255 );
-  text( frameRate, width - 100, 20 );
-
-
-  /** Keyboard input */
-  if ( keyPressed ) {
-    if ( key == 'r' ) {
-      series.flush();
-      time.start();
-      trackers.startRecording( 500 );
-    }
-
-  }
-
+  controller.drawDebug();
+  
 
 }
 
