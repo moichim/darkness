@@ -15,6 +15,10 @@ class Tracker {
   float g;
   float b;
 
+  boolean playing = false;
+
+  // Synth synth;
+
   Tracker(
     int r,
     int g,
@@ -23,6 +27,11 @@ class Tracker {
   ) {
     this.setColor( r, g, b );
     this.threshold = threshold;
+
+    // this.synth = new Synth( "sine" );
+    // this.synth.set( "amp", 0 );
+    // this.synth.create();
+
   }
 
   void reset() {
@@ -206,7 +215,37 @@ class Tracker {
 
   public void analyseForSound() {
 
+    // Detect end / start of the playback
+    if ( this.playing == true && this.blobs.size() == 0 ) {
+      println( "Ended playing!", this );
+      this.playing = false;
+    } else if ( this.playing == false && this.blobs.size() > 0) {
+      println( "Started playing!", this );
+      this.playing = true;
+    }
+
+
+
+    if ( this.playing == true ) {
+
+      float amp = constrain(
+        map( this.blobs.size(), 0, 4, 0, 1 ),
+        0,
+        1
+      );
+
+      // this.synth.set( "amp", amp );
+    } else {
+      // this.synth.set( "amp", 0 );
+    }
+
     if ( this.blobs.size() > 0 ) {
+
+      float freq = random(20,100);
+
+      OscMessage myMessage = new OscMessage("/freq");
+      myMessage.add(freq);
+      osc.send(myMessage, "127.0.0.1", 57120);
 
       float movementSum = 0;
 

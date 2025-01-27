@@ -6,14 +6,28 @@
 import processing.video.*;
 import uibooster.*;
 import uibooster.model.*;
+import oscP5.*;
 
-// Tracking
+
 Capture video;
 Controller controller;
 UiBooster ui;
 
+OscP5 osc;
+
 void setup() {
-  size( 1920, 1080 );
+
+  // fullScreen( P2D );
+  size( 1920, 1080, P2D );
+
+  
+
+  // Running the SC
+  String command = "sclang " + sketchPath("sound.scd");
+  println( command );
+  launch( command );
+
+  osc = new OscP5(this, 57120); 
 
 
   String[] cameras = Capture.list();
@@ -50,7 +64,7 @@ void setup() {
 
   background(0);
 
-  fullScreen();
+  
 
 }
 
