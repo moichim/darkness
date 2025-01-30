@@ -12,13 +12,17 @@ class Controller {
 
   Form state;
 
+  OscP5 osc;
+
   Controller(
     Capture video,
     int outputWidth,
-    int outputHeight
+    int outputHeight,
+    OscP5 osc
     ) {
 
     this.video = video;
+    this.osc = osc;
 
     this.trackers = new Trackers( video );
     this.particles = new Particles( outputWidth, outputHeight );
@@ -37,12 +41,15 @@ class Controller {
       .addSlider( "Speed Min", 0, 3, 1, 1, 0 )
       .addSlider( "Speed Max", 0, 20, 7, 5, 0 )
       .addSlider( "Lost particles distance", 0, outputWidth, 800, 200, 100 )
+      .addSlider( "Blip freq min", 0, 200, 3, 100, 0 )
+      .addSlider( "Blip freq max", 0, 300, 20, 100, 0 )
       .addButton( "Black out", () -> background(0) )
       .addButton( "Play", () -> this.trackers.startRecording() )
       .addButton( "Stop", () -> this.trackers.endRecording() )
       .run();
 
     // this.state.close();
+    this.trackers.startRecording();
   }
 
 
@@ -55,6 +62,9 @@ class Controller {
   protected float minSpeed = 1;
   protected float maxSpeed = 7;
   protected float lostParticlesDistance = 800;
+
+  protected float blipFreqMin = 3;
+  protected float blipFreqMax = 20;
 
   public float bga() {
     return this.bga;
@@ -81,6 +91,13 @@ class Controller {
     return this.lostParticlesDistance;
   }
 
+  public float blipFreqMin() {
+    return this.blipFreqMin;
+  }
+  public float blipFreqMax() {
+    return this.blipFreqMax;
+  }
+
 
   protected void updateUi() {
 
@@ -92,6 +109,8 @@ class Controller {
     this.colorDeviationThreshold = this.state.getByIndex(4).asFloat();
     this.minSpeed = this.state.getByIndex( 5 ).asFloat();
     this.maxSpeed = this.state.getByIndex( 6 ).asFloat();
+    this.blipFreqMin = this.state.getByIndex(8).asFloat();
+    this.blipFreqMax = this.state.getByIndex(9).asFloat();
     this.lostParticlesDistance = this.state.getByIndex( 7 ).asFloat();
   }
 
@@ -113,6 +132,31 @@ class Controller {
       textSize( 10 );
       text( frameRate, 10, 10 );
     }
+  }
+
+  public OscMessage msg( String key ) {
+    return new OscMessage( key );
+  }
+
+  public void send(
+    OscMessage msg
+  ) {
+    this.osc.send( msg, "127.0.0.1", 57120 );
+  }
+
+  public void syncBlip(
+    float pan,
+    float amp,
+    float freq
+  ) {
+    OscMessage msg = this.msg("/blip");
+    msg.add( constrain( pan, -1, 1 ) );
+    msg.add( constrain( amp, 0, 1 ) );
+    msg.add( 
+      freq
+      // constrain( freq, this.blipFreqMin, this.blipFreqMax ) 
+    );
+    this.send(msg);
   }
 
 

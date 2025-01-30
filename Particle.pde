@@ -162,7 +162,7 @@ class Particle {
         );
 
         this.speed = controller.minSpeed() + ( controller.maxSpeed() * movement );
-        this.speed *= d;
+        // this.speed *= d;
 
       }
     }
