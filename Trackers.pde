@@ -6,6 +6,10 @@ class Trackers extends ArrayList<Tracker> {
 
   boolean recording = false;
 
+  int numActiveColors = 0;
+  int numBlobs = 0;
+  float averageBlobSpeed = 0;
+
   Trackers(
     Capture video
     ) {
@@ -89,7 +93,31 @@ class Trackers extends ArrayList<Tracker> {
     }
 
 
+    this.updateStatistics();
+
+
   }
+
+  protected void updateStatistics() {
+
+    int trackerCount = 0;
+    float speedSum = 0;
+    int blobCount = 0;
+
+    for ( Tracker tracker : this ) {
+      blobCount += tracker.blobs.size();
+      speedSum += tracker.averageSpeed;
+      if ( tracker.blobs.size() > 0 ) {
+        trackerCount += 1;
+      }
+    }
+    this.averageBlobSpeed = speedSum / this.size();
+    this.numActiveColors = trackerCount;
+    this.numBlobs = blobCount;
+
+  }
+
+
 
   public void draw() {
 

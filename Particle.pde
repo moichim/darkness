@@ -42,7 +42,7 @@ class Particle {
     this.position.y += random( -20, 20 );
     this.prev = this.position;
 
-    this.col = this.deviation( blob.tracker );
+    this.col = this.deviation( this.blob.tracker.emissionColor, (int) round( controller.colorDeviationThreshold() ) );// this.deviation( blob.tracker );
     this.colTarget = this.col;
 
     this.speed = random( 1, 5 );
@@ -63,9 +63,11 @@ class Particle {
   }
 
   void assignToBlob( Blob blob ) {
-    this.blob = blob;
-    this.phase = LIFE.FOLLOWS;
-    this.colTarget = blob.tracker.trackColor;
+    if ( this.blob != blob ) {
+      this.blob = blob;
+      this.phase = LIFE.FOLLOWS;
+      this.colTarget = blob.tracker.trackColor;
+    }
   }
 
 
@@ -172,21 +174,38 @@ class Particle {
 
   protected void updateColor() {
     if ( this.col != this.colTarget ) {
-      this.col = lerpColor( this.col, this.colTarget, .01 );
+      this.col = lerpColor( this.col, this.colTarget, 0.1 );
     }
+  }
+
+  public void setColorFromTracker() {
+    if ( this.blob != null ) {
+      this.colTarget = this.deviation( this.blob.tracker.trackColor, controller.colorDeviationThreshold() );
+    }
+  }
+
+  public void setColor(
+    color col,
+    float deviation
+  ) {
+    this.colTarget = color(
+      this.deviateChannel( red( col ), deviation ),
+      this.deviateChannel( green( col ), deviation ),
+      this.deviateChannel( blue(col), deviation )
+    );
   }
 
 
 
 
   protected color deviation(
-    Tracker tracker
+    color col,
+    float deviation
     ) {
-      float t = controller.colorDeviationThreshold();
     return color(
-      this.deviateChannel( tracker.r, t ),
-      this.deviateChannel( tracker.g, t ),
-      this.deviateChannel( tracker.b, t )
+      this.deviateChannel( red(col), deviation ),
+      this.deviateChannel( green(col), deviation ),
+      this.deviateChannel( blue(col), deviation )
       );
   }
 

@@ -11,11 +11,15 @@ class Tracker {
   color trackColor;
   float threshold = 40;
 
+  color emissionColor;
+
   float r;
   float g;
   float b;
 
   boolean playing = false;
+
+  float averageSpeed = 0;
 
   // Synth synth;
 
@@ -27,6 +31,7 @@ class Tracker {
   ) {
     this.setColor( r, g, b );
     this.threshold = threshold;
+    this.emissionColor = this.trackColor;
 
     // this.synth = new Synth( "sine" );
     // this.synth.set( "amp", 0 );
@@ -101,12 +106,14 @@ class Tracker {
 
     }
 
+    this.updateStatistics();
+
   }
 
   protected void matchBlobs() {
 
     for (int i = this.temp.size()-1; i >= 0; i--) {
-      if (this.temp.get(i).size() < 500) {
+      if (this.temp.get(i).size() < 800) {
         this.temp.remove(i);
       }
     }
@@ -199,6 +206,18 @@ class Tracker {
       }
 
     }
+
+  }
+
+  protected void updateStatistics() {
+
+    float speedSum = 0;
+
+    for ( Blob blob : this.blobs ) {
+      speedSum += blob.movement;
+    }
+
+    this.averageSpeed = speedSum / this.blobs.size();
 
   }
 

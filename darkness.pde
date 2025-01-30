@@ -16,7 +16,7 @@ UiBooster ui;
 OscP5 osc;
 
 String os = System.getProperty("os.name");
-boolean isMac = os == "Mac OS X";
+boolean isMac = os.contains( "Mac OS X" );
 
 boolean runSC = true;
 
@@ -27,35 +27,19 @@ void setup() {
   // fullScreen( P2D );
   size( 1920, 1080, P2D );
 
-  // Running the SuperCollider
-  /*
-  println( "Operating system", os );
-  if ( isMac == true && runSC == true ) {
-    String scpath = "/Applications/SuperCollider.app/Contents/MacOS/sclang";
-    String soundFilePath = sketchPath( "sound.scd" );
-    String[] command = { scpath, soundFilePath };
-    process = exec( command );
-    println( "executed", command );
-  } else if ( isMac == false && runSC == true ) {
-    String command = "sclang " + sketchPath("sound.scd");
-    process = launch( command );
-    println( "launched", command );
-  }
-  */
-
   osc = new OscP5(this, 57120); 
-
 
   String[] cameras = Capture.list();
 
   printArray(cameras);
+  println("Platform", os);
 
   ui = new UiBooster();
 
-  String cam = cameras[0];
+  String cam = "pipeline:autovideosrc";
 
-  if ( isMac ) {
-    cam = "pipeline:autovideosrc";
+  if ( isMac == false ) {
+    cam = cameras[0];
   }
 
   video = new Capture(this, cam);
@@ -116,6 +100,8 @@ void draw() {
   controller.particles.draw();
 
   controller.listenKeyboard();
+
+  controller.composition.update();
 
 
   controller.drawDebug();

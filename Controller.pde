@@ -16,6 +16,8 @@ class Controller {
 
   boolean isMac = false;
 
+  Composition composition = new Composition();
+
   Controller(
     Capture video,
     int outputWidth,
@@ -53,7 +55,7 @@ class Controller {
     // this.state.close();
     // this.trackers.startRecording();
 
-    this.isMac = System.getProperty("os.name") == "Mac OS X";
+    this.isMac = System.getProperty("os.name").contains( "Mac OS X" );
 
   }
 
@@ -70,6 +72,16 @@ class Controller {
 
   protected float blipFreqMin = 3;
   protected float blipFreqMax = 20;
+
+  public void setBga( float value ) {
+    this.bga = constrain( value, 0, 255 );
+    this.state.getByIndex(0).setValue( (int) round( value ) );
+  }
+
+  public void setColorDeviationThreshold( float value ) {
+    this.colorDeviationThreshold = value;
+    this.state.getByIndex(4).setValue((int) round( value ) );
+  }
 
   public float bga() {
     return this.bga;
@@ -163,7 +175,6 @@ class Controller {
     );
     if ( this.trackers.recording ) {
       this.send(msg);
-      println(msg);
     }
     
   }
