@@ -14,6 +14,8 @@ class Controller {
 
   OscP5 osc;
 
+  boolean isMac = false;
+
   Controller(
     Capture video,
     int outputWidth,
@@ -49,7 +51,10 @@ class Controller {
       .run();
 
     // this.state.close();
-    this.trackers.startRecording();
+    // this.trackers.startRecording();
+
+    this.isMac = System.getProperty("os.name") == "Mac OS X";
+
   }
 
 
@@ -156,7 +161,45 @@ class Controller {
       freq
       // constrain( freq, this.blipFreqMin, this.blipFreqMax ) 
     );
-    this.send(msg);
+    if ( this.trackers.recording ) {
+      this.send(msg);
+      println(msg);
+    }
+    
+  }
+
+  Process process;
+
+  void scStart() {
+
+    if ( this.process == null ) {
+
+      if ( this.isMac == true ) {
+        String scpath = "/Applications/SuperCollider.app/Contents/MacOS/sclang";
+        String soundFilePath = sketchPath( "sound.scd" );
+        String[] command = { scpath, soundFilePath };
+        this.process = exec( command );
+        println( "executed", command );
+      } else if ( this.isMac == false ) {
+        String command = "sclang " + sketchPath("sound.scd");
+        process = launch( command );
+        println( "launched", command );
+      }
+
+    }
+
+  }
+
+  void scEnd() {
+    
+    println( "Trying to destroy", this.process );
+
+    if ( this.process != null ) {
+
+      this.process.destroy();
+
+    }
+
   }
 
 
@@ -165,9 +208,11 @@ class Controller {
 
     /** Keyboard input */
         if ( keyPressed ) {
+            
             if ( key == 'r' ) {
                 this.trackers.startRecording();
             }
+
             if ( key == 'e' ) {
                 this.trackers.endRecording();
             }
@@ -179,6 +224,17 @@ class Controller {
             if ( key == 'z' ) {
                 this.state.close();
             }
+
+            if ( key == 's' ) {
+              this.scStart();
+            }
+
+            if ( key == 'd' ) {
+              this.scEnd();
+            }
+
+
+
         }
 
     }

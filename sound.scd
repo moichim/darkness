@@ -34,17 +34,11 @@ s.waitForBoot({
     // Debug zpráva
     "SynthDef s ADSR obálkou byl úspěšně nahrán a Synth spuštěn!".postln;
 
-	~x = Synth(\foldsaw, [\freq, 4, \amp, 0]);
-	~x.set(\amp, 0.5);
-	~x.set(\pan, -1);
-	~x.set(\freq, 2);
-	~x.free
-
-	s.freeAll
+	~x = Synth(\foldsaw, [\freq, 4, \amp, 1]);
 
 	n = NetAddr.new( NetAddr.localAddr.hostname, NetAddr.localAddr.port );
 
-	n.sendMsg("/blip", 4, 0, 3);
+	// n.sendMsg("/blip", 4, 0, 3);
 
     // Definice OSC routy pro přijímání zpráv
     OSCdef.newMatching(\blipp, { |msg, time, addr, recvPort|

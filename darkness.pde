@@ -15,23 +15,33 @@ UiBooster ui;
 
 OscP5 osc;
 
+String os = System.getProperty("os.name");
+boolean isMac = os == "Mac OS X";
+
+boolean runSC = true;
+
+Process sc;
+
 void setup() {
 
   // fullScreen( P2D );
   size( 1920, 1080, P2D );
 
-  String scpath = "/Applications/SuperCollider.app/Contents/MacOS/sclang";
-  String soundFilePath = sketchPath( "sound.scd" );
-
-  String[] prikaz = { scpath, soundFilePath };
-
-  
-
-  // Running the SC
-  String command = "source /Users/moichim/.bash_profile && sclang " + sketchPath("sound.scd");
-  println( command );
-  // launch("profile /Users/moichim/.bash_profile");
-  // exec( prikaz );
+  // Running the SuperCollider
+  /*
+  println( "Operating system", os );
+  if ( isMac == true && runSC == true ) {
+    String scpath = "/Applications/SuperCollider.app/Contents/MacOS/sclang";
+    String soundFilePath = sketchPath( "sound.scd" );
+    String[] command = { scpath, soundFilePath };
+    process = exec( command );
+    println( "executed", command );
+  } else if ( isMac == false && runSC == true ) {
+    String command = "sclang " + sketchPath("sound.scd");
+    process = launch( command );
+    println( "launched", command );
+  }
+  */
 
   osc = new OscP5(this, 57120); 
 
@@ -42,15 +52,11 @@ void setup() {
 
   ui = new UiBooster();
 
-  // Tracking
-  String os=System.getProperty("os.name");
-  println(os);
+  String cam = cameras[0];
 
-  // String cam = os == "Mac OS X" ? "pipeline:autovideosrc" : cameras[0];
-  String cam = "pipeline:autovideosrc";
-  
-
-  println(os);
+  if ( isMac ) {
+    cam = "pipeline:autovideosrc";
+  }
 
   video = new Capture(this, cam);
   video.start();
@@ -61,8 +67,6 @@ void setup() {
     height,
     osc
   );
-
-  // controller.trackers.create( 255, 255, 255, 20 );
   
   // Green
   controller.trackers.create( 14, 84, 8, 40 );

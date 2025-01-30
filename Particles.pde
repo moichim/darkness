@@ -110,11 +110,9 @@ class Particles {
       freq = map( speedAvg, controller.minSpeed(), controller.maxSpeed(), controller.blipFreqMin(), controller.blipFreqMax() );
       pan = map( posAvg, 0, controller.mapping.output.x, -1, 1 );
 
-      println(freq, speedAvg, controller.minSpeed(), controller.maxSpeed(), controller.blipFreqMin(), controller.blipFreqMax());
+      // println(freq, speedAvg, controller.minSpeed(), controller.maxSpeed(), controller.blipFreqMin(), controller.blipFreqMax());
 
     }
-
-    
 
     controller.syncBlip( pan, amp, freq );
 
