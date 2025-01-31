@@ -24,8 +24,8 @@ Process sc;
 
 void setup() {
 
-  // fullScreen( P2D );
-  size( 1920, 1080, P2D );
+  fullScreen( P2D );
+  // size( 1920, 1080, P2D );
 
   osc = new OscP5(this, 57120); 
 
