@@ -20,18 +20,29 @@ class Tracker {
   boolean playing = false;
 
   float averageSpeed = 0;
+  float averageParticleSpeed = 0;
+  String instrument;
 
-  // Synth synth;
+  float amplitudeAspect = 0;
+  PVector center = new PVector(width / 2, height / 2);
+  float leftmost = 0;
+  float rightmost = width;
+  float topmost = 0;
+  float bottommost = height;
+
+  float particleCount = 0;
 
   Tracker(
     int r,
     int g,
     int b,
-    float threshold
+    float threshold,
+    String instrument
   ) {
     this.setColor( r, g, b );
     this.threshold = threshold;
     this.emissionColor = this.trackColor;
+    this.instrument = instrument;
 
     // this.synth = new Synth( "sine" );
     // this.synth.set( "amp", 0 );
@@ -106,7 +117,7 @@ class Tracker {
 
     }
 
-    this.updateStatistics();
+    // this.updateStatistics();
 
   }
 
@@ -209,15 +220,18 @@ class Tracker {
 
   }
 
-  protected void updateStatistics() {
+  public void updateStatistics() {
 
-    float speedSum = 0;
+    if ( this.blobs.size() > 0 ) {
+      float speedSum = 0;
 
-    for ( Blob blob : this.blobs ) {
-      speedSum += blob.movement;
+      for ( Blob blob : this.blobs ) {
+        speedSum += blob.movement;
+      }
+
+      this.averageSpeed = speedSum / this.blobs.size();
+
     }
-
-    this.averageSpeed = speedSum / this.blobs.size();
 
   }
 
@@ -232,51 +246,90 @@ class Tracker {
   }
 
 
-  public void analyseForSound() {
+  public void drawSound( int index ) {
 
-    // Detect end / start of the playback
-    if ( this.playing == true && this.blobs.size() == 0 ) {
-      println( "Ended playing!", this );
-      this.playing = false;
-    } else if ( this.playing == false && this.blobs.size() > 0) {
-      println( "Started playing!", this );
-      this.playing = true;
-    }
+    push();
+
+    float w = 200;
+    float h = 100;
+
+    float start = controller.mapping.input.x + ( w * index );
+
+    translate( start, 0 );
+
+    // print bg
+    fill( 0 );
+    stroke(255);
+    rect( 0, 0, w, h );
+
+    // Print pan
+    PVector pan = new PVector(
+      map( this.center.x, 0, controller.mapping.output.x, 0, w ),
+      h / 2
+    );
+
+    // Print the name of the instrument
+    fill( this.trackColor );
+    textSize( 10 );
+    text( this.instrument, 10, 10 );
+    // fill(0);
+    text( this.amplitudeAspect, 10, 20 );
+
+    // Print the pan
+    noStroke();
+    fill( this.trackColor );
+    ellipseMode( CENTER );
+    ellipse( pan.x, pan.y, 10, 10 );
+
+    // Print the amplitude
+    rectMode(CORNER);
+    rect( 
+      w - 10, 
+      0, 
+      10,
+      map( this.amplitudeAspect, 0, 1, 0, h )
+    );
+
+    // Print the speed
+    fill(255);
+    rect(
+      w - 20,
+      0, 10,
+      this.averageParticleSpeed
+    );
+
+    // Print the height
+    ellipse(w / 2, map( this.center.y, 0, controller.mapping.output.y, 0, h ), 10, 10);
 
 
+    pop();
 
-    if ( this.playing == true ) {
+  }
 
-      float amp = constrain(
-        map( this.blobs.size(), 0, 4, 0, 1 ),
-        0,
-        1
-      );
 
-      // this.synth.set( "amp", amp );
-    } else {
-      // this.synth.set( "amp", 0 );
-    }
+  /** Send regular OSC message every turn */
+  void sendInstrumentMessage(
+    float amplitude
+  ) {
 
-    if ( this.blobs.size() > 0 ) {
+    amplitude = constrain( amplitude, 0, 1 );
 
-      float freq = random(20,100);
+    OscMessage msg = controller.msg( this.instrument );
 
-      OscMessage myMessage = new OscMessage("/freq");
-      myMessage.add(freq);
-      osc.send(myMessage, "127.0.0.1", 57120);
+    // Amplitude is defined by the aspect and is multiplitd by the provided aspect
+    msg.add( this.amplitudeAspect * amplitude );
 
-      float movementSum = 0;
+    // Pan X is calculated from the center aspect
+    msg.add( map( this.center.x, 0, controller.mapping.output.x, -1, 1 ) );
 
-      for ( Blob blob : this.blobs ) {
-        movementSum += blob.movement;
-      }
+    // Y is mapped to 0-1
+    msg.add( map( this.center.y, 0, controller.mapping.output.y, 0, 1 ) );
 
-      float averageMovement = movementSum / this.blobs.size();
+    // Average speed is sent as real number
+    msg.add( this.averageSpeed );
 
-      // println( this.trackColor, averageMovement );
-
-    }
+    // Sent the message at the end
+    controller.send( msg );
 
   }
 

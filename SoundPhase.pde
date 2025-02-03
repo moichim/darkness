@@ -20,6 +20,9 @@ class SoundPhaseMuted extends SoundPhase {
 
     void execute( int ticks ) {
 
+        controller.composition.muteOne();
+        controller.composition.muteMultiple();
+
     }
 
     void end() {
@@ -42,6 +45,9 @@ class SoundPhaseOne extends SoundPhase {
 
     void execute( int ticks ) {
 
+        controller.composition.raiseOne();
+        controller.composition.muteMultiple();
+
     }
 
     void end() {
@@ -63,6 +69,9 @@ class SoundPhaseMultiple extends SoundPhase {
     }
 
     void execute( int ticks ) {
+
+        controller.composition.muteOne();
+        controller.composition.raiseMultiple();
 
     }
 
@@ -116,6 +125,10 @@ class SoundPhaseMelody extends SoundPhase {
     }
 
     void execute( int ticks ) {
+
+
+        controller.composition.muteOne();
+        controller.composition.raiseMultiple();
 
         this.counter++;
 

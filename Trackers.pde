@@ -20,10 +20,11 @@ class Trackers extends ArrayList<Tracker> {
     int r,
     int g,
     int b,
-    float threshold
+    float threshold,
+    String instrument
     ) {
 
-    this.add( new Tracker( r, g, b, threshold ) );
+    this.add( new Tracker( r, g, b, threshold, instrument ) );
   }
 
 
@@ -76,7 +77,6 @@ class Trackers extends ArrayList<Tracker> {
 
     // Analyse for sound
     for ( Tracker tracker: this ) {
-      tracker.analyseForSound();
       blobCount += tracker.blobs.size();
     }
 
@@ -105,15 +105,66 @@ class Trackers extends ArrayList<Tracker> {
     int blobCount = 0;
 
     for ( Tracker tracker : this ) {
+      
+      // Calculate the tracker`s inner statistics
+      tracker.updateStatistics();
+      
+      // Reset the tracker's particle count
+      tracker.particleCount = 0;
+
+      // Reset the trackers average speed
+      tracker.averageParticleSpeed = 0;
+
+      // Reset the particle position attributes
+      tracker.center.x = 0;
+      tracker.center.y = 0;
+      
+      // Update local statistics
       blobCount += tracker.blobs.size();
       speedSum += tracker.averageSpeed;
+      
       if ( tracker.blobs.size() > 0 ) {
         trackerCount += 1;
       }
+
     }
+
+    // Calculate global statistics
     this.averageBlobSpeed = speedSum / this.size();
     this.numActiveColors = trackerCount;
     this.numBlobs = blobCount;
+
+    // Count particles per tracker
+    for( Particle particle : controller.particles.points ) {
+
+      if ( particle.blob != null ) {
+        particle.blob.tracker.particleCount += 1;
+        particle.blob.tracker.averageParticleSpeed += particle.speed;
+        particle.blob.tracker.center.x += particle.position.x;
+        particle.blob.tracker.center.y += particle.position.y;
+      }
+
+    }
+
+    // Calculate the particle count
+    for ( Tracker tracker : this ) {
+
+      tracker.amplitudeAspect = tracker.particleCount / controller.particles.points.size();
+      tracker.averageParticleSpeed = tracker.averageParticleSpeed / tracker.particleCount;
+      tracker.center.x = tracker.center.x / tracker.particleCount;
+      tracker.center.y = tracker.center.y / tracker.particleCount;
+
+    }
+
+  }
+
+  void sendInstrumentMessages(
+    float amplitude
+  ){
+
+    for ( Tracker tracker : this ) {
+      tracker.sendInstrumentMessage( amplitude );
+    }
 
   }
 
@@ -121,9 +172,10 @@ class Trackers extends ArrayList<Tracker> {
 
   public void draw() {
 
-    // Popsprocess every trackes
-      for ( Tracker tracker : this ) {
+      for ( int i = 0; i < this.size(); i++ ) {
+        Tracker tracker = this.get(i);
         tracker.draw();
+        tracker.drawSound( i );
       }
 
   }

@@ -114,7 +114,7 @@ class Particles {
 
     }
 
-    controller.syncBlip( pan, amp, freq );
+    // controller.syncBlip( pan, amp, freq );
 
   }
 

@@ -20,6 +20,11 @@ class Composition {
 
     int phaseMinLife = 30 * 2;
 
+    float oneAmp = 0;
+    float multipleAmp = 0;
+
+    float changeStep = 0.02;
+
     Composition() {
         this.current.activate();
     }
@@ -35,6 +40,36 @@ class Composition {
         if ( this.ticks >= 10000 ) {
             this.ticks = 0;
         }
+
+        // Send messages of all trackers
+        if ( frameCount % 30 == 0 ) {
+            controller.trackers.sendInstrumentMessages( this.oneAmp );
+        }
+
+        fill( 0 );
+        rectMode(CORNER);
+        rect(0, height - 200, 400, 200);
+
+        fill( 255 );
+        noStroke();
+
+        ellipseMode( CENTER );
+
+        float instDiameter = map( this.oneAmp, 0, 1, 0, 200 );
+        ellipse(
+            100,
+            height - 200,
+            instDiameter,
+            instDiameter
+        );
+
+        float multipleDiameter = map( this.multipleAmp, 0, 1, 0, 200 );
+        ellipse(
+            300,
+            height - 200,
+            multipleDiameter,
+            multipleDiameter
+        );
 
     }
 
@@ -85,6 +120,42 @@ class Composition {
         this.current = phase;
         this.ticks = 0;
         this.current.activate();
+    }
+
+    public void raiseOne() {
+
+        if ( this.oneAmp < 1 ) {
+            this.oneAmp += this.changeStep;
+        } else {
+            this.oneAmp = 1;
+        }
+
+    }
+
+    public void raiseMultiple() {
+
+        if ( this.multipleAmp < 1 ) {
+            this.multipleAmp += this.changeStep;
+        } else {
+            this.multipleAmp = 1;
+        }
+
+    }
+
+    public void muteOne() {
+        if ( this.oneAmp > 0 ) {
+            this.oneAmp -= this.changeStep;
+        } else {
+            this.oneAmp = 0;
+        }
+    }
+
+    public void muteMultiple() {
+        if ( this.multipleAmp > 0 ) {
+            this.multipleAmp -= this.changeStep;
+        } else {
+            this.multipleAmp = 0;
+        }
     }
 
 

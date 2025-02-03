@@ -159,6 +159,7 @@ class Controller {
     OscMessage msg
   ) {
     this.osc.send( msg, "127.0.0.1", 57120 );
+    println( msg );
   }
 
   public void syncBlip(

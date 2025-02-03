@@ -12,7 +12,7 @@ class Mapping {
     }
 
     float xoutput( float value ) {
-        return map( value, 0, this.input.x,  this.output.x, 0 );
+        return map( value, 0, this.input.x,  0, this.output.x );
     }
 
     float youtput( float value ) {
@@ -21,7 +21,7 @@ class Mapping {
 
     PVector output( PVector input ) {
         return new PVector(
-            map( input.x, 0, this.input.x, this.output.x, 0 ),
+            map( input.x, 0, this.input.x, 0, this.output.x ),
             map( input.y, 0, this.input.y, 0, this.output.y )
         );
     }

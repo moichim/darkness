@@ -24,8 +24,8 @@ Process sc;
 
 void setup() {
 
-  fullScreen( P2D );
-  // size( 1920, 1080, P2D );
+  // fullScreen( P2D );
+  size( 1920, 1080, P2D );
 
   osc = new OscP5(this, 57120); 
 
@@ -53,17 +53,15 @@ void setup() {
   );
   
   // Green
-  controller.trackers.create( 14, 84, 8, 40 );
+  controller.trackers.create( 14, 84, 8, 40, "An instrument" );
   
   // Red
-  controller.trackers.create( 176, 11, 11, 70 );
-
+  controller.trackers.create( 176, 11, 11, 70, "a second instrument" );
 
   // Blue
-  controller.trackers.create( 87, 181, 222, 50 );
-
-  controller.trackers.create( 189, 51, 69, 40 );
-  controller.trackers.create( 9, 23, 97, 40 );
+  controller.trackers.create( 87, 181, 222, 50, "a third instrument" );
+  controller.trackers.create( 189, 51, 69, 40, "a fifth instrument" );
+  controller.trackers.create( 9, 23, 97, 40, "a sixth instrument" );
 
   frameRate(40);
 
