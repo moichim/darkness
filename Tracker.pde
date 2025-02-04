@@ -25,10 +25,10 @@ class Tracker {
 
   float amplitudeAspect = 0;
   PVector center = new PVector(width / 2, height / 2);
-  float leftmost = 0;
-  float rightmost = width;
-  float topmost = 0;
-  float bottommost = height;
+  float pan = 1;
+  float h = 0;
+  float heightMin = 0;
+  float heightMax = 0;
 
   float particleCount = 0;
 
@@ -264,7 +264,7 @@ class Tracker {
 
     // Print pan
     PVector pan = new PVector(
-      map( this.center.x, 0, controller.mapping.output.x, 0, w ),
+      map( this.pan, -1, 1, 0, w ),
       h / 2
     );
 
@@ -299,7 +299,7 @@ class Tracker {
     );
 
     // Print the height
-    ellipse(w / 2, map( this.center.y, 0, controller.mapping.output.y, 0, h ), 10, 10);
+    ellipse(w / 2, map( this.h, 0, 1, 0, h ), 10, 10);
 
 
     pop();
@@ -320,10 +320,10 @@ class Tracker {
     msg.add( this.amplitudeAspect * amplitude );
 
     // Pan X is calculated from the center aspect
-    msg.add( map( this.center.x, 0, controller.mapping.output.x, -1, 1 ) );
+    msg.add( this.pan );
 
     // Y is mapped to 0-1
-    msg.add( map( this.center.y, 0, controller.mapping.output.y, 0, 1 ) );
+    msg.add( this.h );
 
     // Average speed is sent as real number
     msg.add( this.averageSpeed );

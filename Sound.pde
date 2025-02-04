@@ -75,16 +75,6 @@ class Composition {
 
     void evaluatePhase() {
 
-
-        // If there are no particles, set muted
-
-        // If there is only one color and maximum of 3 trackers, set one
-
-        // If there are at least two colors, set multiple
-
-        // If there are at least two colors and the phase life is larger than X, set melody
-
-
         // If there are no particles, set muted
         if ( controller.particles.points.size() <= 0 ) {
             if ( this.current.key() != SOUND.MUTED ) {
@@ -156,6 +146,47 @@ class Composition {
         } else {
             this.multipleAmp = 0;
         }
+    }
+
+    public void goMultipleTo( float target ) {
+
+        float distance = this.changeStep * 1.5;
+
+        target = constrain( target, 0, 1 );
+
+        if ( target == this.multipleAmp ) {
+            // Do nothing
+        }
+        else if ( abs( this.multipleAmp - target ) <= distance ) {
+            this.multipleAmp = target;
+        }
+        else if ( this.multipleAmp < target ) {
+            this.multipleAmp += this.changeStep;
+        } 
+        else if ( this.multipleAmp > target ) {
+            this.multipleAmp -= this.changeStep;
+        }
+
+    }
+
+    public void goOneTo( float target ) {
+
+        float distance = this.changeStep * 1.5;
+
+        target = constrain( target, 0, 1 );
+        if ( target == this.oneAmp ) {
+            // Do nothing
+        }
+        else if ( abs( this.oneAmp - target ) <= distance ) {
+            this.oneAmp = target;
+        }
+        else if ( this.oneAmp < target ) {
+            this.oneAmp += this.changeStep;
+        } 
+        else if ( this.oneAmp > target ) {
+            this.oneAmp -= this.changeStep;
+        }
+
     }
 
 

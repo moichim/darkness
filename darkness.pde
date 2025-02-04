@@ -83,7 +83,7 @@ void draw() {
 
   controller.updateUi();
 
-  video.loadPixels();
+  // video.loadPixels();
   // image(video, 0, 0);
 
 

@@ -44,6 +44,8 @@ class Trackers extends ArrayList<Tracker> {
 
   void update() {
 
+    this.video.loadPixels();
+
     if ( this.recording == false ) {
       // do nothing
     } else {
@@ -92,9 +94,7 @@ class Trackers extends ArrayList<Tracker> {
       }
     }
 
-
     this.updateStatistics();
-
 
   }
 
@@ -153,6 +153,8 @@ class Trackers extends ArrayList<Tracker> {
       tracker.averageParticleSpeed = tracker.averageParticleSpeed / tracker.particleCount;
       tracker.center.x = tracker.center.x / tracker.particleCount;
       tracker.center.y = tracker.center.y / tracker.particleCount;
+      tracker.pan = map( tracker.center.x, 0, controller.mapping.output.x, -1, 1 );
+      tracker.h = map( tracker.center.y, 0, controller.mapping.output.y, 0, 1 );
 
     }
 

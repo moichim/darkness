@@ -18,6 +18,23 @@ class Controller {
 
   Composition composition = new Composition();
 
+
+
+  protected float bga = 15;
+  protected boolean displayTrackers = false;
+  protected boolean displayCamera = false;
+  protected boolean displayFps = true;
+  protected float colorDeviationThreshold = 100;
+  protected float minSpeed = 2;
+  protected float maxSpeed = 11;
+  protected float lostParticlesDistance = 800;
+
+  protected float blipFreqMin = 3;
+  protected float blipFreqMax = 20;
+
+
+
+
   Controller(
     Capture video,
     int outputWidth,
@@ -37,16 +54,16 @@ class Controller {
       );
 
     this.state = ui.createForm( "Application settings" )
-      .addSlider("BG opacity", 0, 100, 15, 10, 5)
+      .addSlider("BG opacity", 0, 100, (int) this.bga, 10, 5)
       .addCheckbox( "Display trackers", false )
       .addCheckbox( "Display camera", false )
       .addCheckbox( "Display FPS", true )
-      .addSlider( "Color Deviation Threshold", 0, 255, 100, 128, 0 )
-      .addSlider( "Speed Min", 0, 3, 1, 1, 0 )
-      .addSlider( "Speed Max", 0, 20, 7, 5, 0 )
-      .addSlider( "Lost particles distance", 0, outputWidth, 800, 200, 100 )
-      .addSlider( "Blip freq min", 0, 200, 3, 100, 0 )
-      .addSlider( "Blip freq max", 0, 300, 20, 100, 0 )
+      .addSlider( "Color Deviation Threshold", 0, 255, (int) this.colorDeviationThreshold, 128, 0 )
+      .addSlider( "Speed Min", 0, 3, (int) this.minSpeed, 1, 0 )
+      .addSlider( "Speed Max", 0, 20, (int) this.maxSpeed, 5, 0 )
+      .addSlider( "Lost particles distance", 0, outputWidth, (int) this.lostParticlesDistance, 200, 100 )
+      .addSlider( "Blip freq min", 0, 200, (int) this.blipFreqMin, 100, 0 )
+      .addSlider( "Blip freq max", 0, 300, (int) this.blipFreqMax, 100, 0 )
       .addButton( "Black out", () -> background(0) )
       .addButton( "Play", () -> this.trackers.startRecording() )
       .addButton( "Stop", () -> this.trackers.endRecording() )
@@ -60,22 +77,26 @@ class Controller {
   }
 
 
-
-  protected float bga = 15;
-  protected boolean displayTrackers = false;
-  protected boolean displayCamera = false;
-  protected boolean displayFps = true;
-  protected float colorDeviationThreshold = .01;
-  protected float minSpeed = 1;
-  protected float maxSpeed = 7;
-  protected float lostParticlesDistance = 800;
-
-  protected float blipFreqMin = 3;
-  protected float blipFreqMax = 20;
-
   public void setBga( float value ) {
     this.bga = constrain( value, 0, 255 );
     this.state.getByIndex(0).setValue( (int) round( value ) );
+  }
+
+  public void goBgaTo( float target, float step ){
+    target = constrain( target, 0, 255 );
+
+    float distance = step * 1.5;
+
+    if ( this.bga == target  ) {
+      // Do nothing
+    } else if ( abs( this.bga - target ) <= distance ) {
+      this.setBga( target );
+    } else if ( this.bga < target ) {
+      this.setBga( this.bga + step );
+    } else if ( this.bga > target ) {
+      this.setBga( this.bga - step );
+    }
+
   }
 
   public void setColorDeviationThreshold( float value ) {
@@ -104,6 +125,58 @@ class Controller {
   public float maxSpeed() {
     return this.maxSpeed;
   }
+
+  void setSpeedMin( float value ) {
+    this.minSpeed = value;
+    this.state.getByIndex(5).setValue((int) round( value ) );
+  }
+
+  void setSpeedMax( float value ) {
+    this.maxSpeed = value;
+    this.state.getByIndex(6).setValue((int) round( value ) );
+  }
+
+  protected float stepValueTo(
+    float original,
+    float target,
+    float step
+  ) {
+
+    if ( original == target ) {
+      return target;
+    } else if ( abs( original - target ) <= step * 1.5 ) {
+      return target;
+    } else if ( original < target ) {
+      return original + step;
+    } else if ( original > target ) {
+      return original - step;
+    }
+
+    return original;
+
+  }
+
+  public void goSpeedTo(
+    float targetMin,
+    float targetMax,
+    float step
+  ) {
+
+    float min = this.stepValueTo( this.minSpeed, targetMin, step );
+    if ( min != this.minSpeed ) { 
+      this.setSpeedMin( min ); 
+    }
+
+    float max = this.stepValueTo( this.maxSpeed, targetMax, step );
+    if ( max != this.maxSpeed ) { 
+      this.setSpeedMax( max ); 
+    }
+    
+
+
+  }
+
+
   public float lostParticlesDistance() {
     return this.lostParticlesDistance;
   }

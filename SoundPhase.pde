@@ -20,6 +20,9 @@ class SoundPhaseMuted extends SoundPhase {
 
     void execute( int ticks ) {
 
+        controller.goBgaTo( 15, 1 );
+        controller.goSpeedTo( 1, 3, 1 );
+
         controller.composition.muteOne();
         controller.composition.muteMultiple();
 
@@ -45,6 +48,11 @@ class SoundPhaseOne extends SoundPhase {
 
     void execute( int ticks ) {
 
+        controller.goSpeedTo( 1, 5, 1 );
+        controller.goBgaTo( 12, 1 );
+
+        controller.setColorDeviationThreshold(200);
+
         controller.composition.raiseOne();
         controller.composition.muteMultiple();
 
@@ -66,9 +74,14 @@ class SoundPhaseMultiple extends SoundPhase {
 
         println( "activating", this.key() );
 
+        controller.setColorDeviationThreshold(50);
+
     }
 
     void execute( int ticks ) {
+
+        controller.goSpeedTo( 1, 7, 1 );
+        controller.goBgaTo( 7, 1 );
 
         controller.composition.muteOne();
         controller.composition.raiseMultiple();
@@ -100,9 +113,9 @@ class SoundPhaseMelody extends SoundPhase {
         this.colors.clear();
         this.intervals.clear();
 
-        controller.setBga(10);
+        // controller.setBga(10);
 
-        controller.setColorDeviationThreshold(15);
+        controller.setColorDeviationThreshold(125);
 
         this.counter = 0;
         this.pointer = 0;
@@ -126,9 +139,15 @@ class SoundPhaseMelody extends SoundPhase {
 
     void execute( int ticks ) {
 
+        controller.goBgaTo( 3, 1 );
 
-        controller.composition.muteOne();
-        controller.composition.raiseMultiple();
+        controller.goSpeedTo( 3, 15, 1 );
+
+
+        // controller.composition.muteOne();
+        // controller.composition.raiseMultiple();
+        controller.composition.goOneTo( 0.7 );
+        controller.composition.goMultipleTo( 0.3 );
 
         this.counter++;
 

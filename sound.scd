@@ -25,6 +25,106 @@ s.waitForBoot({
 		Out.ar(out, sig);
 	}).add;
 
+
+	Quarks.install("SoundFileCollection") // `SoundFileCollection` je součástí tohoto balíčku
+
+	File.getcwd.asAbsolutePath
+
+	~path = thisProcess.nowExecutingPath.dirname +/+ "/samples/";
+
+	// strunné nástroje
+	~string = Buffer.readChannel(
+		s,
+		~path +/+ "1_nastroje/stars/rev/star_1.aiff"
+		// channels:[0]
+	);
+
+	~string.bufnum
+
+
+
+
+
+
+
+
+	//
+// Načtení Bufferů
+//
+
+
+~buffers = Array.new; // Inicializace pole pro buffery
+~mode = "raw"; // nastavit režim přehrávání rev / raw
+
+// Kořenová složka pro finální buffery
+~rootFolder = PathName.new( ~path );
+
+~dict = Dictionary.new;
+
+~scandir = { arg path, name;
+	var content;
+		content = PathName.new( ~path +/+ path );
+
+		~dict[]
+		content.entries.do({ arg c;
+			c.postln;
+			array.add(c);
+			c;
+			~dict[c] = c;
+		});
+		array;
+};
+
+	~scandir.value( "1_nastroje/stars/rev/" );
+
+	~dict;
+
+// iterovat složku 01_kolizni
+~counter=0;
+~rootFolder.entries.do({
+	arg path;
+	~folderContent = PathName.new( path.fullPath );
+	path.fullPath.postln;
+	// iterovat oddíl samplů
+	~folderContent.entries.do({
+		arg pth;
+		~sampleFolder = PathName.new( pth.fullPath++~mode );
+		// iterovat obsah dané složky
+		~sampleFolder.entries.do({
+			arg spl;
+			~buffers = ~buffers.add(Buffer.read(s,spl.fullPath));
+			(~counter + spl.fullPath).postln;
+			~counter = ~counter + 1;
+
+		});
+	});
+})
+
+	~buffers.size;
+
+// Nastavení po definici synťáků
+//~sounds = Group.new();
+//~effects = Group.after(~sounds);
+
+
+
+
+
+
+
+
+SynthDef.new(\sample, {
+		arg amp=1, out=0, pan=0, rate=1, buf;
+		var sig;
+		sig = PlayBuf.ar(1,buf, BufRateScale.kr(buf) * rate, doneAction:2);
+		sig = Pan2.ar(sig,pan);
+		sig = sig * amp;
+		// sig = FreeVerb.ar(sig,room:1);
+		Out.ar(out,sig);
+}).add;
+
+	x = Synth.new(\sample,[\buf, 4, \rate, 1, \amp, 0.3, \pan,-1]);
+
     // Počkejte, dokud není SynthDef nahrán
     s.sync;
 
