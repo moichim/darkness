@@ -273,7 +273,7 @@ class Tracker {
     textSize( 10 );
     text( this.instrument, 10, 10 );
     // fill(0);
-    text( this.amplitudeAspect, 10, 20 );
+    text( this.averageParticleSpeed, 10, 20 );
 
     // Print the pan
     noStroke();

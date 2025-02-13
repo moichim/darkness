@@ -2,7 +2,7 @@ class Particles {
 
   ArrayList<Particle> points = new ArrayList<Particle>();
 
-  int max = 200;
+  int max = 800;
 
   // public PGraphics canvas;
 
@@ -16,6 +16,9 @@ class Particles {
   Particle emit(
     Blob blob
     ) {
+
+
+
     Particle item = new Particle(blob);
     this.points.add( item );
 
@@ -121,9 +124,10 @@ class Particles {
   void draw() {
 
     // this.canvas.beginDraw();
-
+    blendMode(MULTIPLY);
     fill( 0, 0, 0, controller.bga() );
     rect( 0, 0, width, height );
+    blendMode(BLEND);
 
     for ( Particle p : this.points ) {
       p.draw( );

@@ -31,6 +31,8 @@ class Particle {
 
   float lifeDuration = 200;
 
+  float originalDiameter;
+
   Particle(
     Blob blob
     ) {
@@ -44,6 +46,8 @@ class Particle {
 
     this.col = this.deviation( this.blob.tracker.emissionColor, (int) round( controller.colorDeviationThreshold() ) );// this.deviation( blob.tracker );
     this.colTarget = this.col;
+
+    this.originalDiameter = blob.diameter;
 
     this.speed = random( 1, 5 );
     this.direction = new PVector(
@@ -88,7 +92,7 @@ class Particle {
       this.syncFromBlob();
 
       float dist = this.blob.center.dist( this.position );
-      if ( dist >= this.blob.diameter / 2 ) {
+      if ( dist >= this.originalDiameter / 2 ) {
         this.phase = LIFE.FOLLOWS;
       }
     }

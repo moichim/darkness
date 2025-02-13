@@ -48,10 +48,10 @@ class SoundPhaseOne extends SoundPhase {
 
     void execute( int ticks ) {
 
-        controller.goSpeedTo( 1, 5, 1 );
-        controller.goBgaTo( 12, 1 );
+        controller.goSpeedTo( 2, 10, 1 );
+        controller.goBgaTo( 2, 1 );
 
-        controller.setColorDeviationThreshold(200);
+        controller.setColorDeviationThreshold(75);
 
         controller.composition.raiseOne();
         controller.composition.muteMultiple();
@@ -81,7 +81,7 @@ class SoundPhaseMultiple extends SoundPhase {
     void execute( int ticks ) {
 
         controller.goSpeedTo( 1, 7, 1 );
-        controller.goBgaTo( 7, 1 );
+        controller.goBgaTo( 0, 1 );
 
         controller.composition.muteOne();
         controller.composition.raiseMultiple();
@@ -139,7 +139,7 @@ class SoundPhaseMelody extends SoundPhase {
 
     void execute( int ticks ) {
 
-        controller.goBgaTo( 3, 1 );
+        controller.goBgaTo( 0, 1 );
 
         controller.goSpeedTo( 3, 15, 1 );
 
@@ -160,11 +160,15 @@ class SoundPhaseMelody extends SoundPhase {
 
         if ( this.counter == (int) round (interval/2 ) ) {
             this.propagateColor(true);
+            controller.setColorDeviationThreshold(75);
         }
 
         if ( this.counter >= interval ) {
             this.counter = 0;
             this.propagateColor( implicite );
+            OscMessage msg = controller.msg("/bass");
+            msg.add( random(20, 80) );
+            controller.send( msg );
             this.pointer++;
         }
 

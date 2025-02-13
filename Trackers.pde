@@ -4,7 +4,7 @@ class Trackers extends ArrayList<Tracker> {
 
   Capture video;
 
-  boolean recording = false;
+  boolean recording = true;
 
   int numActiveColors = 0;
   int numBlobs = 0;

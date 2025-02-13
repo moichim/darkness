@@ -6,127 +6,396 @@ s.boot; // Spuštění zvukového serveru
 // Počkejte, dokud není server připraven
 s.waitForBoot({
 
-	SynthDef(\foldsaw, {
-		arg freq=4, detune=1, atk=0.01, dec=0.3, rel=3, c1=1, c2=(-1), gate=1,
-		mincf=40, maxcf=12000, minrq=0.002, maxrq=0.2, boost=1.25, amp=1, out=0, pan=0;
-		var sig, env;
-		env = EnvGen.kr(Env.adsr(atk,dec,0.5,rel), gate, doneAction:2);
-		sig = Saw.ar(
-			freq +
-			LFNoise1.kr(LFNoise1.kr(0.5!8).range(0.1,1)).bipolar(detune);
-		);
-		5.do{sig = (sig*boost).fold(-1.0,1.0)};
-		sig = BPF.ar(
-			sig,
-			LFNoise1.kr({ExpRand(0.005,0.05)}!8).exprange(mincf, maxcf),
-			LFNoise1.kr({ExpRand(0.1,0.75)}!8).range(minrq, maxrq)
-		);
-		sig = Splay.ar(sig, 0.1, 1, pan) * env * amp * 2;
-		Out.ar(out, sig);
+
+
+
+	n = NetAddr.new( NetAddr.localAddr.hostname, NetAddr.localAddr.port );
+
+
+
+
+
+
+
+	/**
+	 * Globální věci
+	 */
+
+	// Přehrání bufferu
+	SynthDef.new(
+		\playbuff, {
+			arg amp=1,pan=0,out=0,buf,rate=1,bpFreq=1000, rq=0.5;
+			var sig;
+			sig = PlayBuf.ar(1,buf, BufRateScale.kr(buf) * rate,doneAction:2);
+			sig = BPF.ar(sig, bpFreq, rq);
+			sig = Pan2.ar(sig,pan);
+			sig = sig * amp;
+			Out.ar( out, sig );
+		}
+	).add;
+
+
+	// Přehrání bufferu
+	SynthDef.new(
+		\playbuf, {
+			arg amp=1,pan=0,out=0,buf,rate=1;
+			var sig;
+			sig = PlayBuf.ar(1,buf, BufRateScale.kr(buf) * rate,doneAction:2);
+			sig = Pan2.ar(sig,pan);
+			sig = sig * amp;
+			Out.ar( out, sig );
+		}
+	).add;
+
+
+
+
+	// Synthdef A
+	SynthDef(\a, { arg i_out, freq = 360, gate = 1, pan, amp=0.1, lagf=0.2, lagp=0.2;
+		var out, eg, fc, osc, a, b, w, smoothedFreq, smoothedAmp;
+
+		// Plynulé přechody frekvence
+		smoothedFreq = Lag.kr(freq, lagf); // Lag s hodnotou 0.2s
+		smoothedAmp = Lag.kr(amp, lagp);
+
+		fc = LinExp.kr(LFNoise1.kr(Rand(0.25, 0.4)), -1, 1, 500, 2000);
+		osc = Mix.fill(8, { LFSaw.ar(smoothedFreq * [Rand(0.99, 1.01), Rand(0.99, 1.01)], 0, smoothedAmp) }).distort * 0.2;
+
+		eg = EnvGen.kr(Env.asr(1, 1, 1), gate, doneAction: Done.freeSelf);
+		out = eg * RLPF.ar(osc, fc, 0.1);
+
+		#a, b = out;
+		Out.ar(i_out, Mix.ar(PanAz.ar(4, [a, b], [pan, pan+0.3])));
 	}).add;
 
 
-	Quarks.install("SoundFileCollection") // `SoundFileCollection` je součástí tohoto balíčku
 
-	File.getcwd.asAbsolutePath
 
-	~path = thisProcess.nowExecutingPath.dirname +/+ "/samples/";
+	// Basový synthdef
+	SynthDef.new(
+		\base,{
+			arg freq=300, freqLow=60,atk=0.1,rel=2,pan=0, amp=1;
+			var sig, sigMain, sigLow, envMain, envLow;
+			envMain = EnvGen.ar(Env.perc(atk,rel));
+			envLow = EnvGen.ar(Env.perc(atk,rel*2));
+			sigMain = SinOsc.ar(freq,0.5) *  envMain;
+			sigLow = SinOsc.ar(freqLow,0.75) * envLow;
+			sig = sigMain + sigLow;
+			sig = Pan2.ar(sig,pan);
+			sig = sig * amp;
+			Out.ar(0,sig);
+		}
+	).add;
 
-	// strunné nástroje
-	~string = Buffer.readChannel(
-		s,
-		~path +/+ "1_nastroje/stars/rev/star_1.aiff"
-		// channels:[0]
+
+
+
+	// Počkejte, dokud není SynthDef nahrán
+    s.sync;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/**
+	 * A - plyunlý zvuk
+	 */
+
+
+
+	// Globální proměnné A
+	~a = Synth.new(\a, [\freq, 20, \amp, 0]);
+
+
+	// Routa A
+    OSCdef.newMatching(\a, { |msg, time, addr, recvPort|
+		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4];
+
+		// Amplituda
+		if (amp != amp, {
+			~a.set(\amp, 0, \lagp, 3, \freq, 20, \lagf, 2);
+		}, {
+			~a.set(\amp, amp, \lagp, 0.2);
+		} );
+
+		// Pan
+		if ( pan != pan, {
+			~a.set( \pan, 0 );
+		},{
+			~a.set( \pan, pan );
+		} );
+
+		if (speed!=speed, {},{
+			// ~a.set( \freq, speed.linlin(1,10,20,100), \lagf, 0.1 );
+		});
+
+		if (h!=h, {},{
+			~a.set( \freqLow, h.linlin(0,1,20,100), \lagf, 0.1 );
+		});
+
+
+		//~x.set(\freq, freq, \amp, amp, \pan, pan);
+		// [msg, time, addr, recvPort].postln;
+	},
+	"/a",
 	);
 
-	~string.bufnum
+
+	OSCdef(\a).enable;
 
 
 
 
+	/**
+	 * B
+	 */
+
+	// Načtení samplů
+	~b1 = Buffer.read(s, "C:/Users/jachi/Documents/GitHub/darkness/samples/star_1.aiff");
+	~b2 = Buffer.read(s, "C:/Users/jachi/Documents/GitHub/darkness/samples/star_2.aiff");
+	~b3 = Buffer.read(s, "C:/Users/jachi/Documents/GitHub/darkness/samples/star_3.aiff");
+
+	Pdefn(\bdur, 0.5);
+
+
+	// Definice vzorku
+	Pdef.new(
+		\b,
+		Pbind(
+			\instrument, \playbuf,
+			\dur, Pdefn(\bdur),
+			\buf, Pseq([~b1.bufnum, ~b2.bufnum, ~b3.bufnum], inf),
+
+		)
+	);
+
+	Pdef(\b).set(\amp, 0);
+
+	Pdef(\b).play;
 
 
 
+	// Routa A
+    OSCdef.newMatching(\b, { |msg, time, addr, recvPort|
+		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4];
 
-	//
-// Načtení Bufferů
-//
+		amp.postln;
 
+		// Amplituda
+		if (amp != amp, {
+			//Pdef(\b).set(\amp, 0);
+		}, {
+			Pdef(\b).set(\amp, amp);
+		} );
 
-~buffers = Array.new; // Inicializace pole pro buffery
-~mode = "raw"; // nastavit režim přehrávání rev / raw
+		// Pan
+		if ( pan != pan, {
+			Pdef(\b).set(\pan, 0);
+		},{
+			Pdef(\b).set(\pan, pan);
+		} );
 
-// Kořenová složka pro finální buffery
-~rootFolder = PathName.new( ~path );
+		if (h!=h, {},{
+			Pdef(\b).set(\rate, h.linlin(0, 1, 0.1, 0.5 ));
 
-~dict = Dictionary.new;
+			if ( h > 0.5, {
+				Pdef(\b).set(\buf, Pseq([~b1.bufnum, ~b1.bufnum, ~b1.bufnum, ~b2.bufnum], inf);
+			}, {
+				Pdef(\b).set(\buf, Pseq([~b1.bufnum, ~b2.bufnum, ~b2.bufnum], inf);
+			});
 
-~scandir = { arg path, name;
-	var content;
-		content = PathName.new( ~path +/+ path );
-
-		~dict[]
-		content.entries.do({ arg c;
-			c.postln;
-			array.add(c);
-			c;
-			~dict[c] = c;
 		});
-		array;
-};
 
-	~scandir.value( "1_nastroje/stars/rev/" );
+		if (speed!=speed, {},{
+			Pdefn(
+				\bdur, speed.linlin( 0, 2, 0.5, 0.1 ),
+			);
+		});
 
-	~dict;
 
-// iterovat složku 01_kolizni
-~counter=0;
-~rootFolder.entries.do({
-	arg path;
-	~folderContent = PathName.new( path.fullPath );
-	path.fullPath.postln;
-	// iterovat oddíl samplů
-	~folderContent.entries.do({
-		arg pth;
-		~sampleFolder = PathName.new( pth.fullPath++~mode );
-		// iterovat obsah dané složky
-		~sampleFolder.entries.do({
-			arg spl;
-			~buffers = ~buffers.add(Buffer.read(s,spl.fullPath));
-			(~counter + spl.fullPath).postln;
-			~counter = ~counter + 1;
+		//~x.set(\freq, freq, \amp, amp, \pan, pan);
+		[msg, time, addr, recvPort].postln;
+	},
+	"/b",
+	);
+
+
+	OSCdef(\b).enable;
+		// OSCdef(\b).disable;
+
+
+
+
+
+
+
+		~s1 = Buffer.read(s, "C:/Users/jachi/Documents/GitHub/mist-rays/sound/lahoda_samples/1_nastroje/strings/rev/string_cut.aiff" );
+
+		// Synth.new(\playbuf, [\buf, ~s1.bufnum]);
+
+
+		/**
+	 * B
+	 */
+
+	// Načtení samplů
+
+
+	Pdefn(\cdur, 0.5);
+
+
+	// Definice vzorku
+	Pdef.new(
+		\c,
+		Pbind(
+			\instrument, \playbuf,
+			\dur, Pdefn(\cdur),
+			\buf, ~s1.bufnum,
+			//\rate, Prand([1,0.5,0.75,1,1,2], inf)
+		)
+	);
+
+	Pdef(\c).set(\amp, 0);
+	Pdef(\c).set(\rate, Pxrand(#[1, 0.5, 0.75, 1, 1, 2 ], inf));
+	Pdef(\c).set(\rate, 0.7);
+
+	Pdef(\c).play;
+
+
+
+	// Routa c
+    OSCdef.newMatching(\c, { |msg, time, addr, recvPort|
+		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4];
+
+		amp.postln;
+
+		// Amplituda
+		if (amp != amp, {
+			//Pdef(\c).set(\amp, 0);
+		}, {
+			Pdef(\c).set(\amp, amp);
+		} );
+
+		// Pan
+		if ( pan != pan, {
+			Pdef(\c).set(\pan, 0);
+		},{
+			Pdef(\c).set(\pan, pan);
+		} );
+
+		if (h!=h, {},{
+			Pdef(\c).set(\rate, h.linlin(0, 1, 0.1, 0.1 ));
+
+			if ( h > 0.5, {
+				// Pdef(\c).set(\buf, Pseq([~b1.bufnum, ~b1.bufnum, ~b1.bufnum, ~b2.bufnum], inf);
+			}, {
+				// Pdef(\c).set(\buf, Pseq([~b1.bufnum, ~b2.bufnum, ~b2.bufnum], inf);
+			});
 
 		});
-	});
-})
 
-	~buffers.size;
-
-// Nastavení po definici synťáků
-//~sounds = Group.new();
-//~effects = Group.after(~sounds);
+		if (speed!=speed, {},{
+			Pdefn(
+				\cdur, speed.linlin( 0, 5, 0.5, 0.1 ),
+			);
+		});
 
 
+		//~x.set(\freq, freq, \amp, amp, \pan, pan);
+		[msg, time, addr, recvPort].postln;
+	},
+	"/c",
+	);
+
+
+	OSCdef(\c).enable;
 
 
 
 
 
 
-SynthDef.new(\sample, {
-		arg amp=1, out=0, pan=0, rate=1, buf;
-		var sig;
-		sig = PlayBuf.ar(1,buf, BufRateScale.kr(buf) * rate, doneAction:2);
-		sig = Pan2.ar(sig,pan);
-		sig = sig * amp;
-		// sig = FreeVerb.ar(sig,room:1);
-		Out.ar(out,sig);
-}).add;
 
-	x = Synth.new(\sample,[\buf, 4, \rate, 1, \amp, 0.3, \pan,-1]);
 
-    // Počkejte, dokud není SynthDef nahrán
-    s.sync;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// Bass synths reciever
+	// Routa A
+    OSCdef.newMatching(\base, { |msg, time, addr, recvPort|
+		var freq = msg[1];
+
+		x = Synth.new(\base, [\freq, freq, \freqLow, 70, \atk, 0.5]);
+
+
+
+		//~x.set(\freq, freq, \amp, amp, \pan, pan);
+		[freq].postln;
+	},
+	"/bass",
+	);
+
+
+	OSCdef(\base).enable;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	["Started scsynth on", NetAddr.localAddr.hostname, NetAddr.langPort].postln;
@@ -134,28 +403,8 @@ SynthDef.new(\sample, {
     // Debug zpráva
     "SynthDef s ADSR obálkou byl úspěšně nahrán a Synth spuštěn!".postln;
 
-	~x = Synth(\foldsaw, [\freq, 4, \amp, 1]);
 
-	n = NetAddr.new( NetAddr.localAddr.hostname, NetAddr.localAddr.port );
 
-	// n.sendMsg("/blip", 4, 0, 3);
-
-    // Definice OSC routy pro přijímání zpráv
-    OSCdef.newMatching(\blipp, { |msg, time, addr, recvPort|
-		var pan = msg[1], amp = msg[2], freq = msg[3];
-		~x.set(\freq, freq, \amp, amp, \pan, pan);
-		[msg, time, addr, recvPort].postln;
-	},
-	"/blip",
-	// n
-	// NetAddr.new( "127.0.0.1", NetAddr.langPort )
-	// "127.0.0.1",
-	// NetAddr.langPort
-
-	);
-
-	OSCdef(\blipp).enable;
-	// OSCdef(\blipp).disable;
 
     s.plotTree;
     s.meter;

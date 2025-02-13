@@ -42,9 +42,11 @@ class Composition {
         }
 
         // Send messages of all trackers
-        if ( frameCount % 30 == 0 ) {
-            controller.trackers.sendInstrumentMessages( this.oneAmp );
-        }
+        // if ( frameCount % 10 == 0 ) {
+            controller.trackers.sendInstrumentMessages( 1 );
+        // }
+
+        /*
 
         fill( 0 );
         rectMode(CORNER);
@@ -70,6 +72,8 @@ class Composition {
             multipleDiameter,
             multipleDiameter
         );
+
+        */
 
     }
 
