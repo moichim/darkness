@@ -4,11 +4,13 @@ class Trackers extends ArrayList<Tracker> {
 
   Capture video;
 
-  boolean recording = true;
+  boolean recording = false;
 
   int numActiveColors = 0;
   int numBlobs = 0;
   float averageBlobSpeed = 0;
+
+  Form colors;
 
   Trackers(
     Capture video
@@ -27,8 +29,63 @@ class Trackers extends ArrayList<Tracker> {
     this.add( new Tracker( r, g, b, threshold, instrument ) );
   }
 
+  void createColorDialog() {
 
-  void startRecording( ) {
+    UiBooster ui = new UiBooster();
+
+    FormBuilder builder = ui.createForm( "Colors and attributes" );
+
+    for ( Tracker tracker : this ) {
+
+      Color c = new Color( 
+        (int) red( tracker.trackColor ),
+        (int) green( tracker.trackColor ),
+        (int) blue( tracker.trackColor )
+      );
+
+      String col = "color_" + tracker.instrument;
+
+      builder.addColorPicker( col, c );
+      builder.addSlider( "threshold_" + tracker.instrument, 0, 255, (int) tracker.threshold, 30, 0 );
+
+    }
+
+    Trackers self = this;
+
+
+    builder.setChangeListener( (element,value, f) -> {
+
+      println( element, element.getValue(), self );
+
+      for ( Tracker tracker : self ) {
+
+        String col = "color_" + tracker.instrument;
+        String tresh = "threshold_" + tracker.instrument;
+
+        println( element.getLabel(), " -> ", col, tresh, tracker, element.getValue() );
+
+        if ( element.getLabel().equals( col ) ) {
+          Color c = (Color) value;
+          tracker.setColor( c.getRed(), c.getGreen(), c.getBlue() );
+        }
+
+        if ( element.getLabel().equals( tresh ) ) {
+          tracker.threshold = (Integer) value;
+        }
+
+      }
+
+    } );
+
+    this.colors = builder.run();
+    this.colors.close();
+
+
+
+  }
+
+
+  void startRecording() {
     for ( Tracker tracker : this ) {
       tracker.reset();
     }
@@ -95,6 +152,65 @@ class Trackers extends ArrayList<Tracker> {
     }
 
     this.updateStatistics();
+    if ( controller.mutualBlobs() == true ) {
+      this.checkClosestTrackers();
+    }
+
+  }
+
+  protected void checkClosestTrackers() {
+
+    for ( Tracker current : this ) {
+
+      ArrayList<Blob> otherBlobs = new ArrayList<Blob>();
+
+      for ( Blob thisBlob : current.blobs ) {
+
+        if ( thisBlob.assignedToClosest == true ) {
+
+          float distance = thisBlob.center.dist( thisBlob.externalBlob.center );
+
+          if ( distance >= controller.mutualMaxDistance() ) {
+            thisBlob.unassignExternalBlob();
+          }
+
+        }
+
+        else {
+
+          Blob closestBlob = null;
+          float closestDistance = 500000;
+
+          for ( Tracker otherTracker : this ) {
+
+            if ( otherTracker != current ) {
+
+              for ( Blob otherBlob : otherTracker.blobs ) {
+
+                float distance = thisBlob.center.dist( otherBlob.center );
+
+                if ( distance < closestDistance ) {
+                  closestDistance = distance;
+                  closestBlob = otherBlob;
+                }
+
+              }
+
+            }
+
+          }
+
+          if ( closestBlob != null ) {
+
+            thisBlob.assignToClosest( closestBlob );
+
+          }
+
+        }
+
+      }
+
+    }
 
   }
 

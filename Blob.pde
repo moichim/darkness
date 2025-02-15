@@ -30,6 +30,9 @@ class Blob {
 
   Tracker tracker;
 
+  boolean assignedToClosest = false;
+  Blob externalBlob = null;
+
   Blob(float x, float y, Tracker tracker) {
     this.minx = x;
     this.miny = y;
@@ -37,6 +40,30 @@ class Blob {
     this.maxy = y;
     this.tracker = tracker;
     this.recalculate();
+  }
+
+  void assignToClosest(
+    Blob target
+  ) {
+    if ( this.assignedToClosest == false ) {
+      this.assignedToClosest = true;
+      this.externalBlob = target;
+
+      for ( Particle particle : this.particles ) {
+        
+        particle.assignToExternalBlob( target );
+      }
+    }
+  }
+
+  void unassignExternalBlob() {
+    if ( this.assignedToClosest == true ) {
+      this.assignedToClosest = false;
+      this.externalBlob = null;
+      for ( Particle particle : this.particles ) {
+        particle.unassignExternalBlob();
+      }
+    }
   }
 
   PVector getCenter() {

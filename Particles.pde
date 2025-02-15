@@ -81,9 +81,8 @@ class Particles {
       }
     }
 
-    // if ( frameCount % 10 == 0 ) {
-      this.syncToSound();
-    // }
+    this.syncToSound();
+
   }
 
   void syncToSound() {

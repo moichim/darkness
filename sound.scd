@@ -135,6 +135,9 @@ s.waitForBoot({
     OSCdef.newMatching(\a, { |msg, time, addr, recvPort|
 		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4];
 
+		[msg, time, addr, recvPort].postln;
+
+
 		// Amplituda
 		if (amp != amp, {
 			~a.set(\amp, 0, \lagp, 3, \freq, 20, \lagf, 2);
@@ -159,7 +162,7 @@ s.waitForBoot({
 
 
 		//~x.set(\freq, freq, \amp, amp, \pan, pan);
-		// [msg, time, addr, recvPort].postln;
+
 	},
 	"/a",
 	);
@@ -223,9 +226,9 @@ s.waitForBoot({
 			Pdef(\b).set(\rate, h.linlin(0, 1, 0.1, 0.5 ));
 
 			if ( h > 0.5, {
-				Pdef(\b).set(\buf, Pseq([~b1.bufnum, ~b1.bufnum, ~b1.bufnum, ~b2.bufnum], inf);
+				Pdef(\b).set(\buf, Pseq([~b1.bufnum, ~b1.bufnum, ~b1.bufnum, ~b2.bufnum], inf));
 			}, {
-				Pdef(\b).set(\buf, Pseq([~b1.bufnum, ~b2.bufnum, ~b2.bufnum], inf);
+					Pdef(\b).set(\buf, Pseq([~b1.bufnum, ~b2.bufnum, ~b2.bufnum], inf));
 			});
 
 		});
@@ -253,7 +256,7 @@ s.waitForBoot({
 
 
 
-		~s1 = Buffer.read(s, "C:/Users/jachi/Documents/GitHub/mist-rays/sound/lahoda_samples/1_nastroje/strings/rev/string_cut.aiff" );
+	~s1 = Buffer.read(s, "C:/Users/jachi/Documents/GitHub/mist-rays/sound/lahoda_samples/1_nastroje/strings/rev/string_cut.aiff" );
 
 		// Synth.new(\playbuf, [\buf, ~s1.bufnum]);
 
@@ -410,7 +413,5 @@ s.waitForBoot({
     s.meter;
 
 });
-
 )
-
 

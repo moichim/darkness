@@ -3,7 +3,8 @@ enum LIFE {
     FOLLOWS,
     LOST,
     REACHED,
-    DEAD
+    DEAD,
+    FOLLOWS_CLOSEST_NEIGHBOUR
 }
 
 class Particle {
@@ -22,16 +23,15 @@ class Particle {
   float yoff = random(1000);
 
   Blob blob;
+  Blob externalBlob;
 
   LIFE phase = LIFE.RUNSAWAY;
 
   float reachDistance = 30;
-
   float screenBoundary = 50;
-
   float lifeDuration = 200;
-
   float originalDiameter;
+
 
   Particle(
     Blob blob
@@ -74,6 +74,21 @@ class Particle {
     }
   }
 
+  void assignToExternalBlob(
+    Blob externalBlob
+  ) {
+    this.phase = LIFE.FOLLOWS_CLOSEST_NEIGHBOUR;
+    this.externalBlob = blob;
+    this.colTarget = blob.tracker.trackColor;
+  }
+
+  void unassignExternalBlob() {
+    this.blob = null;
+    this.externalBlob = null;
+    this.phase = LIFE.LOST;
+    this.colTarget = color(0,0,0);
+  }
+
 
   protected void evaluateLife() {
 
@@ -86,6 +101,20 @@ class Particle {
       }
     }
 
+    // Check if the external blob is near enough to die
+    else if ( this.phase == LIFE.FOLLOWS_CLOSEST_NEIGHBOUR ) {
+      if ( this.externalBlob == null ) {
+        this.phase = LIFE.DEAD;
+      } else {
+
+        float distance = this.position.dist( this.externalBlob.center );
+        if ( distance <= this.reachDistance ) {
+          this.phase = LIFE.DEAD;
+        }
+
+      }
+    }
+
     // If the phase is out, check for the distance towards the blob and eventually set as null
     else if ( this.phase == LIFE.RUNSAWAY ) {
 
@@ -95,6 +124,7 @@ class Particle {
       if ( dist >= this.originalDiameter / 2 ) {
         this.phase = LIFE.FOLLOWS;
       }
+
     }
 
     // If follows, check if reached already and eventually set the reach
@@ -111,19 +141,46 @@ class Particle {
 
   public void applyDirection() {
 
-    if ( this.phase == LIFE.LOST ) {
-      this.rotateRandomly();
-    } else if ( this.phase == LIFE.RUNSAWAY ) {
-      this.rotateRandomly();
-    } else if ( this.phase == LIFE.FOLLOWS ) {
-      PVector change = this.blob.center.copy();
-      change.sub( this.position );
-      change.normalize();
-      this.direction.lerp( change, .5 );
-      this.rotateRandomly();
-    } else if ( this.phase == LIFE.REACHED ) {
-      this.rotateRandomly();
+
+    switch ( this.phase ) {
+
+      case LOST:
+        this.rotateRandomly();
+        break;
+
+      case RUNSAWAY:
+        this.rotateRandomly();
+        break;
+
+      case FOLLOWS_CLOSEST_NEIGHBOUR:
+
+        if ( this.externalBlob == null ) {
+          this.phase = LIFE.LOST;
+        } else {
+          PVector target = this.externalBlob.center.copy();
+          target.sub( this.position );
+          target.normalize();
+          this.direction.lerp( target, .5 );
+          this.rotateRandomly();
+        }
+
+        break;
+
+      case FOLLOWS:
+        PVector change = this.blob.center.copy();
+        change.sub( this.position );
+        change.normalize();
+        this.direction.lerp( change, .5 );
+        this.rotateRandomly();
+        break;
+
+      case REACHED:
+        this.rotateRandomly();
+        break;
+
+
     }
+
   }
 
   protected void checkBoundaries() {
@@ -178,7 +235,7 @@ class Particle {
 
   protected void updateColor() {
     if ( this.col != this.colTarget ) {
-      this.col = lerpColor( this.col, this.colTarget, 0.1 );
+      this.col = lerpColor( this.col, this.colTarget, 0.01 );
     }
   }
 

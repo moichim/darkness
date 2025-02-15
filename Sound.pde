@@ -43,7 +43,9 @@ class Composition {
 
         // Send messages of all trackers
         // if ( frameCount % 10 == 0 ) {
+        if (controller.trackers.recording == true) {
             controller.trackers.sendInstrumentMessages( 1 );
+        }
         // }
 
         /*

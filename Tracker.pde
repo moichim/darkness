@@ -32,6 +32,8 @@ class Tracker {
 
   float particleCount = 0;
 
+  boolean closest = false;
+
   Tracker(
     int r,
     int g,
@@ -73,6 +75,14 @@ class Tracker {
   public void preprocessPixels() {
     this.temp.clear();
   }
+
+
+  public void assignToClosest(
+
+  ) {
+
+  }
+
 
 
   public void processPixel( color currentColor, int x, int y ) {
@@ -117,14 +127,13 @@ class Tracker {
 
     }
 
-    // this.updateStatistics();
-
   }
 
   protected void matchBlobs() {
 
     for (int i = this.temp.size()-1; i >= 0; i--) {
       if (this.temp.get(i).size() < 800) {
+        this.temp.get(i).unassignExternalBlob();
         this.temp.remove(i);
       }
     }
@@ -211,6 +220,7 @@ class Tracker {
       for ( int i = this.blobs.size() - 1; i >= 0; i-- ) {
         Blob b = this.blobs.get(i);
         if (!b.taken) {
+          b.unassignExternalBlob();
           b.remove();
           this.blobs.remove(i);
         }
@@ -219,6 +229,8 @@ class Tracker {
     }
 
   }
+
+
 
   public void updateStatistics() {
 
@@ -300,7 +312,6 @@ class Tracker {
 
     // Print the height
     ellipse(w / 2, map( this.h, 0, 1, 0, h ), 10, 10);
-
 
     pop();
 

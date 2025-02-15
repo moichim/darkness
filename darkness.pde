@@ -7,6 +7,7 @@ import processing.video.*;
 import uibooster.*;
 import uibooster.model.*;
 import oscP5.*;
+import java.awt.Color;  // Java Color třída
 
 
 Capture video;
@@ -24,8 +25,8 @@ Process sc;
 
 void setup() {
 
-  fullScreen();
-  // size( 1920, 1080 );
+  // fullScreen();
+  size( 1920, 1080 );
 
   frameRate(30);
 
@@ -56,13 +57,16 @@ void setup() {
   
   // Green
   // controller.trackers.create( 17, 173, 31, 70, "/a" );
-  controller.trackers.create( 50, 255, 57, 70, "/a" );
+  controller.trackers.create( 50, 200, 57, 80, "/a" );
 
   // Pink
-  controller.trackers.create( 255, 52, 128, 70, "/b" );
+  controller.trackers.create( 255, 52, 128, 80, "/b" );
 
   // Blue
-  controller.trackers.create( 15, 52, 255, 70, "/c" );
+  controller.trackers.create( 15, 52, 230, 50, "/c" );
+
+
+  controller.trackers.createColorDialog();
   
   // Red
   // controller.trackers.create( 176, 11, 11, 70, "a second instrument" );

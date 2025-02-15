@@ -32,6 +32,10 @@ class Controller {
   protected float blipFreqMin = 3;
   protected float blipFreqMax = 20;
 
+  protected boolean mutualBlobs = false;
+  protected float mutualMinDistance = 100;
+  protected float mutualMaxDistance = 500;
+
 
 
 
@@ -64,6 +68,9 @@ class Controller {
       .addSlider( "Lost particles distance", 0, outputWidth, (int) this.lostParticlesDistance, 200, 100 )
       .addSlider( "Blip freq min", 0, 200, (int) this.blipFreqMin, 100, 0 )
       .addSlider( "Blip freq max", 0, 300, (int) this.blipFreqMax, 100, 0 )
+      .addCheckbox( "Mutual blobs", this.mutualBlobs ) // 10
+      .addSlider( "Mutual min distance", 0, 300, (int) this.mutualMinDistance, 100, 0 )
+      .addSlider( "Mutual max distance", 0, 1000, (int) this.mutualMaxDistance, 100, 0 )
       .addButton( "Black out", () -> background(0) )
       .addButton( "Play", () -> this.trackers.startRecording() )
       .addButton( "Stop", () -> this.trackers.endRecording() )
@@ -125,6 +132,30 @@ class Controller {
   public float maxSpeed() {
     return this.maxSpeed;
   }
+
+  public boolean mutualBlobs() { return this.mutualBlobs; }
+  public void setMutualBlobs( boolean value ) {
+    this.mutualBlobs = value;
+    this.state.getByIndex(10).setValue( (boolean) value );
+  }
+
+
+  public float mutualMinDistance() { return this.mutualMinDistance; }
+  public void setMutualMinDistance( float value ) {
+    float sanitisedValue = min( value, this.mutualMaxDistance );
+    sanitisedValue = max( sanitisedValue, 0 );
+    this.mutualMinDistance = sanitisedValue;
+    this.state.getByIndex(11).setValue( (int) round( sanitisedValue ) );
+  }
+
+  public float mutualMaxDistance() { return this.mutualMaxDistance; }
+  public void setMutualMaxDistance( float value ) {
+    float sanitisedValue = max( value, this.mutualMinDistance );
+    sanitisedValue = min( sanitisedValue, 1000 );
+    this.mutualMaxDistance = sanitisedValue;
+    this.state.getByIndex(12).setValue( (int) round( sanitisedValue ) );
+  }
+
 
   void setSpeedMin( float value ) {
     this.minSpeed = value;
@@ -231,7 +262,7 @@ class Controller {
   public void send(
     OscMessage msg
   ) {
-    this.osc.send( msg, "127.0.0.1", 57120 );
+    this.osc.send( msg, "127.0.0.1", 57121 );
     println( msg );
   }
 
@@ -316,6 +347,14 @@ class Controller {
 
             if ( key == 'd' ) {
               this.scEnd();
+            }
+
+            if ( key == 'c' ) {
+              this.trackers.colors.show();
+            }
+
+            if ( key == 'x' ) {
+              this.trackers.colors.close();
             }
 
 
