@@ -16,6 +16,11 @@ UiBooster ui;
 
 OscP5 osc;
 
+PShader blur;
+PImage cosmos;
+PImage mask;
+PImage list;
+
 String os = System.getProperty("os.name");
 boolean isMac = os.contains( "Mac OS X" );
 
@@ -23,14 +28,18 @@ boolean runSC = true;
 
 Process sc;
 
+SampleBank listy;
+
 void setup() {
 
-  // fullScreen();
-  size( 1920, 1080 );
+  fullScreen();
+  /// size( 1920, 1080 );
 
   frameRate(30);
 
   osc = new OscP5(this, 57120); 
+
+  blur = loadShader("blur.glsl"); 
 
   String[] cameras = Capture.list();
 
@@ -54,16 +63,40 @@ void setup() {
     height,
     osc
   );
+
+  cosmos = loadImage( "cosmos.jpg" );
+  mask = loadImage("mask.png");
+  list = loadImage( "list.png" );
+
+  listy = new SampleBank();
+  listy
+    .load( "cosmos.jpg" )
+    .load( "mask.png" )
+    .load( "list.png" )
+    .load( "listBarevny.jpg" )
+    .load( "maple.jpg" );
+
+  println( listy.exact.getClosestSmaller( 600 ) );
+
   
   // Green
   // controller.trackers.create( 17, 173, 31, 70, "/a" );
-  controller.trackers.create( 50, 200, 57, 80, "/a" );
+  controller.trackers.create( 50, 200, 57, 80, "/a" )
+    .addBankRenderer( listy )
+    // .addImageRenderer( cosmos )
+    // .addCircleRenderer()
+    // .addParticlesRenderer()
+    ;
 
   // Pink
-  controller.trackers.create( 255, 52, 128, 80, "/b" );
+  controller.trackers.create( 255, 52, 128, 80, "/b" )
+    .addCircleRenderer()
+    .addParticlesRenderer();
 
   // Blue
-  controller.trackers.create( 15, 52, 230, 50, "/c" );
+  controller.trackers.create( 15, 52, 230, 50, "/c" )
+    .addCircleRenderer()
+    .addParticlesRenderer();
 
 
   controller.trackers.createColorDialog();
@@ -109,6 +142,8 @@ void draw() {
 
   
   controller.particles.draw();
+
+  controller.trackers.render();
 
   controller.listenKeyboard();
 

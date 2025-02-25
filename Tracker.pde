@@ -2,6 +2,7 @@ class Tracker {
 
   ArrayList<Blob> blobs = new ArrayList<Blob>();
   ArrayList<Blob> temp = new ArrayList<Blob>();
+  ArrayList<RendererAbstract> renderers = new ArrayList<RendererAbstract>();
 
   int blobCounter = 0;
 
@@ -52,6 +53,33 @@ class Tracker {
 
   }
 
+  Tracker addRenderer(
+    RendererAbstract renderer
+  ) {
+    this.renderers.add( renderer );
+    return this;
+  }
+
+  Tracker addParticlesRenderer() {
+    this.renderers.add( new RendererParticles( this ) );
+    return this;
+  }
+
+  Tracker addCircleRenderer() {
+    this.renderers.add( new RendererCircles( this ) );
+    return this;
+  }
+
+  Tracker addImageRenderer( PImage image ) {
+    this.renderers.add( new RendererBitmap( this, image ) );
+    return this;
+  }
+
+  Tracker addBankRenderer( SampleBank bank ) {
+    this.renderers.add( new RendererSample( this, bank ) );
+    return this;
+  }
+
   void reset() {
     this.blobs.clear();
     this.temp.clear();
@@ -63,6 +91,7 @@ class Tracker {
     this.g = green( col );
     this.b = blue( col );
     this.trackColor = col;
+    this.emissionColor = col;
   }
 
   void setColor( float r, float g, float b ) {
@@ -70,6 +99,7 @@ class Tracker {
     this.g = g;
     this.b = b;
     this.trackColor = color( r, g, b );
+    this.emissionColor = this.trackColor;
   }
 
   public void preprocessPixels() {
@@ -123,7 +153,12 @@ class Tracker {
 
     for ( Blob b: this.blobs ) {
 
-      b.update( this );
+      // b.update( this );
+
+      for ( RendererAbstract renderer : this.renderers ) {
+        renderer.updateInBlob( b );
+      }
+
 
     }
 

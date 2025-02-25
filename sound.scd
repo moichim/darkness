@@ -178,9 +178,9 @@ s.waitForBoot({
 	 */
 
 	// Načtení samplů
-	~b1 = Buffer.read(s, "C:/Users/jachi/Documents/GitHub/darkness/samples/star_1.aiff");
-	~b2 = Buffer.read(s, "C:/Users/jachi/Documents/GitHub/darkness/samples/star_2.aiff");
-	~b3 = Buffer.read(s, "C:/Users/jachi/Documents/GitHub/darkness/samples/star_3.aiff");
+	~b1 = Buffer.read(s, "/Users/moichim/Documents/GitHub/darkness/samples/1_nastroje/stars/rev/star_1.aiff");
+	~b2 = Buffer.read(s, "/Users/moichim/Documents/GitHub/darkness/samples/1_nastroje/stars/rev/star_2.aiff");
+	~b3 = Buffer.read(s, "/Users/moichim/Documents/GitHub/darkness/samples/1_nastroje/stars/rev/star_3.aiff");
 
 	Pdefn(\bdur, 0.5);
 
@@ -253,10 +253,10 @@ s.waitForBoot({
 
 
 
+//"/Users/moichim/Documents/GitHub/darkness/samples/1_nastroje/stars/rev/star_1.aiff"
 
 
-
-	~s1 = Buffer.read(s, "C:/Users/jachi/Documents/GitHub/mist-rays/sound/lahoda_samples/1_nastroje/strings/rev/string_cut.aiff" );
+	~s1 = Buffer.read(s, "/Users/moichim/Documents/GitHub/darkness/samples/1_nastroje/strings/rev/string_cut.aiff" );
 
 		// Synth.new(\playbuf, [\buf, ~s1.bufnum]);
 

@@ -95,6 +95,7 @@ class Blob {
     Tracker tracker
   ) {
 
+
     float life = map( this.diameter, 0, video.width, 5, 1 );
 
     this.particles.add( controller.particles.emit( this ) );

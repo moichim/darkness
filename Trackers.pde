@@ -18,16 +18,17 @@ class Trackers extends ArrayList<Tracker> {
     this.video = video;
   }
 
-  void create(
+  Tracker create(
     int r,
     int g,
     int b,
     float threshold,
     String instrument
     ) {
-
-    this.add( new Tracker( r, g, b, threshold, instrument ) );
-  }
+      Tracker item = new Tracker( r, g, b, threshold, instrument );
+      this.add( item );
+      return item;
+    }
 
   void createColorDialog() {
 
@@ -282,6 +283,23 @@ class Trackers extends ArrayList<Tracker> {
 
     for ( Tracker tracker : this ) {
       tracker.sendInstrumentMessage( amplitude );
+    }
+
+  }
+
+  public void render() {
+
+    for ( Tracker tracker : this ) {
+
+      for ( RendererAbstract renderer : tracker.renderers ) {
+        renderer.drawInTracker();
+
+        for ( Blob b : tracker.blobs ) {
+          renderer.drawInBlob( b );
+        }
+
+      }
+
     }
 
   }

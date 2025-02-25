@@ -81,7 +81,7 @@ class SoundPhaseMultiple extends SoundPhase {
     void execute( int ticks ) {
 
         controller.goSpeedTo( 1, 7, 1 );
-        controller.goBgaTo( 0, 1 );
+        controller.goBgaTo( 3, 1 );
 
         controller.composition.muteOne();
         controller.composition.raiseMultiple();
@@ -139,7 +139,7 @@ class SoundPhaseMelody extends SoundPhase {
 
     void execute( int ticks ) {
 
-        controller.goBgaTo( 0, 1 );
+        controller.goBgaTo( 5, 1 );
 
         controller.goSpeedTo( 3, 15, 1 );
 
