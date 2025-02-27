@@ -85,8 +85,10 @@ class Blob {
     // this.prev = this.center.clone();
     this.center = controller.mapping.output( c );
     this.movement = this.prev.dist( this.center );
-    this.width = controller.mapping.xoutput( this.maxx - this.minx );
-    this.height = controller.mapping.youtput( this.maxy - this.miny );
+    this.width = //controller.mapping.xoutput( 
+    this.maxx - this.minx; //);
+    this.height = //controller.mapping.youtput(
+     this.maxy - this.miny; // );
     this.diameter = sqrt( ( this.width * this.width ) + ( this.height * this.height ) );
 
   }

@@ -262,7 +262,7 @@ class Controller {
   public void send(
     OscMessage msg
   ) {
-    this.osc.send( msg, "127.0.0.1", 57122 );
+    this.osc.send( msg, "127.0.0.1", 57121 );
     // println( msg );
   }
 

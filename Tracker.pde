@@ -75,7 +75,7 @@ class Tracker {
     return this;
   }
 
-  Tracker addBankRenderer( SampleBank bank ) {
+  Tracker addBankRenderer( FolderBank bank ) {
     this.renderers.add( new RendererSample( this, bank ) );
     return this;
   }

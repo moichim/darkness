@@ -32,8 +32,8 @@ SampleBank listy;
 
 void setup() {
 
-  fullScreen();
-  /// size( 1920, 1080 );
+  // fullScreen();
+  size( 1920, 1080 );
 
   frameRate(30);
 
@@ -64,28 +64,20 @@ void setup() {
     osc
   );
 
-  cosmos = loadImage( "cosmos.jpg" );
-  mask = loadImage("mask.png");
-  list = loadImage( "list.png" );
+  FolderBank bank = new FolderBank("multicolor");
+  bank.load();
 
-  listy = new SampleBank();
-  listy
-    .load( "cosmos.jpg" )
-    .load( "mask.png" )
-    .load( "list.png" )
-    .load( "listBarevny.jpg" )
-    .load( "maple.jpg" );
-
-  println( listy.exact.getClosestSmaller( 600 ) );
+  FolderBank bank2 = new FolderBank("blue");
+  bank2.load();
 
   
   // Green
   // controller.trackers.create( 17, 173, 31, 70, "/a" );
   controller.trackers.create( 50, 200, 57, 80, "/a" )
-    .addBankRenderer( listy )
+    .addBankRenderer( bank )
     // .addImageRenderer( cosmos )
     // .addCircleRenderer()
-    // .addParticlesRenderer()
+    .addParticlesRenderer()
     ;
 
   // Pink
@@ -95,7 +87,12 @@ void setup() {
 
   // Blue
   controller.trackers.create( 15, 52, 230, 50, "/c" )
-    .addCircleRenderer()
+    // .addCircleRenderer()
+    .addParticlesRenderer();
+
+    // Blue
+  controller.trackers.create( 15, 17, 230, 50, "/d" )
+    .addBankRenderer( bank2 )
     .addParticlesRenderer();
 
 

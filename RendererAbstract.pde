@@ -179,11 +179,11 @@ class RendererBitmap extends RendererAbstract {
 
 class RendererSample extends RendererAbstract {
 
-    SampleBank bank;
+    FolderBank bank;
 
     RendererSample(
         Tracker tracker,
-        SampleBank bank
+        FolderBank bank
     ) {
         super( tracker );
         this.bank = bank;
@@ -199,15 +199,18 @@ class RendererSample extends RendererAbstract {
 
         rotate( random(0, 2*PI) );
 
-        int scale = (int) max(50, blob.diameter);
+        float sc = max(50, blob.width);
 
-        PImage img = this.bank.exact.getFromRange( 0, scale );
+        PImage img = this.bank.exact.getFromRange( 0, 1200 );
 
         blendMode( LIGHTEST );
 
-        // imageMode( CENTER );
+        imageMode( CENTER );
 
-        image( img, -blob.diameter/2, -blob.diameter/2, blob.diameter, blob.diameter );
+        println( sc );
+
+        image( img, 0, 0, sc, sc );
+
 
         blendMode( BLEND );
 

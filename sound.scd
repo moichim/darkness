@@ -2,6 +2,8 @@
 s = Server.default;
 s.boot; // Spuštění zvukového serveru
 
+
+
 (
 // Počkejte, dokud není server připraven
 s.waitForBoot({
@@ -90,27 +92,53 @@ s.waitForBoot({
 
 
 
+
+
+
+
+
+	// Get the path relative to data folder
+	~path = {|relative|
+		thisProcess.nowExecutingPath.dirname +/+ "/data/samples/" +/+ relative;
+	};
+
+	// Get an array of bufnums
+	~scanFolder = {|relative|
+		var abs = thisProcess.nowExecutingPath.dirname +/+ "/data/samples/" +/+ relative;
+		var path = PathName.new(abs);
+		path.files.collect({|file|
+			Buffer.read(s, file.asAbsolutePath);
+		});
+	};
+
+	~voices = [
+		~scanFolder.value("bim"),
+		~scanFolder.value("bam"),
+		~scanFolder.value("la"),
+		~scanFolder.value( "tin" )
+	];
+
+
+	// Přehrání bufferu
+	SynthDef.new(
+		\vocal, {
+			arg amp=1,pan=0,out=0,init=0,ind=8,dict=0,rate=1;
+			var sig, buf, t, d;
+			d = dict.clip(0,3).floor(1).asInteger;
+			t = ind.clip(0,14).floor(1).asInteger;
+			buf = init.floor(1).asInteger + t + ( d * 14 );
+
+			sig = PlayBuf.ar(1,buf, BufRateScale.kr(buf) * rate,doneAction:2);
+			sig = Pan2.ar(sig,pan);
+			sig = sig * amp;
+			Out.ar( out, sig );
+		}
+	).add;
+
+
+
 	// Počkejte, dokud není SynthDef nahrán
     s.sync;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -135,7 +163,7 @@ s.waitForBoot({
     OSCdef.newMatching(\a, { |msg, time, addr, recvPort|
 		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4];
 
-		[msg, time, addr, recvPort].postln;
+		// [msg, time, addr, recvPort].postln;
 
 
 		// Amplituda
@@ -206,7 +234,7 @@ s.waitForBoot({
     OSCdef.newMatching(\b, { |msg, time, addr, recvPort|
 		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4];
 
-		amp.postln;
+		// amp.postln;
 
 		// Amplituda
 		if (amp != amp, {
@@ -241,7 +269,7 @@ s.waitForBoot({
 
 
 		//~x.set(\freq, freq, \amp, amp, \pan, pan);
-		[msg, time, addr, recvPort].postln;
+		// [msg, time, addr, recvPort].postln;
 	},
 	"/b",
 	);
@@ -272,21 +300,19 @@ s.waitForBoot({
 
 
 	// Definice vzorku
-	Pdef.new(
+	Pbindef(
 		\c,
-		Pbind(
 			\instrument, \playbuf,
-			\dur, Pdefn(\cdur),
+			\dur, 0.5,
 			\buf, ~s1.bufnum,
 			//\rate, Prand([1,0.5,0.75,1,1,2], inf)
-		)
 	);
 
-	Pdef(\c).set(\amp, 0);
-	Pdef(\c).set(\rate, Pxrand(#[1, 0.5, 0.75, 1, 1, 2 ], inf));
-	Pdef(\c).set(\rate, 0.7);
+	Pbindef(\c, \amp, 0);
+	// Pdef(\c).set(\rate, Pxrand(#[1, 0.5, 0.75, 1, 1, 2 ], inf));
+	Pbindef(\c, \rate, 0.7);
 
-	Pdef(\c).play;
+	Pbindef(\c).play;
 
 
 
@@ -294,24 +320,24 @@ s.waitForBoot({
     OSCdef.newMatching(\c, { |msg, time, addr, recvPort|
 		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4];
 
-		amp.postln;
+		// amp.postln;
 
 		// Amplituda
 		if (amp != amp, {
-			//Pdef(\c).set(\amp, 0);
+			Pbindef(\c,\amp, 0);
 		}, {
-			Pdef(\c).set(\amp, amp);
+			Pbindef(\c,\amp, amp);
 		} );
 
 		// Pan
 		if ( pan != pan, {
-			Pdef(\c).set(\pan, 0);
+			Pbindef(\c,\pan, 0);
 		},{
-			Pdef(\c).set(\pan, pan);
+			Pbindef(\c,\pan, pan);
 		} );
 
 		if (h!=h, {},{
-			Pdef(\c).set(\rate, h.linlin(0, 1, 0.1, 0.1 ));
+			Pbindef(\c,\rate, h.linlin(0, 1, 2, 0.5 ));
 
 			if ( h > 0.5, {
 				// Pdef(\c).set(\buf, Pseq([~b1.bufnum, ~b1.bufnum, ~b1.bufnum, ~b2.bufnum], inf);
@@ -322,14 +348,14 @@ s.waitForBoot({
 		});
 
 		if (speed!=speed, {},{
-			Pdefn(
-				\cdur, speed.linlin( 0, 5, 0.5, 0.1 ),
+			Pbindef(\c,
+				\dur, speed.linlin( 0, 5, 1, 0.3 ),
 			);
 		});
 
 
 		//~x.set(\freq, freq, \amp, amp, \pan, pan);
-		[msg, time, addr, recvPort].postln;
+		// [msg, time, addr, recvPort].postln;
 	},
 	"/c",
 	);
@@ -339,6 +365,81 @@ s.waitForBoot({
 
 
 
+
+
+
+
+
+
+
+
+	// Definice vzorku
+	Pbindef(
+		\d,
+		\instrument, \vocal,
+		\ind, 0,
+		\rate, 1,
+		// \dict, 1
+		\dur, 1
+	);
+
+	Pbindef(\d, \amp, 0);
+	// Pbindef(\d, \ind, Pseq([0, 2, 4], inf));
+	// Pbindef(\d, \dict, 3);
+	//Pdef(\d).set(\rate, Pxrand(#[1, 0.5, 0.75, 1, 1, 2 ], inf));
+	// Pdef(\d).set(\rate, 0.7);
+
+	Pbindef(\d).play;
+
+	// Routa d
+    OSCdef.newMatching(\d, { |msg, time, addr, recvPort|
+		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4];
+
+		// amp.postln;
+
+		// Amplituda
+		if (amp != amp, {
+			Pbindef(\d, \amp, 0);
+		}, {
+			Pbindef(\d, \amp, amp);
+		} );
+
+		// Pan
+		if ( pan != pan, {
+			Pbindef(\d, \pan, 0);
+		},{
+			Pbindef(\d, \pan, pan);
+			Pbindef(\d,\dict, h.linlin(-1, 1, 0, 3 ));
+		} );
+
+		if (h!=h, {},{
+			Pbindef(\d,\ind, h.linlin(0, 1, 0, 14 ));
+
+
+			if ( h > 0.5, {
+				// Pdef(\c).set(\buf, Pseq([~b1.bufnum, ~b1.bufnum, ~b1.bufnum, ~b2.bufnum], inf);
+			}, {
+				// Pdef(\c).set(\buf, Pseq([~b1.bufnum, ~b2.bufnum, ~b2.bufnum], inf);
+			});
+
+		});
+
+
+		if (speed!=speed, {},{
+			Pbindef( \d,
+				\dur, speed.linlin( 0, 5, 1, 0.2 ),
+			);
+		});
+
+
+		//~x.set(\freq, freq, \amp, amp, \pan, pan);
+		// [msg, time, addr, recvPort].postln;
+	},
+	"/d",
+	);
+
+
+	OSCdef(\d).enable;
 
 
 

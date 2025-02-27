@@ -1,4 +1,6 @@
 import java.util.function.Function;
+import java.io.File;
+
 
 class ImageMap extends HashMap<Integer, ArrayList<PImage>> {
 
@@ -80,6 +82,45 @@ class SampleBank {
         this.exact.register( img );
 
         return this;
+
+    }
+
+}
+
+class FolderBank {
+
+    String path;
+
+    ImageMap exact;
+
+    FolderBank(
+        String path
+    ) {
+        this.path = path;
+        this.exact = new ImageMap( img -> img.width );
+    }
+
+    void load() {
+
+        String p = sketchPath( "data/" + this.path );
+
+        File actual = new File(p);
+        println( actual );
+        for( File f : actual.listFiles()){
+
+            if ( f.getName().endsWith("png") ) {
+                String fp = p + "/" + f.getName();
+
+                PImage img = loadImage( fp );
+
+                this.exact.register( img );
+
+                println( img );
+
+            }
+
+            
+        }
 
     }
 
