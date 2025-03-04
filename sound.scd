@@ -49,6 +49,25 @@ s.waitForBoot({
 		}
 	).add;
 
+	// Přehrání bufferu s posunem frekvence na požadovanou notu
+SynthDef.new(
+	\playbuf2, {
+		arg amp=1, pan=0, out=0, buf, rate=1, targetNote=60; // targetNote je ve formátu MIDI čísla
+		var sig, freqRatio, midiNote;
+
+		// Vypočítáme frekvenční poměr mezi C (MIDI 60) a požadovanou notou
+		midiNote = 60; // C je MIDI 60
+		freqRatio = 2 ** ((targetNote - midiNote) / 12); // Výpočet frekvenčního poměru
+
+		// Přehrávání bufferu s nastaveným posunem frekvence
+		sig = PlayBuf.ar(1, buf, BufRateScale.kr(buf) * rate * freqRatio, doneAction: 2);
+		sig = Pan2.ar(sig, pan);
+		sig = sig * amp;
+		Out.ar(out, sig);
+	}
+).add;
+
+
 
 
 
@@ -88,6 +107,91 @@ s.waitForBoot({
 			Out.ar(0,sig);
 		}
 	).add;
+
+
+
+	SynthDef.new(\basa, {
+		arg freq=50, amp=0.5, atk=0.5, rel=2, pan=0, detune=0.01, revMix=0.3, revRoom=0.9, revDamp=0.5;
+		var sig, env, sub, tri, mod, phase, reverb;
+
+		// Obálka
+		env = EnvGen.kr(Env.perc(atk, rel, curve: -4), doneAction: 2);
+
+		// Náhodná počáteční fáze
+		phase = Rand(0.0, 2pi);
+
+		// Jemná amplitudová modulace
+		mod = SinOsc.kr(0.2, phase).range(0.9, 1.0);
+
+		// Základní sinusová vlna
+		sig = SinOsc.ar(freq, phase) * mod;
+
+		// Sub-oscilátor (oktáva dolů)
+		sub = Saw.ar(freq * 0.5, phase) * 0.5;
+
+		// Trojúhelníkový oscilátor s mírným rozladěním
+		tri = LFTri.ar(freq * (1 + detune), phase) * 0.5;
+
+		// Mix vrstev
+		sig = Mix([sig, sub, tri]);
+
+		// Mírné zkreslení pro organičtější charakter
+		sig = sig.tanh * 0.8;
+
+		// Nízkopásmový filtr
+		sig = LPF.ar(sig, freq * 2);
+
+		// FreeVerb reverb
+		reverb = FreeVerb.ar(sig, mix: revMix, room: revRoom, damp: revDamp);
+
+		// Panoramování
+		sig = Pan2.ar(reverb, pan) * env * amp;
+
+		Out.ar(0, sig);
+	}).add;
+
+
+	SynthDef.new(\bell, {
+		arg freq=1000, amp=0.8, atk=0.001, rel=1.5, pan=0, decay=0.8, harmMix=0.5, bright=1.5;
+		var sig, env, mod, harmonics, resFilt;
+
+		// Obálka - velmi krátký attack pro ostré cinknutí
+		env = EnvGen.kr(Env.perc(atk, rel, curve: -4), doneAction: 2);
+
+		// FM modulace pro kovový charakter
+		mod = SinOsc.ar(freq * 2.5) * (freq * 0.3);
+		sig = SinOsc.ar(freq + mod) * 0.6;
+
+		// Přidání vyšších harmonických složek
+		harmonics = Mix.fill(4, { |i|
+			SinOsc.ar(freq * (i + 1) * bright, 0, harmMix / (i + 1))
+		});
+
+		// Mix základní sinusové vlny a harmonických
+		sig = Mix([sig, harmonics]);
+
+		// Rezonanční filtr pro simulaci kovové rezonance
+		resFilt = BPF.ar(sig, freq * 1.2, 0.2) * decay;
+
+		// Výstup s panoramou
+		sig = Pan2.ar((sig + resFilt) * env * amp, pan);
+
+		Out.ar(0, sig);
+	}).add;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -210,7 +314,58 @@ s.waitForBoot({
 	~b2 = Buffer.read(s, "/Users/moichim/Documents/GitHub/darkness/samples/1_nastroje/stars/rev/star_2.aiff");
 	~b3 = Buffer.read(s, "/Users/moichim/Documents/GitHub/darkness/samples/1_nastroje/stars/rev/star_3.aiff");
 
+	x = Synth.new(\playbuf2, [\buf, ~b1.bufnum, \targetNote, 67]);
+
 	Pdefn(\bdur, 0.5);
+
+	Pbindef(\basa,
+		\instrument, \playbuf2,
+		\dur, Pseq([2, 2, 1.5, 2, 2.5], inf),
+		\buf, ~s1.bufnum,
+		\targetNote, Pseq([45, 48, 50, 52, 47], inf),
+		\amp, 0.5,
+		\atk, 0.1,
+		\pan, 0
+	);
+
+	Pbindef(\melodie1,
+		\instrument, \playbuf2,
+		\dur, Pseq([2, 2, 1.5, 2, 2.5], inf),  // Zajistíme stejný čas pro melodii jako pro basu
+		\buf, ~b1.bufnum,  // Jiný buffer pro jiný sampl
+		\targetNote, Pseq([60, 62, 64, 65, 67], inf),  // Noty pro melodii
+		\amp, 0.6,
+		\atk, 0.05,
+		\pan, -0.5
+	);
+
+	Pbindef(\melodie1,
+		\instrument, \playbuf2,
+		\dur, Pseq([1, 0.5, 0.5, 1, 1, 0.75, 0.25, 3], inf),  // Různé trvání not pro melodii
+		\buf, ~b1.bufnum,
+		\targetNote, Pseq([60, 62, 64, 67, 69, 72, 74, 72], inf),  // Více not pro melodii
+		\amp, 0.6,
+		\atk, 0.1,
+		\pan, 0.5
+	);
+
+	Pbindef(\basa,
+		\instrument, \playbuf2,
+		\dur, Pseq([1, 1, 0.5, 0.5, 1], inf),  // Délka trvání not, některé delší, některé kratší
+		\buf, ~s1.bufnum,
+		\targetNote, Pseq([36, 40, 43, 50, 48], inf),  // Basové tóny pro podporu melodie
+		\amp, 0.7,
+		\atk, 0.01,
+		\pan, -0.5,
+		\rate, 1
+	);
+
+
+
+	Pbindef(\basa).play;
+	Pbindef(\melodie1).play;
+
+	Pbindef(\basa).stop;
+	Pbindef(\melodie1).stop;
 
 
 	// Definice vzorku
