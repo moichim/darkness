@@ -90,7 +90,7 @@ class RendererCircles extends RendererAbstract {
 
         ellipse( 0, 0, diameter, diameter );
 
-        int amount = (int) map( blob.movement, 0, 100, 0, 30 );
+        int amount = (int) map( blob.movement, 0, 100, 0, 10 );
 
         for ( int i = 0; i < amount; i++ ) {
 

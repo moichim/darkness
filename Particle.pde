@@ -214,7 +214,8 @@ class Particle {
 
       if ( this.blob.movement != 0 ) {
 
-        float movement = map( this.blob.movement, 0, controller.mapping.output.x / 10, 0, 1 );
+        float movement = map( this.blob.movement, 0, controller.mapping.output.x / 20, 0, 1 );
+        movement = constrain(movement, 0, 1);
 
         float distance = this.position.dist( this.blob.center );
 

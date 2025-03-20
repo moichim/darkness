@@ -25,8 +25,8 @@ class Controller {
   protected boolean displayCamera = false;
   protected boolean displayFps = true;
   protected float colorDeviationThreshold = 100;
-  protected float minSpeed = 2;
-  protected float maxSpeed = 11;
+  protected float minSpeed = 4;
+  protected float maxSpeed = 20;
   protected float lostParticlesDistance = 800;
 
   protected float blipFreqMin = 3;
@@ -63,8 +63,8 @@ class Controller {
       .addCheckbox( "Display camera", false )
       .addCheckbox( "Display FPS", true )
       .addSlider( "Color Deviation Threshold", 0, 255, (int) this.colorDeviationThreshold, 128, 0 )
-      .addSlider( "Speed Min", 0, 3, (int) this.minSpeed, 1, 0 )
-      .addSlider( "Speed Max", 0, 20, (int) this.maxSpeed, 5, 0 )
+      .addSlider( "Speed Min", 0, 10, (int) this.minSpeed, 1, 0 )
+      .addSlider( "Speed Max", 10, 20, (int) this.maxSpeed, 5, 0 )
       .addSlider( "Lost particles distance", 0, outputWidth, (int) this.lostParticlesDistance, 200, 100 )
       .addSlider( "Blip freq min", 0, 200, (int) this.blipFreqMin, 100, 0 )
       .addSlider( "Blip freq max", 0, 300, (int) this.blipFreqMax, 100, 0 )
@@ -262,7 +262,7 @@ class Controller {
   public void send(
     OscMessage msg
   ) {
-    this.osc.send( msg, "127.0.0.1", 57121 );
+    this.osc.send( msg, "127.0.0.1", 57133 );
     // println( msg );
   }
 

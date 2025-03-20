@@ -2,6 +2,8 @@ abstract class SoundPhase {
 
     abstract SOUND key();
 
+    abstract int code();
+
     abstract void activate();
 
     abstract void execute( int ticks );
@@ -13,6 +15,8 @@ abstract class SoundPhase {
 class SoundPhaseMuted extends SoundPhase {
 
     SOUND key() {return SOUND.MUTED; }
+
+    int code() { return 0; }
 
     void activate() {
         println( "activating", this.key() );
@@ -39,6 +43,8 @@ class SoundPhaseMuted extends SoundPhase {
 class SoundPhaseOne extends SoundPhase {
 
     SOUND key() { return SOUND.ONE; }
+
+    int code() { return 1; }
 
     void activate() {
 
@@ -70,6 +76,8 @@ class SoundPhaseMultiple extends SoundPhase {
 
     SOUND key() { return SOUND.MULTIPLE; }
 
+    int code() { return 2; }
+
     void activate() {
 
         println( "activating", this.key() );
@@ -80,7 +88,7 @@ class SoundPhaseMultiple extends SoundPhase {
 
     void execute( int ticks ) {
 
-        controller.goSpeedTo( 1, 7, 1 );
+        controller.goSpeedTo( 5, 12, 1 );
         controller.goBgaTo( 3, 1 );
 
         controller.composition.muteOne();
@@ -99,6 +107,8 @@ class SoundPhaseMultiple extends SoundPhase {
 class SoundPhaseMelody extends SoundPhase {
 
     SOUND key() { return SOUND.MELODY; }
+
+    int code() { return 3; }
 
     protected ArrayList<Boolean> colors = new ArrayList<Boolean>();
     protected ArrayList<Integer> intervals = new ArrayList<Integer>();
@@ -141,7 +151,7 @@ class SoundPhaseMelody extends SoundPhase {
 
         controller.goBgaTo( 5, 1 );
 
-        controller.goSpeedTo( 3, 15, 1 );
+        controller.goSpeedTo( 7, 20, 1 );
 
 
         // controller.composition.muteOne();

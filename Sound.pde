@@ -44,7 +44,7 @@ class Composition {
         // Send messages of all trackers
         // if ( frameCount % 10 == 0 ) {
         if (controller.trackers.recording == true) {
-            controller.trackers.sendInstrumentMessages( 1 );
+            controller.trackers.sendInstrumentMessages( 10 );
         }
         // }
 
@@ -116,6 +116,13 @@ class Composition {
         this.current = phase;
         this.ticks = 0;
         this.current.activate();
+
+        OscMessage msg = controller.msg("/phase");
+
+        msg.add( this.current.code() );
+
+        controller.send(msg);
+
     }
 
     public void raiseOne() {

@@ -37,7 +37,7 @@ void setup() {
 
   frameRate(30);
 
-  osc = new OscP5(this, 57120); 
+  osc = new OscP5(this, 7772); 
 
   blur = loadShader("blur.glsl"); 
 
@@ -74,15 +74,15 @@ void setup() {
   // Green
   // controller.trackers.create( 17, 173, 31, 70, "/a" );
   controller.trackers.create( 50, 200, 57, 80, "/a" )
-    .addBankRenderer( bank )
+    // .addBankRenderer( bank )
     // .addImageRenderer( cosmos )
     // .addCircleRenderer()
     .addParticlesRenderer()
     ;
 
-  // Pink
-  controller.trackers.create( 255, 52, 128, 80, "/b" )
-    .addCircleRenderer()
+  // Red is mapped to stars
+  controller.trackers.create( 255, 10, 10, 80, "/b" )
+    // .addCircleRenderer()
     .addParticlesRenderer();
 
   // Blue
@@ -113,6 +113,8 @@ void setup() {
   background(0);
 
   video.loadPixels();
+
+  controller.trackers.startRecording();
   
   
 

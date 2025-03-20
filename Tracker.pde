@@ -26,6 +26,7 @@ class Tracker {
 
   float amplitudeAspect = 0;
   PVector center = new PVector(width / 2, height / 2);
+  PVector pivot = new PVector(0.5, 0.5);
   float pan = 1;
   float h = 0;
   float heightMin = 0;
@@ -272,11 +273,18 @@ class Tracker {
     if ( this.blobs.size() > 0 ) {
       float speedSum = 0;
 
+      float pivotX = 0;
+      float pivotY = 0;
+
       for ( Blob blob : this.blobs ) {
         speedSum += blob.movement;
+        pivotX += blob.center.x;
+        pivotY += blob.center.y;
       }
 
       this.averageSpeed = speedSum / this.blobs.size();
+      this.pivot.x = map( pivotX / this.blobs.size(), 0, controller.mapping.output.x, 0, 1 );
+      this.pivot.y = map( pivotY / this.blobs.size(), 0, controller.mapping.output.y, 0, 1 );
 
     }
 
@@ -373,6 +381,10 @@ class Tracker {
 
     // Average speed is sent as real number
     msg.add( this.averageSpeed );
+
+    // Current pivot is sent as index
+    msg.add(this.pivot.x);
+    msg.add(this.pivot.y);
 
     // Sent the message at the end
     controller.send( msg );
