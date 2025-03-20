@@ -2,7 +2,7 @@ class Particles {
 
   ArrayList<Particle> points = new ArrayList<Particle>();
 
-  int max = 200;
+  int max = 800;
 
   // public PGraphics canvas;
 
@@ -16,6 +16,9 @@ class Particles {
   Particle emit(
     Blob blob
     ) {
+
+
+
     Particle item = new Particle(blob);
     this.points.add( item );
 
@@ -77,14 +80,53 @@ class Particles {
         p.update();
       }
     }
+
+    this.syncToSound();
+
+  }
+
+  void syncToSound() {
+
+    float amp = 0;
+    float freq = 0;
+    float pan = 0;
+
+
+    if ( this.points.size() > 0 ) {
+      
+      // Calculate the amplitude
+      amp = map( this.points.size(), 0, this.max, 0, 1 );
+      
+      float posSum = 0;
+      float speedSum = 0;
+
+      for ( Particle particle : this.points ) {
+        posSum += particle.position.x;
+        speedSum += particle.speed;
+      }
+
+      float posAvg = posSum / this.points.size();
+      float speedAvg = speedSum / this.points.size();
+
+      // Calculate the frequency
+      freq = map( speedAvg, controller.minSpeed(), controller.maxSpeed(), controller.blipFreqMin(), controller.blipFreqMax() );
+      pan = map( posAvg, 0, controller.mapping.output.x, -1, 1 );
+
+      // println(freq, speedAvg, controller.minSpeed(), controller.maxSpeed(), controller.blipFreqMin(), controller.blipFreqMax());
+
+    }
+
+    // controller.syncBlip( pan, amp, freq );
+
   }
 
   void draw() {
 
     // this.canvas.beginDraw();
-
+    blendMode(MULTIPLY);
     fill( 0, 0, 0, controller.bga() );
     rect( 0, 0, width, height );
+    blendMode(BLEND);
 
     for ( Particle p : this.points ) {
       p.draw( );

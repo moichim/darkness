@@ -7,6 +7,7 @@ import processing.video.*;
 import uibooster.*;
 import uibooster.model.*;
 import oscP5.*;
+import java.awt.Color;  // Java Color třída
 
 
 Capture video;
@@ -15,55 +16,106 @@ UiBooster ui;
 
 OscP5 osc;
 
+PShader blur;
+PImage cosmos;
+PImage mask;
+PImage list;
+
+String os = System.getProperty("os.name");
+boolean isMac = os.contains( "Mac OS X" );
+
+boolean runSC = true;
+
+Process sc;
+
+SampleBank listy;
+
 void setup() {
 
-  // fullScreen( P2D );
-  size( 1920, 1080, P2D );
+  // fullScreen();
+  size( 1920, 1080 );
 
-  
+  frameRate(30);
 
-  // Running the SC
-  String command = "sclang " + sketchPath("sound.scd");
-  println( command );
-  launch( command );
+  osc = new OscP5(this, 7772); 
 
-  osc = new OscP5(this, 57120); 
-
+  blur = loadShader("blur.glsl"); 
 
   String[] cameras = Capture.list();
 
   printArray(cameras);
+  println("Platform", os);
 
   ui = new UiBooster();
 
-  // Tracking
+  String cam = "pipeline:autovideosrc";
 
-  video = new Capture(this, cameras[0]);
+  if ( isMac == false ) {
+    cam = cameras[0];
+  }
+
+  video = new Capture(this, cam);
   video.start();
 
   controller = new Controller(
     video,
     width,
-    height
+    height,
+    osc
   );
 
-  // controller.trackers.create( 255, 255, 255, 20 );
+  FolderBank bank = new FolderBank("multicolor");
+  bank.load();
+
+  FolderBank bank2 = new FolderBank("blue");
+  bank2.load();
+
   
   // Green
-  controller.trackers.create( 14, 84, 8, 40 );
-  
-  // Red
-  controller.trackers.create( 176, 11, 11, 70 );
+  // controller.trackers.create( 17, 173, 31, 70, "/a" );
+  controller.trackers.create( 50, 200, 57, 80, "/a" )
+    // .addBankRenderer( bank )
+    // .addImageRenderer( cosmos )
+    // .addCircleRenderer()
+    .addParticlesRenderer()
+    ;
 
+  // Red is mapped to stars
+  controller.trackers.create( 255, 10, 10, 80, "/b" )
+    // .addCircleRenderer()
+    .addParticlesRenderer();
 
   // Blue
-  controller.trackers.create( 87, 181, 222, 50 );
+  controller.trackers.create( 15, 52, 230, 50, "/c" )
+    // .addCircleRenderer()
+    .addParticlesRenderer();
 
-  controller.trackers.create( 245, 237, 5, 50 );
-  controller.trackers.create( 10, 10, 255, 75 );
+    // Blue
+  controller.trackers.create( 15, 17, 230, 50, "/d" )
+    .addBankRenderer( bank2 )
+    .addParticlesRenderer();
+
+
+  controller.trackers.createColorDialog();
+  
+  // Red
+  // controller.trackers.create( 176, 11, 11, 70, "a second instrument" );
+
+  // Blue
+  // controller.trackers.create( 87, 181, 222, 50, "a third instrument" );
+  // controller.trackers.create( 189, 51, 69, 40, "a fifth instrument" );
+  // controller.trackers.create( 9, 23, 97, 40, "a sixth instrument" );
+
+  frameRate(40);
+
+  image(video, 0, 0);
 
   background(0);
 
+  video.loadPixels();
+
+  controller.trackers.startRecording();
+  
   
 
 }
@@ -76,7 +128,7 @@ void draw() {
 
   controller.updateUi();
 
-  video.loadPixels();
+  // video.loadPixels();
   // image(video, 0, 0);
 
 
@@ -90,7 +142,11 @@ void draw() {
   
   controller.particles.draw();
 
+  controller.trackers.render();
+
   controller.listenKeyboard();
+
+  controller.composition.update();
 
 
   controller.drawDebug();

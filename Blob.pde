@@ -30,6 +30,9 @@ class Blob {
 
   Tracker tracker;
 
+  boolean assignedToClosest = false;
+  Blob externalBlob = null;
+
   Blob(float x, float y, Tracker tracker) {
     this.minx = x;
     this.miny = y;
@@ -37,6 +40,30 @@ class Blob {
     this.maxy = y;
     this.tracker = tracker;
     this.recalculate();
+  }
+
+  void assignToClosest(
+    Blob target
+  ) {
+    if ( this.assignedToClosest == false ) {
+      this.assignedToClosest = true;
+      this.externalBlob = target;
+
+      for ( Particle particle : this.particles ) {
+        
+        particle.assignToExternalBlob( target );
+      }
+    }
+  }
+
+  void unassignExternalBlob() {
+    if ( this.assignedToClosest == true ) {
+      this.assignedToClosest = false;
+      this.externalBlob = null;
+      for ( Particle particle : this.particles ) {
+        particle.unassignExternalBlob();
+      }
+    }
   }
 
   PVector getCenter() {
@@ -58,8 +85,10 @@ class Blob {
     // this.prev = this.center.clone();
     this.center = controller.mapping.output( c );
     this.movement = this.prev.dist( this.center );
-    this.width = controller.mapping.xoutput( this.maxx - this.minx );
-    this.height = controller.mapping.youtput( this.maxy - this.miny );
+    this.width = //controller.mapping.xoutput( 
+    this.maxx - this.minx; //);
+    this.height = //controller.mapping.youtput(
+     this.maxy - this.miny; // );
     this.diameter = sqrt( ( this.width * this.width ) + ( this.height * this.height ) );
 
   }
@@ -67,6 +96,7 @@ class Blob {
   void update(
     Tracker tracker
   ) {
+
 
     float life = map( this.diameter, 0, video.width, 5, 1 );
 

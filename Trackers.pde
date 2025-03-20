@@ -6,24 +6,87 @@ class Trackers extends ArrayList<Tracker> {
 
   boolean recording = false;
 
+  int numActiveColors = 0;
+  int numBlobs = 0;
+  float averageBlobSpeed = 0;
+
+  Form colors;
+
   Trackers(
     Capture video
     ) {
     this.video = video;
   }
 
-  void create(
+  Tracker create(
     int r,
     int g,
     int b,
-    float threshold
+    float threshold,
+    String instrument
     ) {
+      Tracker item = new Tracker( r, g, b, threshold, instrument );
+      this.add( item );
+      return item;
+    }
 
-    this.add( new Tracker( r, g, b, threshold ) );
+  void createColorDialog() {
+
+    UiBooster ui = new UiBooster();
+
+    FormBuilder builder = ui.createForm( "Colors and attributes" );
+
+    for ( Tracker tracker : this ) {
+
+      Color c = new Color( 
+        (int) red( tracker.trackColor ),
+        (int) green( tracker.trackColor ),
+        (int) blue( tracker.trackColor )
+      );
+
+      String col = "color_" + tracker.instrument;
+
+      builder.addColorPicker( col, c );
+      builder.addSlider( "threshold_" + tracker.instrument, 0, 255, (int) tracker.threshold, 30, 0 );
+
+    }
+
+    Trackers self = this;
+
+
+    builder.setChangeListener( (element,value, f) -> {
+
+      println( element, element.getValue(), self );
+
+      for ( Tracker tracker : self ) {
+
+        String col = "color_" + tracker.instrument;
+        String tresh = "threshold_" + tracker.instrument;
+
+        println( element.getLabel(), " -> ", col, tresh, tracker, element.getValue() );
+
+        if ( element.getLabel().equals( col ) ) {
+          Color c = (Color) value;
+          tracker.setColor( c.getRed(), c.getGreen(), c.getBlue() );
+        }
+
+        if ( element.getLabel().equals( tresh ) ) {
+          tracker.threshold = (Integer) value;
+        }
+
+      }
+
+    } );
+
+    this.colors = builder.run();
+    this.colors.close();
+
+
+
   }
 
 
-  void startRecording( ) {
+  void startRecording() {
     for ( Tracker tracker : this ) {
       tracker.reset();
     }
@@ -38,6 +101,8 @@ class Trackers extends ArrayList<Tracker> {
 
 
   void update() {
+
+    this.video.loadPixels();
 
     if ( this.recording == false ) {
       // do nothing
@@ -72,7 +137,6 @@ class Trackers extends ArrayList<Tracker> {
 
     // Analyse for sound
     for ( Tracker tracker: this ) {
-      tracker.analyseForSound();
       blobCount += tracker.blobs.size();
     }
 
@@ -88,14 +152,166 @@ class Trackers extends ArrayList<Tracker> {
       }
     }
 
+    this.updateStatistics();
+    if ( controller.mutualBlobs() == true ) {
+      this.checkClosestTrackers();
+    }
 
   }
 
+  protected void checkClosestTrackers() {
+
+    for ( Tracker current : this ) {
+
+      ArrayList<Blob> otherBlobs = new ArrayList<Blob>();
+
+      for ( Blob thisBlob : current.blobs ) {
+
+        if ( thisBlob.assignedToClosest == true ) {
+
+          float distance = thisBlob.center.dist( thisBlob.externalBlob.center );
+
+          if ( distance >= controller.mutualMaxDistance() ) {
+            thisBlob.unassignExternalBlob();
+          }
+
+        }
+
+        else {
+
+          Blob closestBlob = null;
+          float closestDistance = 500000;
+
+          for ( Tracker otherTracker : this ) {
+
+            if ( otherTracker != current ) {
+
+              for ( Blob otherBlob : otherTracker.blobs ) {
+
+                float distance = thisBlob.center.dist( otherBlob.center );
+
+                if ( distance < closestDistance ) {
+                  closestDistance = distance;
+                  closestBlob = otherBlob;
+                }
+
+              }
+
+            }
+
+          }
+
+          if ( closestBlob != null ) {
+
+            thisBlob.assignToClosest( closestBlob );
+
+          }
+
+        }
+
+      }
+
+    }
+
+  }
+
+  protected void updateStatistics() {
+
+    int trackerCount = 0;
+    float speedSum = 0;
+    int blobCount = 0;
+
+    for ( Tracker tracker : this ) {
+      
+      // Calculate the tracker`s inner statistics
+      tracker.updateStatistics();
+      
+      // Reset the tracker's particle count
+      tracker.particleCount = 0;
+
+      // Reset the trackers average speed
+      tracker.averageParticleSpeed = 0;
+
+      // Reset the particle position attributes
+      tracker.center.x = 0;
+      tracker.center.y = 0;
+      
+      // Update local statistics
+      blobCount += tracker.blobs.size();
+      speedSum += tracker.averageSpeed;
+      
+      if ( tracker.blobs.size() > 0 ) {
+        trackerCount += 1;
+      }
+
+    }
+
+    // Calculate global statistics
+    this.averageBlobSpeed = speedSum / this.size();
+    this.numActiveColors = trackerCount;
+    this.numBlobs = blobCount;
+
+    // Count particles per tracker
+    for( Particle particle : controller.particles.points ) {
+
+      if ( particle.blob != null ) {
+        particle.blob.tracker.particleCount += 1;
+        particle.blob.tracker.averageParticleSpeed += particle.speed;
+        particle.blob.tracker.center.x += particle.position.x;
+        particle.blob.tracker.center.y += particle.position.y;
+      }
+
+    }
+
+    // Calculate the particle count
+    for ( Tracker tracker : this ) {
+
+      tracker.amplitudeAspect = tracker.particleCount / controller.particles.points.size();
+      tracker.averageParticleSpeed = tracker.averageParticleSpeed / tracker.particleCount;
+      tracker.center.x = tracker.center.x / tracker.particleCount;
+      tracker.center.y = tracker.center.y / tracker.particleCount;
+      tracker.pan = map( tracker.center.x, 0, controller.mapping.output.x, -1, 1 );
+      tracker.h = map( tracker.center.y, 0, controller.mapping.output.y, 0, 1 );
+
+    }
+
+  }
+
+  void sendInstrumentMessages(
+    float amplitude
+  ){
+
+    for ( Tracker tracker : this ) {
+      tracker.sendInstrumentMessage( amplitude );
+    }
+
+  }
+
+  public void render() {
+
+    for ( Tracker tracker : this ) {
+
+      for ( RendererAbstract renderer : tracker.renderers ) {
+        renderer.drawInTracker();
+
+        for ( Blob b : tracker.blobs ) {
+          renderer.drawInBlob( b );
+        }
+
+      }
+
+    }
+
+  }
+
+
+
   public void draw() {
 
-    // Popsprocess every trackes
-      for ( Tracker tracker : this ) {
+      for ( int i = 0; i < this.size(); i++ ) {
+        Tracker tracker = this.get(i);
         tracker.draw();
+        tracker.drawSound( i );
       }
 
   }
