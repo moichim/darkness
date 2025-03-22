@@ -282,10 +282,28 @@ class Tracker {
         pivotY += blob.center.y;
       }
 
-      this.averageSpeed = speedSum / this.blobs.size();
+      float speed = speedSum / this.blobs.size();
+
+      float speedMax = 50;
+
+      float normalisedSpeed = map(
+        constrain(speed, 0, speedMax),
+        0, speedMax,
+        0,1
+      );
+
+    if( normalisedSpeed == 0 ) {
+      this.averageSpeed = lerp( this.averageSpeed, 0, 0.1 );
+    } else {
+      this.averageSpeed = lerp( normalisedSpeed, this.averageSpeed, 0.5 );
+    }
+      
+
       this.pivot.x = map( pivotX / this.blobs.size(), 0, controller.mapping.output.x, 0, 1 );
       this.pivot.y = map( pivotY / this.blobs.size(), 0, controller.mapping.output.y, 0, 1 );
 
+    } else {
+      this.averageSpeed = lerp( this.averageSpeed, 0, 0.1 );
     }
 
   }
@@ -385,6 +403,21 @@ class Tracker {
     // Current pivot is sent as index
     msg.add(this.pivot.x);
     msg.add(this.pivot.y);
+
+    // Lastly, add average particle speed
+    msg.add(
+      map(
+        constrain( 
+          Float.isNaN( this.averageParticleSpeed ) ? 0 : this.averageParticleSpeed, 
+          controller.minSpeed(), 
+          controller.maxSpeed()
+        ),
+        controller.minSpeed(),
+        controller.maxSpeed(),
+        0,
+        1
+      )
+    );
 
     // Sent the message at the end
     controller.send( msg );

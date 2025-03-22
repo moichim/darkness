@@ -73,7 +73,7 @@ void setup() {
   
   // Green
   // controller.trackers.create( 17, 173, 31, 70, "/a" );
-  controller.trackers.create( 50, 200, 57, 80, "/a" )
+  controller.trackers.create( 50, 200, 57, 80, "/kytar" )
     // .addBankRenderer( bank )
     // .addImageRenderer( cosmos )
     // .addCircleRenderer()
@@ -81,17 +81,17 @@ void setup() {
     ;
 
   // Red is mapped to stars
-  controller.trackers.create( 255, 10, 10, 80, "/b" )
+  controller.trackers.create( 255, 10, 10, 80, "/bell" )
     // .addCircleRenderer()
     .addParticlesRenderer();
 
   // Blue
-  controller.trackers.create( 15, 52, 230, 50, "/c" )
+  controller.trackers.create( 15, 52, 230, 50, "/saber" )
     // .addCircleRenderer()
     .addParticlesRenderer();
 
     // Blue
-  controller.trackers.create( 15, 17, 230, 50, "/d" )
+  controller.trackers.create( 200, 17, 230, 50, "/d" )
     .addBankRenderer( bank2 )
     .addParticlesRenderer();
 

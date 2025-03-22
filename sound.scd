@@ -103,7 +103,7 @@ s.waitForBoot({
 	~se.set(\bpfFreq, 1000);
 	// Clock
 	~sc = TempoClock.new(1.0);
-	~sc.tempo = 4;
+	~sc.tempo = 2;
 
 	// Intervaly na změnu melodie
 	~sinterval = 5.0;
@@ -117,11 +117,11 @@ s.waitForBoot({
 
 	Pdefn(\starbase, 60); // Základní nota
 
-	Pdefn(\starmelody, 52); // Nosná melodie
+	Pdefn(\starmelody, 60); // Nosná melodie
 	// Pdefn(\starmelody, Pseq([60, 61, 62, 63, 64, 65, 66, 67], inf));
 	// Pdefn(\starmelody, Pseq([62, 65, 67, 69 ], inf));
 
-	Pdefn(\stardur, Pseq([1, 1, 1, 3], inf)); // Ve výchozím stavu hraje po 4 taktech
+	Pdefn(\stardur, Pseq([1, 1, 1, 1], inf)); // Ve výchozím stavu hraje po 4 taktech
 
 	Pdefn(\starshift, Pseq([0, 0, -2, 3, 0, 0, -2, -5], inf)); // Výchozí relativní melodie
 	// Pdefn(\starshift, Pseq([0, -3, 0, 1], inf));
@@ -146,7 +146,13 @@ s.waitForBoot({
 	);
 
 	Pbindef(\star).play(~sc);
-	// Pbindef(\star).stop;
+	Pbindef(\star).stop;
+
+	Pbindef(\star, \amp, 1);
+
+	Pdefn(\starshift, Pseq([0, 5, 8, 7, 5, 12, 10, 7 ], inf));
+
+	Pdefn(\starshift, Pseq([-2, 8, 7 ], inf));
 
 
 
@@ -154,7 +160,7 @@ s.waitForBoot({
 
 
 
-    OSCdef.newMatching(\b, { |msg, time, addr, recvPort|
+    OSCdef.newMatching(\bell, { |msg, time, addr, recvPort|
 		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4], pivotx = msg[5], pivoty=msg[6];
 
 
@@ -205,12 +211,14 @@ s.waitForBoot({
 			var now = SystemClock.seconds;
 
 			if ( (now - ~slast) > ~sinterval, {
+				/*
 				~slast = now;
 				case
 				{ pivotx < 0.25 } { Pdefn(\starshift, Pseq([0, -3, 0, 1], inf)); 1.postln }
 				{ pivotx >= 0.25 && pivotx < 0.5 } { Pdefn(\starshift, Pseq([0, 0, -2, 3, 0, 0, -2, -5], inf)); 2.postln; }
 				{ pivotx >= 0.5 && pivotx < 0.75} { Pdefn(\starshift, Pseq([0, 0, -2, 3], inf)); 3.postln; }
 				{ pivotx>= 0.75 && pivotx < 1 } { Pdefn(\starshift, 0); 4.postln; };
+				*/
 			},{
 
 			} );
@@ -219,11 +227,11 @@ s.waitForBoot({
 		});
 
 	},
-	"/b",
+	"/bell",
 	recvPort: 57133
 	);
 
-	OSCdef(\b).enable;
+	OSCdef(\bell).enable;
 
 
 
@@ -305,7 +313,7 @@ s.waitForBoot({
 
 
 
-    OSCdef.newMatching(\c, { |msg, time, addr, recvPort|
+    OSCdef.newMatching(\kytarlistener, { |msg, time, addr, recvPort|
 		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4], pivotx = msg[5], pivoty=msg[6];
 
 
@@ -317,8 +325,14 @@ s.waitForBoot({
 			Pbindef(\kytar, \amp, 0 );
 			Pbindef(\kytar).stop;
 		}, {
-			Pbindef(\kytar, \amp, amp.linlin(0,1,0.2,1.2) );
-			Pbindef(\kytar).play(~kc);
+			if(amp ==0, {
+				Pbindef(\kytar, \amp, 0 );
+				Pbindef(\kytar).stop;
+			},{
+				Pbindef(\kytar, \amp, amp.linlin(0,1,0.2,1.2) );
+				Pbindef(\kytar).play(~kc);
+			});
+
 		} );
 
 		// Pan
@@ -358,10 +372,10 @@ s.waitForBoot({
 			if ( (now - ~klast) > ~kinterval, {
 				~klast = now;
 				case
-				{ pivotx < 0.25 } { Pdefn(\kshift, Pseq([0, -3, 0, 1], inf)); 1.postln }
-				{ pivotx >= 0.25 && pivotx < 0.5 } { Pdefn(\kshift, Pseq([0, 0, -2, 3, 0, 0, -2, -5], inf)); 2.postln; }
-				{ pivotx >= 0.5 && pivotx < 0.75} { Pdefn(\kshift, Pseq([0, 0, -2, 3], inf)); 3.postln; }
-				{ pivotx>= 0.75 && pivotx < 1 } { Pdefn(\kshift, 0); 4.postln; };
+				{ pivotx < 0.25 } { Pdefn(\kshift, Pseq([0, -3, 0, 1], inf)); }
+				{ pivotx >= 0.25 && pivotx < 0.5 } { Pdefn(\kshift, Pseq([0, 0, -2, 3, 0, 0, -2, -5], inf)); }
+				{ pivotx >= 0.5 && pivotx < 0.75} { Pdefn(\kshift, Pseq([0, 0, -2, 3], inf)); }
+				{ pivotx>= 0.75 && pivotx < 1 } { Pdefn(\kshift, 0); };
 			},{
 
 			} );
@@ -370,11 +384,161 @@ s.waitForBoot({
 		});
 
 	},
-	"/a",
+	"/kytar",
 	recvPort: 57133
 	);
 
-	OSCdef(\c).enable;
+	OSCdef(\kytarListener).enable;
+
+
+
+
+
+
+
+
+
+
+
+
+	v = Bus.control(s, 1); // Speed amount 0-1
+	h = Bus.control(s, 1); // Current height 0-1
+
+	m = Bus.control(s, 1); // Minimal frequency
+	n = Bus.control(s, 1); // Maximal frequency
+
+	v.set(0);
+	h.set(0);
+	m.set(0);
+	n.set(100);
+
+
+
+	Ndef.new(\saber, {
+		|flutterAmt=0.02, humLevel=0.3, swingThresh=0.7, swingLevel = 0.1, amp=0, pan=0, speed=1.5|
+
+		var humPitch = In.kr(h).range(In.kr(m), In.kr(n));
+
+		var hum, sig, flutter, swing, swingNoise, swingSwitch;
+
+		flutter = 4.collect({
+			|i|
+			LFNoise0.kr(rrand(3, 16), flutterAmt, 1).lag(0.48);
+		});
+
+		hum = Mix(SyncSaw.ar([humPitch, humPitch * 1.001] * flutter.copyRange(0, 1), [humPitch * 1.003, humPitch * 1.0025] * flutter.copyRange(2, 3)));
+
+		hum = hum * LFNoise0.kr(8.77224).range(0.2, 1.0).lag(0.4);
+
+		hum = RLPF.ar(hum, LFNoise0.kr(21).range(200, 1800).lag(1.2), 0.5) * 0.1 * humLevel;
+
+		humPitch = humPitch * StandardL.ar(3.8, 2.9).range(0.93, 1.07);
+
+		swingNoise = LFNoise1.kr(16.2).range(0, 1);
+		swingSwitch = if(swingNoise > swingThresh, 1, 0).lag2(0.9, 1.3);
+		swingLevel = swingLevel * swingSwitch;
+
+		humPitch = humPitch * StandardL.ar(3.8, 2.9).range(0.97, 1.03) * (1 + (swingSwitch * 0.2));
+
+		swing = SyncSaw.ar(Lag.ar( humPitch * speed, 0.3 ), Lag.ar( humPitch * 1.09, 0.3) ) * In.kr(v);
+		swing = LPF.ar(swing, 1000, 0.3);
+
+		sig = hum + swing;
+
+		sig = sig * Lag.kr( amp, 1 );
+
+		sig = Pan2.ar(sig, pan);
+
+
+	}).play;
+
+	~data = List.new(100).addAll(Array.fill(100, 0));  // Seznam na data (max 100 bodů)
+    // Vytvoříme okno a kreslící plochu
+    w = Window("OSC Graph", Rect(100, 100, 500, 300)).front;
+    u = UserView(w, Rect(0, 0, 500, 300))
+        .background_(Color.black)
+        .drawFunc_({
+            Pen.color = Color.green;
+            Pen.width = 2;
+            Pen.moveTo(Point(0, u.bounds.height / 2)); // Start ve středu Y
+            ~data.do { |val, i|
+                Pen.lineTo(Point(i * (u.bounds.width / ~data.size),
+                    (u.bounds.height / 2) - (val * 100))); // Škálování
+            };
+            Pen.stroke;
+        });
+
+
+
+	OSCdef.newMatching(\saber, { |msg, time, addr, recvPort|
+		var amp = msg[1], pan = msg[2], height = msg[3], speed = msg[4], pivotx = msg[5], pivoty=msg[6], particleSpeed=msg[7];
+
+		// msg[0].postln;
+
+
+
+		// msg.postln;
+
+		// Amplituda
+		if (amp != amp, {
+			Ndef(\saber).set(\amp, 0);
+		}, {
+			Ndef(\saber).set(\amp, amp);
+			// Pbindef(\kytar, \amp, amp.linlin(0,1,0.2,1.2) );
+			//Pbindef(\kytar).play(~kc);
+		} );
+
+		// Pan
+		if ( pivotx != pivotx, {
+			Ndef(\saber).set(\pan, 0);
+		},{
+			Ndef(\saber).set(\pan, pivotx.linlin(0,1, -1, 1));
+		} );
+
+		// Height mapuje základní notu na rozsah 60 - 67
+		if (height!=height, {
+			h.set(0.5);
+		},{
+
+			h.set(height);
+
+		});
+
+		// particleSpeed.postln;
+
+		pivotx.postln;
+		{
+		~data.add(speed);
+            if (~data.size > 100, { ~data.removeAt(0) }); // Max 100 bodů
+            u.refresh; // Překreslíme graf
+		}.defer;
+
+		if (speed!=speed, {
+			//~kc.tempo = 4;
+			v.set(0);
+			Ndef(\saber).set(\speed, 1.5);
+		},{
+			v.set(speed);
+			Ndef(\saber).set(\speed, speed.linlin(0,1, 1.5, 2.5));
+		});
+
+		if (pivoty!=pivoty, {},{
+			// Pdefn(\kmelody, pivoty.linlin(0,1,40,67).round);
+		});
+
+		if (pivotx!==pivotx,{},{
+
+
+		});
+
+	},
+	"/saber",
+	recvPort: 57133
+	);
+
+	OSCdef(\saber).enable;
+
+	//OSCdef(\saber).disable;
 
 
 
@@ -401,7 +565,7 @@ s.waitForBoot({
 		var code = msg[1];
 
 		"Phase changed".postln;
-		code.postln;
+		// code.postln;
 
 		case {code == 0} {
 			Pdefn(\stardiff, 20);
