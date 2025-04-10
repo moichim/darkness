@@ -207,8 +207,6 @@ class RendererSample extends RendererAbstract {
 
         imageMode( CENTER );
 
-        println( sc );
-
         image( img, 0, 0, sc, sc );
 
 

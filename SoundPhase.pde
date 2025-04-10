@@ -54,7 +54,7 @@ class SoundPhaseOne extends SoundPhase {
 
     void execute( int ticks ) {
 
-        controller.goSpeedTo( 2, 10, 1 );
+        controller.goSpeedTo( 4, 10, 1 );
         controller.goBgaTo( 2, 1 );
 
         controller.setColorDeviationThreshold(75);
@@ -130,7 +130,7 @@ class SoundPhaseMelody extends SoundPhase {
         this.counter = 0;
         this.pointer = 0;
 
-        int max = (int) round( random( 3, 5 ) );
+        int max = (int) round( random( 7, 15 ) );
 
         for ( int i = 1; i <= max; i++ ) {
 

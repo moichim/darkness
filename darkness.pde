@@ -30,6 +30,9 @@ Process sc;
 
 SampleBank listy;
 
+Tracker bell;
+Tracker kytar;
+
 void setup() {
 
   // fullScreen();
@@ -73,16 +76,19 @@ void setup() {
   
   // Green
   // controller.trackers.create( 17, 173, 31, 70, "/a" );
-  controller.trackers.create( 50, 200, 57, 80, "/kytar" )
+  kytar = controller.trackers.create( 50, 200, 57, 80, "/kytar" )
     // .addBankRenderer( bank )
     // .addImageRenderer( cosmos )
     // .addCircleRenderer()
+    .addCircleRenderer()
     .addParticlesRenderer()
     ;
 
   // Red is mapped to stars
-  controller.trackers.create( 255, 10, 10, 80, "/bell" )
-    // .addCircleRenderer()
+  bell = controller.trackers.create( 255, 10, 10, 80, "/bell" )
+    
+    .addBankRenderer( bank2 )
+
     .addParticlesRenderer();
 
   // Blue
@@ -115,6 +121,8 @@ void setup() {
   video.loadPixels();
 
   controller.trackers.startRecording();
+
+  // controller.scStart();
   
   
 
@@ -165,3 +173,24 @@ float distSq(float x1, float y1, float z1, float x2, float y2, float z2) {
   float d = (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) +(z2-z1)*(z2-z1);
   return d;
 }
+
+/* incoming osc message are forwarded to the oscEvent method. */
+void oscEvent(OscMessage theOscMessage) {
+  /* print the address pattern and the typetag of the received OscMessage */
+  print("### received an osc message.");
+  print(" addrpattern: "+theOscMessage.addrPattern());
+  println(" typetag: "+theOscMessage.typetag());
+
+  switch (theOscMessage.addrPattern()) {
+
+    case "/bell":
+      bell.doJump(20f);
+      break;
+    case "/kytar":
+      kytar.doJump(20f);
+      break;
+
+  }
+
+  
+}`

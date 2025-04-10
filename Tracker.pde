@@ -87,6 +87,15 @@ class Tracker {
     this.blobCounter = 0;
   }
 
+  void doJump( float amount ) {
+    for (Blob blob : this.blobs ) {
+      for (Particle particle : blob.particles ) {
+        particle.doJump(amount);
+        particle.setRandomColorFromTracker();
+      }
+    }
+  }
+
   void setColor( color col ) {
     this.r = red( col );
     this.g = green( col );

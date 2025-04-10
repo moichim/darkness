@@ -13,6 +13,8 @@ class Particle {
   PVector prev;
   PVector direction;
   float speed;
+  float speedFactor = 1;
+  float speedJump = 0;
 
   color col;
   color colTarget;
@@ -118,7 +120,7 @@ class Particle {
     // If the phase is out, check for the distance towards the blob and eventually set as null
     else if ( this.phase == LIFE.RUNSAWAY ) {
 
-      this.syncFromBlob();
+      
 
       float dist = this.blob.center.dist( this.position );
       if ( dist >= this.originalDiameter / 2 ) {
@@ -130,7 +132,7 @@ class Particle {
     // If follows, check if reached already and eventually set the reach
     else if ( this.phase == LIFE.FOLLOWS ) {
 
-      this.syncFromBlob();
+      
 
       float dist = this.blob.center.dist( this.position );
       if ( dist <= this.reachDistance ) {
@@ -183,6 +185,22 @@ class Particle {
 
   }
 
+  public void doJump( float amount ) {
+    this.speedJump = abs( amount );
+  }
+
+  protected void adjustSpeedFactor() {
+    float jump = abs( this.speedJump );
+    if ( jump <= 0.1 ) {
+      this.speedJump = 0;
+      this.speedFactor = 1;
+    } else {
+      jump = lerp( jump, 0, 0.5 );
+      this.speedJump = jump;
+      this.speedFactor = 1 + jump;
+    }
+  }
+
   protected void checkBoundaries() {
 
     if (
@@ -197,15 +215,20 @@ class Particle {
 
   protected void doMove() {
 
+    // this.syncFromBlob();
+
+    this.adjustSpeedFactor();
+
     // Store the current position as previous
     this.prev = this.position.copy();
 
     // Calculate the new position based on speed and direction
     PVector change = this.direction.copy();
-    change.mult( this.speed );
+    change.mult( this.speed * this.speedFactor );
     this.position.add( change );
   }
 
+  /** @deprecated */
   protected void syncFromBlob() {
 
     // Update the speed by blob movement
@@ -214,13 +237,13 @@ class Particle {
 
       if ( this.blob.movement != 0 ) {
 
-        float movement = map( this.blob.movement, 0, controller.mapping.output.x / 20, 0, 1 );
+        float movement = map( this.blob.movement, 0, controller.mapping.output.x / 10, 0, 1 );
         movement = constrain(movement, 0, 1);
 
         float distance = this.position.dist( this.blob.center );
 
         float d = constrain( 
-          map( distance, 0, 300, 1, 2 ), 
+          map( distance, 0, 300, 2, 1 ), 
           1, 
           2 
         );
@@ -255,6 +278,10 @@ class Particle {
       this.deviateChannel( green( col ), deviation ),
       this.deviateChannel( blue(col), deviation )
     );
+  }
+
+  public void setRandomColorFromTracker() {
+    this.setColor(this.blob.tracker.trackColor, 200);
   }
 
 

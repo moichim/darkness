@@ -105,7 +105,6 @@ class FolderBank {
         String p = sketchPath( "data/" + this.path );
 
         File actual = new File(p);
-        println( actual );
         for( File f : actual.listFiles()){
 
             if ( f.getName().endsWith("png") ) {
@@ -114,8 +113,6 @@ class FolderBank {
                 PImage img = loadImage( fp );
 
                 this.exact.register( img );
-
-                println( img );
 
             }
 
