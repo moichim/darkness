@@ -35,10 +35,22 @@ class RendererParticles extends RendererAbstract {
 
     int tick = 0;
 
+    WeightMap weightMap = null;
+
     RendererParticles(
         Tracker tracker
     ) {
         super( tracker );
+    }
+
+    RendererParticles setWeightMask(PImage image) {
+        this.weightMap = new WeightMap(image);
+        return this;
+    }
+
+    RendererParticles unsetWeightMask() {
+        this.weightMap = null;
+        return this;
     }
 
     void updateInBlob( Blob blob ) {

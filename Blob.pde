@@ -49,8 +49,9 @@ class Blob {
       this.assignedToClosest = true;
       this.externalBlob = target;
 
+      println("assigning to closest", this, target);
+
       for ( Particle particle : this.particles ) {
-        
         particle.assignToExternalBlob( target );
       }
     }

@@ -78,17 +78,19 @@ class Particle {
 
   void assignToExternalBlob(
     Blob externalBlob
-  ) {
+    ) {
     this.phase = LIFE.FOLLOWS_CLOSEST_NEIGHBOUR;
     this.externalBlob = blob;
-    this.colTarget = blob.tracker.trackColor;
+    if ( blob.tracker != null ) {
+      this.colTarget = blob.tracker.trackColor;
+    }
   }
 
   void unassignExternalBlob() {
     this.blob = null;
     this.externalBlob = null;
     this.phase = LIFE.LOST;
-    this.colTarget = color(0,0,0);
+    this.colTarget = color(0, 0, 0);
   }
 
 
@@ -113,26 +115,24 @@ class Particle {
         if ( distance <= this.reachDistance ) {
           this.phase = LIFE.DEAD;
         }
-
       }
     }
 
     // If the phase is out, check for the distance towards the blob and eventually set as null
     else if ( this.phase == LIFE.RUNSAWAY ) {
 
-      
+
 
       float dist = this.blob.center.dist( this.position );
       if ( dist >= this.originalDiameter / 2 ) {
         this.phase = LIFE.FOLLOWS;
       }
-
     }
 
     // If follows, check if reached already and eventually set the reach
     else if ( this.phase == LIFE.FOLLOWS ) {
 
-      
+
 
       float dist = this.blob.center.dist( this.position );
       if ( dist <= this.reachDistance ) {
@@ -142,47 +142,65 @@ class Particle {
   }
 
   public void applyDirection() {
+    if (this.blob != null) {
+      if (this.blob.tracker != null) {
+        if ( this.blob.tracker.particleRenderer != null ) {
+          if ( this.blob.tracker.particleRenderer.weightMap != null ) {
+            if (this.blob.tracker.trackColor != 0 ) {
+
+              PVector angle = this.blob.tracker.particleRenderer.weightMap.getDirection(
+                this.position,
+                this.direction,
+                this.blob.tracker.trackColor
+                );
+
+              if (angle != null) {
+                this.direction.lerp(angle, 0.5);
+              }
+
+            }
+          }
+        }
+      }
+    }
 
 
     switch ( this.phase ) {
 
-      case LOST:
-        this.rotateRandomly();
-        break;
+    case LOST:
+      this.rotateRandomly();
+      break;
 
-      case RUNSAWAY:
-        this.rotateRandomly();
-        break;
+    case RUNSAWAY:
+      // this.rotateRandomly();
+      break;
 
-      case FOLLOWS_CLOSEST_NEIGHBOUR:
+    case FOLLOWS_CLOSEST_NEIGHBOUR:
 
-        if ( this.externalBlob == null ) {
-          this.phase = LIFE.LOST;
-        } else {
-          PVector target = this.externalBlob.center.copy();
-          target.sub( this.position );
-          target.normalize();
-          this.direction.lerp( target, .5 );
-          this.rotateRandomly();
-        }
+      if ( this.externalBlob == null ) {
+        this.phase = LIFE.LOST;
+      } else {
+        PVector target = this.externalBlob.center.copy();
+        target.sub( this.position );
+        target.normalize();
+        this.direction.lerp( target, .1 );
+        // this.rotateRandomly();
+      }
 
-        break;
+      break;
 
-      case FOLLOWS:
-        PVector change = this.blob.center.copy();
-        change.sub( this.position );
-        change.normalize();
-        this.direction.lerp( change, .5 );
-        this.rotateRandomly();
-        break;
+    case FOLLOWS:
+      PVector change = this.blob.center.copy();
+      change.sub( this.position );
+      change.normalize();
+      this.direction.lerp( change, .1 );
+      // this.rotateRandomly();
+      break;
 
-      case REACHED:
-        this.rotateRandomly();
-        break;
-
-
+    case REACHED:
+      this.rotateRandomly();
+      break;
     }
-
   }
 
   public void doJump( float amount ) {
@@ -242,10 +260,10 @@ class Particle {
 
         float distance = this.position.dist( this.blob.center );
 
-        float d = constrain( 
-          map( distance, 0, 300, 2, 1 ), 
-          1, 
-          2 
+        float d = constrain(
+          map( distance, 0, 300, 2, 1 ),
+          1,
+          2
         );
 
         this.speed = controller.minSpeed() + ( controller.maxSpeed() * movement );

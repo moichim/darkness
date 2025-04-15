@@ -35,6 +35,8 @@ Tracker kytar;
 Tracker piano;
 Tracker voice;
 
+boolean isReady = false;
+
 void setup() {
 
   fullScreen();
@@ -42,9 +44,9 @@ void setup() {
 
   frameRate(30);
 
-  osc = new OscP5(this, 7772); 
+  osc = new OscP5(this, 7772);
 
-  blur = loadShader("blur.glsl"); 
+  blur = loadShader("blur.glsl");
 
   String[] cameras = Capture.list();
 
@@ -67,7 +69,7 @@ void setup() {
     width,
     height,
     osc
-  );
+    );
 
   FolderBank bank = new FolderBank("multicolor");
   bank.load();
@@ -77,57 +79,60 @@ void setup() {
 
   FolderBank flowers = new FolderBank("flowers");
   flowers.load();
+  
+  PImage stripes = loadImage( "weights/stripes.png" );
+  PImage mask = loadImage( "weights/mask.png" );
+  PImage colorfulMask = loadImage( "weights/mask.jpg" );
 
   // colorMode(HSB);
 
-  
+
   // Green
   // controller.trackers.create( 17, 173, 31, 70, "/a" );
-  kytar = controller.trackers.create( 50, 200, 57, 
-    0.052, 
-    0.372, 
-    0.174, 
-    "/piano" 
-  )
-    // .addBankRenderer( bank )
-    // .addImageRenderer( cosmos )
-    // .addCircleRenderer()
-    .addCircleRenderer()
-    .addParticlesRenderer()
-    ;
+  piano = controller.trackers.create( 50, 200, 57,
+    0.052,
+    0.372,
+    0.174,
+    "/piano"
+    );
+  // piano.addCircleRenderer();
+  piano.addParticlesRenderer()
+    .setWeightMask(stripes);
 
   // Red is mapped to stars
-  bell = controller.trackers.create( 255, 10, 10, 
-    0.110, 
-    0.762, 
-    0.703, 
-  "/bell" 
-)   
-    .addBankRenderer( bank2 )
-    .addParticlesRenderer();
+  bell = controller.trackers.create( 255, 10, 10,
+    0.110,
+    0.762,
+    0.703,
+    "/bell"
+    );
+  bell.addBankRenderer( bank2 );
+  bell.addParticlesRenderer()
+    .setWeightMask( mask );
 
   // Blue
-  voice = controller.trackers.create( 15, 52, 230, 
-    0.047, 
-    0.802, 
-    0.762, 
-    "/kytar" )
-    // .addCircleRenderer()
-    .addParticlesRenderer();
+  kytar = controller.trackers.create( 15, 52, 230,
+    0.047,
+    0.802,
+    0.762,
+    "/kytar" );
+  kytar.addParticlesRenderer()
+    .setWeightMask(mask);
 
-    // Blue
-  piano = controller.trackers.create( 200, 200, 80, 
-    0.081, 
-    0.814, 
-    0.791, 
-    "/voice" 
-  )
-    .addBankRenderer( flowers )
-    .addParticlesRenderer();
+  // Blue
+  voice = controller.trackers.create( 200, 200, 80,
+    0,//0.081,
+    0.814,
+    0.791,
+    "/voice"
+    );
+  voice.addBankRenderer( flowers );
+  voice.addParticlesRenderer()
+    .setWeightMask(colorfulMask);
 
 
   controller.trackers.createColorDialog();
-  
+
   // Red
   // controller.trackers.create( 176, 11, 11, 70, "a second instrument" );
 
@@ -147,9 +152,6 @@ void setup() {
   controller.trackers.startRecording();
 
   // controller.scStart();
-  
-  
-
 }
 
 void captureEvent(Capture video) {
@@ -157,6 +159,8 @@ void captureEvent(Capture video) {
 }
 
 void draw() {
+
+  isReady = true;
 
   controller.updateUi();
 
@@ -167,11 +171,11 @@ void draw() {
   controller.trackers.update();
   controller.particles.update();
 
-  
+
 
   // background( 0, 0, 0, 50 );
 
-  
+
   controller.particles.draw();
 
   controller.trackers.render();
@@ -182,8 +186,6 @@ void draw() {
 
 
   controller.drawDebug();
-  
-
 }
 
 
@@ -200,6 +202,10 @@ float distSq(float x1, float y1, float z1, float x2, float y2, float z2) {
 
 /* incoming osc message are forwarded to the oscEvent method. */
 void oscEvent(OscMessage theOscMessage) {
+
+  if ( !isReady ) {
+    return;
+  }
   /* print the address pattern and the typetag of the received OscMessage */
   // print("### received an osc message.");
   // print(" addrpattern: "+theOscMessage.addrPattern());

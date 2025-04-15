@@ -32,7 +32,7 @@ class Controller {
   protected float blipFreqMin = 3;
   protected float blipFreqMax = 20;
 
-  protected boolean mutualBlobs = false;
+  protected boolean mutualBlobs = true;
   protected float mutualMinDistance = 100;
   protected float mutualMaxDistance = 500;
 

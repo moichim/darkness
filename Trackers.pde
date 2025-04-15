@@ -27,10 +27,10 @@ class Trackers extends ArrayList<Tracker> {
     float brightness,
     String instrument
     ) {
-      Tracker item = new Tracker( r, g, b, threshold, saturation, brightness, instrument );
-      this.add( item );
-      return item;
-    }
+    Tracker item = new Tracker( r, g, b, threshold, saturation, brightness, instrument );
+    this.add( item );
+    return item;
+  }
 
   void createColorDialog() {
 
@@ -40,11 +40,11 @@ class Trackers extends ArrayList<Tracker> {
 
     for ( Tracker tracker : this ) {
 
-      Color c = new Color( 
+      Color c = new Color(
         (int) red( tracker.trackColor ),
         (int) green( tracker.trackColor ),
         (int) blue( tracker.trackColor )
-      );
+        );
 
       String col = "color_" + tracker.instrument;
 
@@ -67,14 +67,12 @@ class Trackers extends ArrayList<Tracker> {
 
 
       row.endRow();
-
-
     }
 
     Trackers self = this;
 
 
-    builder.setChangeListener( (element,value, f) -> {
+    builder.setChangeListener( (element, value, f) -> {
 
       println( element, element.getValue(), self );
 
@@ -103,21 +101,15 @@ class Trackers extends ArrayList<Tracker> {
         if ( element.getLabel().equals( bri ) ) {
           tracker_.thresholdBrightness = ((Integer) value) / 1000f;
         }
-
-
-
       }
+    }
+    );
 
-    } );
 
 
-    
 
     this.colors = builder.run();
     this.colors.close();
-
-
-
   }
 
 
@@ -171,7 +163,7 @@ class Trackers extends ArrayList<Tracker> {
     int blobCount = 0;
 
     // Analyse for sound
-    for ( Tracker tracker: this ) {
+    for ( Tracker tracker : this ) {
       blobCount += tracker.blobs.size();
     }
 
@@ -191,7 +183,6 @@ class Trackers extends ArrayList<Tracker> {
     if ( controller.mutualBlobs() == true ) {
       this.checkClosestTrackers();
     }
-
   }
 
   protected void checkClosestTrackers() {
@@ -200,7 +191,21 @@ class Trackers extends ArrayList<Tracker> {
 
       ArrayList<Blob> otherBlobs = new ArrayList<Blob>();
 
+
+      // Assign other blobs
+      for ( Tracker item : this ) {
+        if ( item != current ) {
+          for ( Blob b : item.blobs) {
+            otherBlobs.add(b);
+          }
+        }
+      }
+
+
+
       for ( Blob thisBlob : current.blobs ) {
+
+        println(thisBlob, thisBlob.assignedToClosest);
 
         if ( thisBlob.assignedToClosest == true ) {
 
@@ -210,44 +215,31 @@ class Trackers extends ArrayList<Tracker> {
             thisBlob.unassignExternalBlob();
           }
 
-        }
-
-        else {
+        } else {
 
           Blob closestBlob = null;
           float closestDistance = 500000;
 
-          for ( Tracker otherTracker : this ) {
+          for ( Blob otherBlob : otherBlobs ) {
 
-            if ( otherTracker != current ) {
+            float distance = thisBlob.center.dist( otherBlob.center );
 
-              for ( Blob otherBlob : otherTracker.blobs ) {
-
-                float distance = thisBlob.center.dist( otherBlob.center );
-
-                if ( distance < closestDistance ) {
-                  closestDistance = distance;
-                  closestBlob = otherBlob;
-                }
-
-              }
-
+            if ( distance < closestDistance ) {
+              closestDistance = distance;
+              closestBlob = otherBlob;
             }
 
           }
 
           if ( closestBlob != null ) {
 
-            thisBlob.assignToClosest( closestBlob );
+            println("closest", closestBlob);
 
+            // thisBlob.assignToClosest( closestBlob );
           }
-
         }
-
       }
-
     }
-
   }
 
   protected void updateStatistics() {
@@ -257,10 +249,10 @@ class Trackers extends ArrayList<Tracker> {
     int blobCount = 0;
 
     for ( Tracker tracker : this ) {
-      
+
       // Calculate the tracker`s inner statistics
       tracker.updateStatistics();
-      
+
       // Reset the tracker's particle count
       tracker.particleCount = 0;
 
@@ -270,15 +262,14 @@ class Trackers extends ArrayList<Tracker> {
       // Reset the particle position attributes
       tracker.center.x = 0;
       tracker.center.y = 0;
-      
+
       // Update local statistics
       blobCount += tracker.blobs.size();
       speedSum += tracker.averageSpeed;
-      
+
       if ( tracker.blobs.size() > 0 ) {
         trackerCount += 1;
       }
-
     }
 
     // Calculate global statistics
@@ -287,7 +278,7 @@ class Trackers extends ArrayList<Tracker> {
     this.numBlobs = blobCount;
 
     // Count particles per tracker
-    for( Particle particle : controller.particles.points ) {
+    for ( Particle particle : controller.particles.points ) {
 
       if ( particle.blob != null ) {
         particle.blob.tracker.particleCount += 1;
@@ -295,7 +286,6 @@ class Trackers extends ArrayList<Tracker> {
         particle.blob.tracker.center.x += particle.position.x;
         particle.blob.tracker.center.y += particle.position.y;
       }
-
     }
 
     // Calculate the particle count
@@ -307,19 +297,16 @@ class Trackers extends ArrayList<Tracker> {
       tracker.center.y = tracker.center.y / tracker.particleCount;
       tracker.pan = map( tracker.center.x, 0, controller.mapping.output.x, -1, 1 );
       tracker.h = map( tracker.center.y, 0, controller.mapping.output.y, 0, 1 );
-
     }
-
   }
 
   void sendInstrumentMessages(
     float amplitude
-  ){
+    ) {
 
     for ( Tracker tracker : this ) {
       tracker.sendInstrumentMessage( amplitude );
     }
-
   }
 
   public void render() {
@@ -332,24 +319,18 @@ class Trackers extends ArrayList<Tracker> {
         for ( Blob b : tracker.blobs ) {
           renderer.drawInBlob( b );
         }
-
       }
-
     }
-
   }
 
 
 
   public void draw() {
 
-      for ( int i = 0; i < this.size(); i++ ) {
-        Tracker tracker = this.get(i);
-        tracker.draw();
-        tracker.drawSound( i );
-      }
-
+    for ( int i = 0; i < this.size(); i++ ) {
+      Tracker tracker = this.get(i);
+      tracker.draw();
+      tracker.drawSound( i );
+    }
   }
-
-
 }

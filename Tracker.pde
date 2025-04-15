@@ -39,6 +39,12 @@ class Tracker {
 
   boolean closest = false;
 
+  RendererParticles particleRenderer = null;
+  RendererCircles circleRenderer = null;
+  RendererSample bankRenderer = null;
+  RendererBitmap bitmapRenderer = null;
+
+
   Tracker(
     int r,
     int g,
@@ -56,37 +62,41 @@ class Tracker {
     this.instrument = instrument;
     this.calculateTrasholds(this.trackColor);
 
-    // this.synth = new Synth( "sine" );
-    // this.synth.set( "amp", 0 );
-    // this.synth.create();
-
   }
 
-  Tracker addRenderer(
+  protected Tracker addRenderer(
     RendererAbstract renderer
   ) {
     this.renderers.add( renderer );
     return this;
   }
 
-  Tracker addParticlesRenderer() {
-    this.renderers.add( new RendererParticles( this ) );
-    return this;
+  RendererParticles addParticlesRenderer() {
+    RendererParticles renderer = new RendererParticles( this );
+    this.renderers.add( renderer );
+    this.particleRenderer = renderer;
+    return renderer;
   }
 
-  Tracker addCircleRenderer() {
-    this.renderers.add( new RendererCircles( this ) );
-    return this;
+  RendererCircles addCircleRenderer() {
+    RendererCircles renderer = new RendererCircles( this );
+    this.renderers.add( renderer );
+    this.circleRenderer = renderer;
+    return renderer;
   }
 
-  Tracker addImageRenderer( PImage image ) {
-    this.renderers.add( new RendererBitmap( this, image ) );
-    return this;
+  RendererBitmap addImageRenderer( PImage image ) {
+    RendererBitmap renderer = new RendererBitmap( this, image );
+    this.renderers.add( renderer );
+    this.bitmapRenderer = renderer;
+    return renderer;
   }
 
-  Tracker addBankRenderer( FolderBank bank ) {
-    this.renderers.add( new RendererSample( this, bank ) );
-    return this;
+  RendererSample addBankRenderer( FolderBank bank ) {
+    RendererSample renderer = new RendererSample( this, bank );
+    this.renderers.add( renderer );
+    this.bankRenderer = renderer;
+    return renderer;
   }
 
   void reset() {
