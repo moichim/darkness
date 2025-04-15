@@ -142,11 +142,17 @@ class Particle {
   }
 
   public void applyDirection() {
+
+    float dirAmount = 0.5;
+
+
     if (this.blob != null) {
       if (this.blob.tracker != null) {
         if ( this.blob.tracker.particleRenderer != null ) {
           if ( this.blob.tracker.particleRenderer.weightMap != null ) {
             if (this.blob.tracker.trackColor != 0 ) {
+
+              dirAmount = 0.1;
 
               PVector angle = this.blob.tracker.particleRenderer.weightMap.getDirection(
                 this.position,
@@ -155,7 +161,7 @@ class Particle {
                 );
 
               if (angle != null) {
-                this.direction.lerp(angle, 0.5);
+                this.direction.lerp(angle, 0.9);
               }
 
             }
@@ -163,6 +169,8 @@ class Particle {
         }
       }
     }
+
+    
 
 
     switch ( this.phase ) {
@@ -172,7 +180,7 @@ class Particle {
       break;
 
     case RUNSAWAY:
-      // this.rotateRandomly();
+      this.rotateRandomly();
       break;
 
     case FOLLOWS_CLOSEST_NEIGHBOUR:
@@ -183,8 +191,8 @@ class Particle {
         PVector target = this.externalBlob.center.copy();
         target.sub( this.position );
         target.normalize();
-        this.direction.lerp( target, .1 );
-        // this.rotateRandomly();
+        this.direction.lerp( target, dirAmount );
+        this.rotateRandomly();
       }
 
       break;
@@ -193,8 +201,8 @@ class Particle {
       PVector change = this.blob.center.copy();
       change.sub( this.position );
       change.normalize();
-      this.direction.lerp( change, .1 );
-      // this.rotateRandomly();
+      this.direction.lerp( change, dirAmount );
+      this.rotateRandomly();
       break;
 
     case REACHED:

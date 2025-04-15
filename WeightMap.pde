@@ -4,7 +4,7 @@ class WeightMap {
 
   protected PImage image;
 
-  int radius = 3;
+  int radius = 10;
 
   WeightMap(
     PImage image
@@ -29,7 +29,8 @@ class WeightMap {
     int index = (int) position.x + (this.image.width * (int) position.y);
 
     if ( index < this.image.width * this.image.height ) {
-        return this.image.pixels[ (int) index ];
+        color result = this.image.pixels[ (int) index ];
+        return result;
     }
     return 0;
   }

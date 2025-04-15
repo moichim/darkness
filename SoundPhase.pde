@@ -55,7 +55,7 @@ class SoundPhaseOne extends SoundPhase {
     void execute( int ticks ) {
 
         controller.goSpeedTo( 4, 10, 1 );
-        controller.goBgaTo( 2, 1 );
+        controller.goBgaTo( 20, 1 );
 
         controller.setColorDeviationThreshold(75);
 

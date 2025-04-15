@@ -18,7 +18,6 @@ OscP5 osc;
 
 PShader blur;
 PImage cosmos;
-PImage mask;
 PImage list;
 
 String os = System.getProperty("os.name");
@@ -34,6 +33,10 @@ Tracker bell;
 Tracker kytar;
 Tracker piano;
 Tracker voice;
+
+PImage stripes;
+PImage mask;
+PImage colorfulMask;
 
 boolean isReady = false;
 
@@ -80,9 +83,9 @@ void setup() {
   FolderBank flowers = new FolderBank("flowers");
   flowers.load();
   
-  PImage stripes = loadImage( "weights/stripes.png" );
-  PImage mask = loadImage( "weights/mask.png" );
-  PImage colorfulMask = loadImage( "weights/mask.jpg" );
+  stripes = loadImage( "weights/stripes.png" );
+  mask = loadImage( "weights/circles.png" );
+  colorfulMask = loadImage( "weights/grid.png" );
 
   // colorMode(HSB);
 
@@ -186,6 +189,37 @@ void draw() {
 
 
   controller.drawDebug();
+
+if ( key == 'm' ) {
+              bell.particleRenderer.unsetWeightMask();
+              kytar.particleRenderer.unsetWeightMask();
+              piano.particleRenderer.unsetWeightMask();
+              voice.particleRenderer.unsetWeightMask();
+            }
+
+            if ( key == 'n' ) {
+              bell.particleRenderer.setWeightMask(stripes);
+              kytar.particleRenderer.setWeightMask(stripes);
+              piano.particleRenderer.setWeightMask(stripes);
+              voice.particleRenderer.setWeightMask(stripes);
+            }
+
+            if ( key == 'b' ) {
+              bell.particleRenderer.setWeightMask(mask);
+              kytar.particleRenderer.setWeightMask(mask);
+              piano.particleRenderer.setWeightMask(mask);
+              voice.particleRenderer.setWeightMask(mask);
+            }
+
+            if ( key == 'v' ) {
+              bell.particleRenderer.setWeightMask(colorfulMask);
+              kytar.particleRenderer.setWeightMask(colorfulMask);
+              piano.particleRenderer.setWeightMask(colorfulMask);
+              voice.particleRenderer.setWeightMask(colorfulMask);
+            }
+
+
+
 }
 
 
@@ -214,16 +248,16 @@ void oscEvent(OscMessage theOscMessage) {
   switch (theOscMessage.addrPattern()) {
 
     case "/bell":
-      bell.doJump(30f);
+      bell.doJump(10f);
       break;
     case "/kytar":
-      kytar.doJump(30f);
+      kytar.doJump(10f);
       break;
     case "/piano":
-      piano.doJump(30f);
+      piano.doJump(10f);
       break;
     case "/voice":
-      voice.doJump(30f);
+      voice.doJump(10f);
       break;
   }
 
