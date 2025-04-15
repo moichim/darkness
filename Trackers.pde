@@ -23,9 +23,11 @@ class Trackers extends ArrayList<Tracker> {
     int g,
     int b,
     float threshold,
+    float saturation,
+    float brightness,
     String instrument
     ) {
-      Tracker item = new Tracker( r, g, b, threshold, instrument );
+      Tracker item = new Tracker( r, g, b, threshold, saturation, brightness, instrument );
       this.add( item );
       return item;
     }
@@ -47,7 +49,25 @@ class Trackers extends ArrayList<Tracker> {
       String col = "color_" + tracker.instrument;
 
       builder.addColorPicker( col, c );
-      builder.addSlider( "threshold_" + tracker.instrument, 0, 255, (int) tracker.threshold, 30, 0 );
+
+      RowFormBuilder row = builder.startRow( tracker.instrument );
+
+      row.addSlider( "hue_" + tracker.instrument, 0, 1000, (int) tracker.threshold, 100, 0 )
+        // .bind( tracker.threshold )
+        ;
+
+      row.addSlider( "sat_" + tracker.instrument, 0, 1000, (int) tracker.thresholdSaturation, 100, 0 )
+        // .bind( tracker.thresholdSaturation )
+        ;
+
+      row.addSlider( "bri_" + tracker.instrument, 0, 1000, (int) tracker.thresholdBrightness, 100, 0 )
+        // .bind(tracker.thresholdBrightness)
+        ;
+
+
+
+      row.endRow();
+
 
     }
 
@@ -58,25 +78,40 @@ class Trackers extends ArrayList<Tracker> {
 
       println( element, element.getValue(), self );
 
-      for ( Tracker tracker : self ) {
+      for ( Tracker tracker_ : self ) {
 
-        String col = "color_" + tracker.instrument;
-        String tresh = "threshold_" + tracker.instrument;
+        String col = "color_" + tracker_.instrument;
+        String hue = "hue_" + tracker_.instrument;
+        String sat = "sat_" + tracker_.instrument;
+        String bri = "bri_" + tracker_.instrument;
 
-        println( element.getLabel(), " -> ", col, tresh, tracker, element.getValue() );
+        // println( element.getLabel(), " -> ", col, tresh, tracker, element.getValue() );
 
         if ( element.getLabel().equals( col ) ) {
           Color c = (Color) value;
-          tracker.setColor( c.getRed(), c.getGreen(), c.getBlue() );
+          tracker_.setColor( c.getRed(), c.getGreen(), c.getBlue() );
         }
 
-        if ( element.getLabel().equals( tresh ) ) {
-          tracker.threshold = (Integer) value;
+        if ( element.getLabel().equals( hue ) ) {
+          tracker_.threshold = ((Integer) value) / 1000f;
         }
+
+        if ( element.getLabel().equals( sat ) ) {
+          tracker_.thresholdSaturation = ((Integer) value) / 1000f;
+        }
+
+        if ( element.getLabel().equals( bri ) ) {
+          tracker_.thresholdBrightness = ((Integer) value) / 1000f;
+        }
+
+
 
       }
 
     } );
+
+
+    
 
     this.colors = builder.run();
     this.colors.close();

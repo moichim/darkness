@@ -32,11 +32,13 @@ SampleBank listy;
 
 Tracker bell;
 Tracker kytar;
+Tracker piano;
+Tracker voice;
 
 void setup() {
 
-  // fullScreen();
-  size( 1920, 1080 );
+  fullScreen();
+  // size( 1920, 1080 );
 
   frameRate(30);
 
@@ -73,10 +75,20 @@ void setup() {
   FolderBank bank2 = new FolderBank("blue");
   bank2.load();
 
+  FolderBank flowers = new FolderBank("flowers");
+  flowers.load();
+
+  // colorMode(HSB);
+
   
   // Green
   // controller.trackers.create( 17, 173, 31, 70, "/a" );
-  kytar = controller.trackers.create( 50, 200, 57, 80, "/kytar" )
+  kytar = controller.trackers.create( 50, 200, 57, 
+    0.052, 
+    0.372, 
+    0.174, 
+    "/piano" 
+  )
     // .addBankRenderer( bank )
     // .addImageRenderer( cosmos )
     // .addCircleRenderer()
@@ -85,20 +97,32 @@ void setup() {
     ;
 
   // Red is mapped to stars
-  bell = controller.trackers.create( 255, 10, 10, 80, "/bell" )
-    
+  bell = controller.trackers.create( 255, 10, 10, 
+    0.110, 
+    0.762, 
+    0.703, 
+  "/bell" 
+)   
     .addBankRenderer( bank2 )
-
     .addParticlesRenderer();
 
   // Blue
-  controller.trackers.create( 15, 52, 230, 50, "/saber" )
+  voice = controller.trackers.create( 15, 52, 230, 
+    0.047, 
+    0.802, 
+    0.762, 
+    "/kytar" )
     // .addCircleRenderer()
     .addParticlesRenderer();
 
     // Blue
-  controller.trackers.create( 200, 17, 230, 50, "/d" )
-    .addBankRenderer( bank2 )
+  piano = controller.trackers.create( 200, 200, 80, 
+    0.081, 
+    0.814, 
+    0.791, 
+    "/voice" 
+  )
+    .addBankRenderer( flowers )
     .addParticlesRenderer();
 
 
@@ -177,19 +201,24 @@ float distSq(float x1, float y1, float z1, float x2, float y2, float z2) {
 /* incoming osc message are forwarded to the oscEvent method. */
 void oscEvent(OscMessage theOscMessage) {
   /* print the address pattern and the typetag of the received OscMessage */
-  print("### received an osc message.");
-  print(" addrpattern: "+theOscMessage.addrPattern());
-  println(" typetag: "+theOscMessage.typetag());
+  // print("### received an osc message.");
+  // print(" addrpattern: "+theOscMessage.addrPattern());
+  // println(" typetag: "+theOscMessage.typetag());
 
   switch (theOscMessage.addrPattern()) {
 
     case "/bell":
-      bell.doJump(20f);
+      bell.doJump(30f);
       break;
     case "/kytar":
-      kytar.doJump(20f);
+      kytar.doJump(30f);
       break;
-
+    case "/piano":
+      piano.doJump(30f);
+      break;
+    case "/voice":
+      voice.doJump(30f);
+      break;
   }
 
   

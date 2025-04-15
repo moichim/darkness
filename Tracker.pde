@@ -10,7 +10,10 @@ class Tracker {
 
   /** @deprecated */
   color trackColor;
-  float threshold = 40;
+
+  float threshold = 0.5;
+  float thresholdSaturation = 0.5;
+  float thresholdBrightness = 0.5;
 
   color emissionColor;
 
@@ -41,12 +44,17 @@ class Tracker {
     int g,
     int b,
     float threshold,
+    float saturation,
+    float brightness,
     String instrument
   ) {
     this.setColor( r, g, b );
     this.threshold = threshold;
+    this.thresholdSaturation = saturation;
+    this.thresholdBrightness = brightness;
     this.emissionColor = this.trackColor;
     this.instrument = instrument;
+    this.calculateTrasholds(this.trackColor);
 
     // this.synth = new Synth( "sine" );
     // this.synth.set( "amp", 0 );
@@ -102,6 +110,7 @@ class Tracker {
     this.b = blue( col );
     this.trackColor = col;
     this.emissionColor = col;
+    this.calculateTrasholds(this.trackColor);
   }
 
   void setColor( float r, float g, float b ) {
@@ -110,6 +119,7 @@ class Tracker {
     this.b = b;
     this.trackColor = color( r, g, b );
     this.emissionColor = this.trackColor;
+    this.calculateTrasholds(this.trackColor);
   }
 
   public void preprocessPixels() {
@@ -125,8 +135,24 @@ class Tracker {
 
 
 
+  protected float trackHue = 0;
+  protected float trackSaturation = 0;
+  protected float trackBrightness = 0;
+
+  protected void calculateTrasholds( color col ) {
+    float h2 = hue(col);
+    float s2 = saturation(col);
+    float b2 = brightness(col);
+    this.trackHue = h2;
+    this.trackSaturation = s2;
+    this.trackBrightness = b2;
+  }
+
+
+
   public void processPixel( color currentColor, int x, int y ) {
 
+    /*
     float r1 = red(currentColor);
     float g1 = green(currentColor);
     float b1 = blue(currentColor);
@@ -137,7 +163,47 @@ class Tracker {
 
     float d = distSq(r1, g1, b1, r2, g2, b2);
 
-    if ( d < this.threshold*this.threshold ) {
+    */
+
+    /*
+
+    float h1 = hue(currentColor);
+  float s1 = saturation(currentColor);
+  float b1 = brightness(currentColor);
+
+  // Převod referenční barvy do HSB
+  color reference = color(this.r, this.g, this.b); // tvoříme barvu z uložených RGB složek
+  float h2 = hue(reference);
+  float s2 = saturation(reference);
+  float b2 = brightness(reference);
+
+  // Výpočet vzdálenosti v HSB prostoru (s přihlédnutím ke kruhové povaze odstínu)
+  float dh = min(abs(h1 - h2), 360 - abs(h1 - h2)) / 360.0; // normované na 0–1
+  float ds = (s1 - s2) / 100.0;
+  float db = (b1 - b2) / 100.0;
+
+  float d = dh*dh + ds*ds + db*db;
+
+  */
+
+  // Aktuální barva pixelu
+  float h1 = hue(currentColor);
+  float s1 = saturation(currentColor);
+  float b1 = brightness(currentColor);
+
+  // Referenční barva (trackColor složený z RGB složek)
+  float h2 = this.trackHue;
+  float s2 = this.trackSaturation;
+  float b2 = this.trackBrightness;
+
+  // Rozdíl odstínu (s přihlédnutím ke kruhovému rozsahu)
+  float dh = min(abs(h1 - h2), 360 - abs(h1 - h2)) / 360.0;
+  float ds = abs(s1 - s2) / 100.0;
+  float db = abs(b1 - b2) / 100.0;
+
+    if (dh * dh < threshold * threshold &&
+      ds * ds < thresholdSaturation * thresholdSaturation &&
+      db * db < thresholdBrightness * thresholdBrightness) {
       boolean found = false;
       for (Blob b : this.temp) {
         if (b.isNear(x, y)) {
@@ -356,6 +422,10 @@ class Tracker {
     text( this.instrument, 10, 10 );
     // fill(0);
     text( this.averageParticleSpeed, 10, 20 );
+
+    text( this.threshold, 10, 30 );
+    text( this.thresholdSaturation, 10, 40 );
+    text( this.thresholdBrightness, 10, 50 );
 
     // Print the pan
     noStroke();

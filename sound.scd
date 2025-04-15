@@ -1,24 +1,26 @@
 // Spuštění zvukového serveru
 s = Server.default;
-s.boot; // Spuštění zvukového serveru
+// ; // Spuštění zvukového serveru
 
-s.quit;
+// s.quit;
 
-Server.local.options.device = "Built-in Audio";
-Server.internal.options.device = "Built-in Audio";
+// Server.local.options.device = "Aggr";
+// Server.internal.options.device = "Aggr";
+// s.options.sampleRate = 48000;
 
-s.options.outDevice;
+// s.options.outDevice;
 
 
 
 (
+
 // Počkejte, dokud není server připraven
 s.waitForBoot({
 
 
 
 
-	n = NetAddr.new( NetAddr.localAddr.hostname, 57133 );
+	// n = NetAddr.new( NetAddr.localAddr.hostname, 57133 );
 
 	~processing = NetAddr.new( NetAddr.localAddr.hostname, 7772 );
 
@@ -81,6 +83,59 @@ s.waitForBoot({
 	).add;
 
 
+
+	v = Bus.control(s, 1); // Speed amount 0-1
+	h = Bus.control(s, 1); // Current height 0-1
+
+	m = Bus.control(s, 1); // Minimal frequency
+	n = Bus.control(s, 1); // Maximal frequency
+
+	v.set(1);
+	h.set(1);
+	m.set(1);
+	n.set(100);
+
+
+
+	Ndef.new(\saber, {
+		|flutterAmt=0.02, humLevel=0.3, swingThresh=0.7, swingLevel = 0.1, amp=0, pan=0, speed=1.5|
+
+		var humPitch = In.kr(h).range(In.kr(m), In.kr(n));
+
+		var hum, sig, flutter, swing, swingNoise, swingSwitch;
+
+		flutter = 4.collect({
+			|i|
+			LFNoise0.kr(rrand(3, 16), flutterAmt, 1).lag(0.48);
+		});
+
+		hum = Mix(SyncSaw.ar([humPitch, humPitch * 1.001] * flutter.copyRange(0, 1), [humPitch * 1.003, humPitch * 1.0025] * flutter.copyRange(2, 3)));
+
+		hum = hum * LFNoise0.kr(8.77224).range(0.2, 1.0).lag(0.4);
+
+		hum = RLPF.ar(hum, LFNoise0.kr(21).range(200, 1800).lag(1.2), 0.5) * 0.1 * humLevel;
+
+		humPitch = humPitch * StandardL.ar(3.8, 2.9).range(0.93, 1.07);
+
+		swingNoise = LFNoise1.kr(16.2).range(0, 1);
+		swingSwitch = if(swingNoise > swingThresh, 1, 0).lag2(0.9, 1.3);
+		swingLevel = swingLevel * swingSwitch;
+
+		humPitch = humPitch * StandardL.ar(3.8, 2.9).range(0.97, 1.03) * (1 + (swingSwitch * 0.2));
+
+		swing = SyncSaw.ar(Lag.ar( humPitch * speed, 0.3 ), Lag.ar( humPitch * 1.09, 0.3) ) * In.kr(v);
+		swing = LPF.ar(swing, 1000, 0.3);
+
+		sig = hum + swing;
+
+		sig = sig * Lag.kr( amp, 1 );
+
+		sig = Pan2.ar(sig, pan);
+
+
+	}).play;
+
+
 	// Počkejte, dokud není SynthDef nahrán
     s.sync;
 
@@ -127,7 +182,7 @@ s.waitForBoot({
 	);
 
 
-	Pbindef(\test,
+	Pbindef(\starPattern,
 		\instrument, \sample,
 		\dur, Pdefn(\starDur),
 		\degree, Pdefn(\starDegree).asStream.next(1),
@@ -139,7 +194,9 @@ s.waitForBoot({
 		\onNote, Pfunc({|event| ~processing.sendMsg("/bell"); })
 	);
 
-	Pbindef(\test).play(~sc);
+	Pbindef(\starPattern).play(~sc);
+
+	~starPlays = true;
 
 
 
@@ -153,8 +210,17 @@ s.waitForBoot({
 		// Amplituda
 		if (amp != amp, {
 			Pdefn(\starAmp, 0);
+			if (~starPlays==true,{
+				Pbindef(\starPattern).stop;
+				~starPlays = false;
+			});
 		}, {
+			if (~starPlays==false, {
+				Pbindef(\starPattern).play(~sc);
+				~starPlays = false;
+			},{});
 			Pdefn(\starAmp, amp);
+
 		} );
 
 		// Pan
@@ -225,11 +291,12 @@ s.waitForBoot({
 	// Proměnné
 
 	Pdefn(\kytarDur, 1);
-	Pdefn(\kytarMelody, Pseq([0, 1, 2, 3, 4, 0, 0], inf));
+	Pdefn(\kytarMelody, Pseq([0, 2, 4, 4, 5, 6, 3, 2, 1, 0],inf));
 	Pdefn(\kytarShift, Pxrand(#[0,1,2],inf));
 	Pdefn(\kytarPan, 0);
 	Pdefn(\kytarAmp, 0);
 	Pdefn(\kytarScale, Scale.minorPentatonic);
+	Pdefn(\kytarScale, Scale.chinese);
 	Pdefn(\kytarOctave, 4);
 
 	// Konvertor stupňů
@@ -240,7 +307,7 @@ s.waitForBoot({
 	);
 
 
-	Pbindef(\kytar,
+	Pbindef(\kytarPattern,
 		\instrument, \sample,
 		\dur, Pdefn(\kytarDur),
 		\degree, Pdefn(\kytarDegree).asStream.next(1),
@@ -255,7 +322,9 @@ s.waitForBoot({
 
 	// Pbindef(\kytar, \amp, 0.5);
 
-	Pbindef(\kytar).play(~kc);
+	Pbindef(\kytarPattern).play(~kc);
+
+	~kytarPlays = true;
 
 
 
@@ -269,8 +338,17 @@ s.waitForBoot({
 		// Amplituda
 		if (amp != amp, {
 			Pdefn(\kytarAmp, 0);
+			if (~kytarPlays==true,{
+				Pbindef(\kytarPattern).stop;
+				~kytarPlays = false;
+			});
 		}, {
+			if (~kytarPlays==false, {
+				Pbindef(\kytarPattern).play(~kc);
+				~kytarPlays = false;
+			},{});
 			Pdefn(\kytarAmp, amp);
+
 		} );
 
 		// Pan
@@ -332,78 +410,271 @@ s.waitForBoot({
 
 
 
-	v = Bus.control(s, 1); // Speed amount 0-1
-	h = Bus.control(s, 1); // Current height 0-1
+	~drum = Buffer.read(s, ~path.value( "drum/bassdrum02.ogg" ));
+	~ding = Buffer.read(s, ~path.value( "ding/dong02.ogg" ));
 
-	m = Bus.control(s, 1); // Minimal frequency
-	n = Bus.control(s, 1); // Maximal frequency
-
-	v.set(0);
-	h.set(0);
-	m.set(0);
-	n.set(100);
+	~pianoPlays = true;
 
 
 
-	Ndef.new(\saber, {
-		|flutterAmt=0.02, humLevel=0.3, swingThresh=0.7, swingLevel = 0.1, amp=0, pan=0, speed=1.5|
+	// Samply
+	~piano = Buffer.read(s, ~path.value( "piano/c.wav" ));
+	// Bus
+	~pb = Bus.audio(s, 2);
+	// Effector
+	~pe = Synth.new(\effector, [\in, ~sb]);
+	~pe.set(\bpfFreq, 500, \bpfQ, 1);
+	// Clock
+	~pc = TempoClock.new(1.0);
+	~pc.tempo = 2;
 
-		var humPitch = In.kr(h).range(In.kr(m), In.kr(n));
 
-		var hum, sig, flutter, swing, swingNoise, swingSwitch;
+	// Proměnné
 
-		flutter = 4.collect({
-			|i|
-			LFNoise0.kr(rrand(3, 16), flutterAmt, 1).lag(0.48);
+	Pdefn(\pianoDur, 1);
+	Pdefn(\pianoMelody, Pseq([0, 2, 4, 4, 5, 6, 3, 2, 1, 0],inf));
+	Pdefn(\pianoShift, Pxrand(#[0,1,2],inf));
+	Pdefn(\pianoPan, 0);
+	Pdefn(\pianoAmp, 0);
+	Pdefn(\pianoScale, Scale.minorPentatonic);
+	Pdefn(\pianoOctave, 4);
+
+	// Konvertor stupňů
+	Pdefn(\pianoDegree,
+		Pfuncn({
+			Pdefn(\pianoMelody) + Pdefn(\pianoShift)
+		}, inf)
+	);
+
+
+	Pbindef(\pianoPattern,
+		\instrument, \sample,
+		\dur, Pdefn(\pianoDur),
+		\degree, Pdefn(\pianoDegree).asStream.next(1),
+		\scale, Pdefn(\pianoScale),
+		\octave, Pdefn(\pianoOctave),
+		\amp, Pdefn(\pianoAmp),
+		\pan, Pdefn(\pianoPan),
+		\out, 0,
+		\onNote, Pfunc({|event| ~processing.sendMsg("/piano"); }),
+		\buf, ~piano.bufnum
+	);
+
+	// Pbindef(\kytar, \amp, 0.5);
+
+	// Pbindef(\pianoPattern).play(~pc);
+
+	Pbindef(\pianoPattern).stop;
+
+
+
+
+
+
+
+
+
+    OSCdef.newMatching(\piano, { |msg, time, addr, recvPort|
+		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4], pivotx = msg[5], pivoty=msg[6];
+
+
+
+		// Amplituda pro Ndef
+		if (amp != amp, {}, {
+			Ndef(\saber).set(\amp, amp);
 		});
 
-		hum = Mix(SyncSaw.ar([humPitch, humPitch * 1.001] * flutter.copyRange(0, 1), [humPitch * 1.003, humPitch * 1.0025] * flutter.copyRange(2, 3)));
+		// Pan
+		if (pan != pan, {}, {
+			Ndef(\saber).set(\pan, pan);
+		});
 
-		hum = hum * LFNoise0.kr(8.77224).range(0.2, 1.0).lag(0.4);
+		// Výška - pošle se do bussu h (který se mapuje na rozsah frekvencí)
+		if (h != h, {}, {
+			//h.set(h); // Bus 'h' (výška 0–1)
+		});
 
-		hum = RLPF.ar(hum, LFNoise0.kr(21).range(200, 1800).lag(1.2), 0.5) * 0.1 * humLevel;
+		// Rychlost oscilace (swing)
+		if (speed != speed, {}, {
+			Ndef(\saber).set(\flutterAmt, speed);
 
-		humPitch = humPitch * StandardL.ar(3.8, 2.9).range(0.93, 1.07);
+			// var octave = speed.linlin(0.0,1.0, 4, 1).floor.asInteger;
+			// var minFreq = 10.midicps * (2 ** (octave - 4));
+			// var maxFreq = 40.midicps * (2 ** (octave - 4));
+			// m.set(minFreq);
+			// n.set(maxFreq);
+		});
 
-		swingNoise = LFNoise1.kr(16.2).range(0, 1);
-		swingSwitch = if(swingNoise > swingThresh, 1, 0).lag2(0.9, 1.3);
-		swingLevel = swingLevel * swingSwitch;
+		// PivotY ovlivňuje oktávu (nepoužívá se v Ndef přímo, ale můžem použít třeba pro změnu frekvenčního rozsahu)
+		if (pivoty != pivoty, {}, {
+			// var octave = pivoty.linlin(0.0,1.0, 4, 1).floor.asInteger;
+			// var minFreq = 10.midicps * (2 ** (octave - 4));
+			// var maxFreq = 40.midicps * (2 ** (octave - 4));
+			// m.set(minFreq);
+			// n.set(maxFreq);
+		});
 
-		humPitch = humPitch * StandardL.ar(3.8, 2.9).range(0.97, 1.03) * (1 + (swingSwitch * 0.2));
-
-		swing = SyncSaw.ar(Lag.ar( humPitch * speed, 0.3 ), Lag.ar( humPitch * 1.09, 0.3) ) * In.kr(v);
-		swing = LPF.ar(swing, 1000, 0.3);
-
-		sig = hum + swing;
-
-		sig = sig * Lag.kr( amp, 1 );
-
-		sig = Pan2.ar(sig, pan);
-
-
-	}).play;
-
-	~data = List.new(100).addAll(Array.fill(100, 0));  // Seznam na data (max 100 bodů)
-    // Vytvoříme okno a kreslící plochu
-    w = Window("OSC Graph", Rect(100, 100, 500, 300)).front;
-    u = UserView(w, Rect(0, 0, 500, 300))
-        .background_(Color.black)
-        .drawFunc_({
-            Pen.color = Color.green;
-            Pen.width = 2;
-            Pen.moveTo(Point(0, u.bounds.height / 2)); // Start ve středu Y
-            ~data.do { |val, i|
-                Pen.lineTo(Point(i * (u.bounds.width / ~data.size),
-                    (u.bounds.height / 2) - (val * 100))); // Škálování
-            };
-            Pen.stroke;
-        });
+		// PivotX ovlivňuje tempo, můžeš s tím třeba škálovat hlasitost nebo rychlost
+		if (pivotx != pivotx,{}, {
+			// var swingVolume = pivotx.linlin(0.0, 1.0, 0.0, 1.0);
+			// v.set(swingVolume); // Bus 'v' pro sílu swing části
+		});
 
 
+		//////////
+
+	},
+	"/piano",
+	recvPort: 57133
+	);
+
+	OSCdef(\piano).enable;
 
 
 
-	//OSCdef(\saber).disable;
+
+
+
+
+
+
+
+
+
+
+
+	// Samply
+
+	~voice1 = Buffer.read(s, ~path.value( "voice/07_c2_rev_1.aiff" ));
+	~voice2 = Buffer.read(s, ~path.value( "voice/07_c2_rev_2.aiff" ));
+	~voice3 = Buffer.read(s, ~path.value( "voice/07_c2_rev_3.aiff" ));
+
+
+
+
+	// Bus
+	~vb = Bus.audio(s, 2);
+	// Effector
+	~ve = Synth.new(\effector, [\in, ~sb]);
+	~ve.set(\bpfFreq, 500, \bpfQ, 1);
+	// Clock
+	~vc = TempoClock.new(1.0);
+	~vc.tempo = 2;
+
+
+	// Proměnné
+
+	Pdefn(\voiceDur, 1);
+	Pdefn(\voiceMelody, Pseq([0, 2, 4, 4, 5, 6, 3, 2, 1, 0],inf));
+	Pdefn(\voiceShift, Pxrand(#[0,1,2],inf));
+	Pdefn(\voicePan, 0);
+	Pdefn(\voiceAmp, 0);
+	Pdefn(\voiceScale, Scale.minorPentatonic);
+	Pdefn(\voiceOctave, 6);
+
+	// Konvertor stupňů
+	Pdefn(\voiceDegree,
+		Pfuncn({
+			Pdefn(\voiceMelody) + Pdefn(\voiceShift)
+		}, inf)
+	);
+
+
+	Pbindef(\voicePattern,
+		\instrument, \sample,
+		\dur, Pdefn(\voiceDur),
+		\degree, Pdefn(\voiceDegree).asStream.next(1),
+		\scale, Pdefn(\voiceScale),
+		\octave, Pdefn(\voiceOctave),
+		\amp, Pdefn(\voiceAmp),
+		\pan, Pdefn(\voicePan),
+		\out, 0,
+		\onNote, Pfunc({|event| ~processing.sendMsg("/voice"); }),
+		\buf, Pseq([~voice1.bufnum, ~voice2.bufnum, ~voice3.bufnum], inf)
+	);
+
+	// Pbindef(\kytar, \amp, 0.5);
+
+	Pbindef(\voicePattern).play(~vc);
+
+	~voicePlays = true;
+
+
+
+
+
+
+
+	OSCdef.newMatching(\voice, { |msg, time, addr, recvPort|
+		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4], pivotx = msg[5], pivoty=msg[6];
+
+
+		// Amplituda
+		if (amp != amp, {
+			Pdefn(\voiceAmp, 0);
+			if (~voicePlays==true,{
+				Pbindef(\pianoPattern).stop;
+				~voicePlays = false;
+			});
+		}, {
+			if (~voicePlays==false, {
+				Pbindef(\pianoPattern).play(~vc);
+				~voicePlays = false;
+			},{});
+			Pdefn(\voiceAmp, amp);
+
+		} );
+
+		// Pan
+		if ( pan != pan, {
+			Pdefn(\voicePan, 0);
+		},{
+			Pdefn(\voicePan, pan);
+		} );
+
+		// Height mapuje základní notu na rozsah 60 - 67
+		if (h!=h, {},{
+
+			// h.linlin(-1,1, 2, 6).round.asInteger.postln;
+
+			if (h < 0.5,{
+				// ~se.set(\bpfQ, h.linlin(0.0, 0.5, 0.3, 5.0) );
+			},{
+				// ~se.set(\bpfQ, h.linlin(0.5, 1.0, 5.0, 0.3) );
+			});
+
+		});
+
+		if (speed!=speed, {
+		},{});
+
+		if (pivoty!=pivoty, {},{
+
+			var octave = pivoty.linlin(0.0,1.0, 7, 4).floor.asInteger;
+
+			Pdefn(\voiceOctave, octave);
+			// Pdefn(\starmelody, pivoty.linlin(0,1,40,67).round);
+		});
+
+		if (pivotx!==pivotx,{},{
+
+			var tempo = pivotx.linlin(0.0,1.0, 0.5, 2);
+
+			Pdefn(\voiceDur, tempo);
+
+		});
+
+	},
+	"/voice",
+	recvPort: 57133
+	);
+
+	OSCdef(\voice).enable;
+
+
+
+
+
 
 
 

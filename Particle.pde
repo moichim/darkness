@@ -281,7 +281,7 @@ class Particle {
   }
 
   public void setRandomColorFromTracker() {
-    this.setColor(this.blob.tracker.trackColor, 200);
+    this.colTarget = this.deviation(this.blob.tracker.trackColor, 200);
   }
 
 
@@ -295,7 +295,7 @@ class Particle {
       this.deviateChannel( red(col), deviation ),
       this.deviateChannel( green(col), deviation ),
       this.deviateChannel( blue(col), deviation )
-      );
+    );
   }
 
   protected float deviateChannel(
