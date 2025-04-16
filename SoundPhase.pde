@@ -208,7 +208,7 @@ class SoundPhaseMelody extends SoundPhase {
         for ( Particle particle : controller.particles.points ) {
 
             if ( implicite == true ) {
-                particle.setColorFromTracker();
+                particle.movementColor.grabColorFromTracker();
             } else {
                 particle.setColor( col, deviation );
             }

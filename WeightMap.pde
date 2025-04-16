@@ -35,6 +35,21 @@ class WeightMap {
     return 0;
   }
 
+
+  public PVector getNormalVector( PVector position ) {
+
+    color col = this.getColorAt( position );
+    float red = red( col );
+    float green = green( col );
+    float blue = blue( col );
+
+    float x = red / 255 * 2 - 1;
+    float y = green / 255 * 2 - 1;
+
+    return new PVector( x, y );
+
+  }
+
   public PVector getDirection(
     PVector position,
     PVector direction,
