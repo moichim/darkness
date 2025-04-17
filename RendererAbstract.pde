@@ -36,11 +36,32 @@ class RendererParticles extends RendererAbstract {
     int tick = 0;
 
     WeightMap weightMap = null;
+    OrderColumns orderColumns;
+    OrderCircle orderCircle;
+    OrderRound orderRound;
+    OrderRandom orderRandom;
 
     RendererParticles(
         Tracker tracker
     ) {
         super( tracker );
+        this.orderColumns = new OrderColumns( tracker );
+        this.orderRound = new OrderRound( tracker );
+        this.orderRandom = new OrderRandom( tracker );
+        this.orderCircle = new OrderCircle( tracker );
+
+        this.orderColumns.configure( false, 10, 50 );
+        this.orderColumns.setImpact( 0.5 );
+        this.orderColumns.off();
+
+        this.orderRound.configure(6);
+        this.orderRound.setImpact(0.8);
+        // this.orderRound.on();
+
+        // this.orderRandom.on();
+        // this.orderRandom.setImpact(1);
+        // this.orderRandom.setNoiseStep( 1 );
+        // this.orderRandom.setSpread( 8 );
     }
 
     RendererParticles setWeightMask(PImage image) {
@@ -66,6 +87,12 @@ class RendererParticles extends RendererAbstract {
 
         this.tick++;
 
+    }
+
+    void updateInParticle( Particle particle ) {
+        this.orderColumns.applyToParticle( particle );
+        this.orderRound.applyToParticle( particle );
+        this.orderCircle.applyToParticle( particle );
     }
 
     protected void emitParticle( Blob blob ) {

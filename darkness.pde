@@ -87,7 +87,7 @@ void setup() {
     stripes = loadImage("weights/stripes.png");
     mask = loadImage("weights/circles.png");
     colorfulMask = loadImage("weights/grid.png");
-    normal = loadImage("weights/normal.jpg");
+    normal = loadImage("normals/countryside_raw.png");
     
     
     //Green
@@ -207,6 +207,54 @@ void draw() {
         piano.particleRenderer.setWeightMask(colorfulMask);
         voice.particleRenderer.setWeightMask(colorfulMask);
         }
+
+
+    if ( key == 'p' ) {
+        piano.particleRenderer.orderColumns.configure( true, 10, 50 );
+        piano.particleRenderer.orderColumns.setImpact( 0.7 );
+        piano.particleRenderer.orderColumns.on();
+    }
+
+    if ( key == 'o' ) {
+        piano.particleRenderer.orderColumns.configure( false, 10, 50 );
+        piano.particleRenderer.orderColumns.setImpact( 0.3 );
+        piano.particleRenderer.orderColumns.on();
+    }
+
+    if ( key == 'i' ) {
+        piano.particleRenderer.orderColumns.configure( true, 10, 50 );
+        piano.particleRenderer.orderColumns.setImpact( 0.5 );
+        piano.particleRenderer.orderColumns.off();
+    }
+
+    if ( key == 'l' ) {
+        piano.particleRenderer.orderColumns.configure( true, 100, 50 );
+        piano.particleRenderer.orderColumns.setImpact( 0.9 );
+        piano.particleRenderer.orderColumns.on();
+    }
+
+    if (key == 'k') {
+        piano.particleRenderer.orderCircle.configure(5, 30); // 5 kruhů, šířka 30
+        piano.particleRenderer.orderCircle.setImpact(0.4);
+        piano.particleRenderer.orderCircle.on();
+    }
+
+    if (key == 'j') {
+        piano.particleRenderer.orderCircle.configure(10, 30); // 5 kruhů, šířka 30
+        piano.particleRenderer.orderCircle.setImpact(0.8);
+        piano.particleRenderer.orderCircle.on();
+    }
+
+    if (key == 'h') {
+        piano.particleRenderer.orderCircle.configure(30, 30); // 5 kruhů, šířka 30
+        piano.particleRenderer.orderCircle.setImpact(0.9);
+        piano.particleRenderer.orderCircle.on();
+    }
+
+    if (key == 'm') {
+        piano.particleRenderer.orderCircle.off();
+    }
+
     
     
     

@@ -21,7 +21,7 @@ abstract class AbstractMovement {
     protected abstract void evaluate();
 
     protected void applyDirection( PVector value ) {
-        this.particle.direction.lerp( value, this.impact );
+        this.particle.direction.lerp( value, this.impact ).normalize();
     }
 
     protected void applySpeed( float value ) {
@@ -35,6 +35,7 @@ class MovementRandom extends AbstractMovement {
     protected float noiseStep = 0.09;
     protected float xoff = random(1000);
     protected float yoff = random(1000);
+    protected float spread = 12;
 
     MovementRandom( Particle particle ) {
         this.particle = particle;
@@ -44,10 +45,14 @@ class MovementRandom extends AbstractMovement {
         this.noiseStep = value;
     }
 
+    public void setSpread( float value ) {
+        this.spread = value;
+    }
+
     protected void evaluate() {
 
-        float angleX = map( noise(this.xoff), 0, 1, -PI / 4, PI / 4 );
-        float angleY = map( noise(this.yoff), 0, 1, -PI / 4, PI / 4 );
+        float angleX = map( noise(this.xoff), 0, 1, (-PI * 2) / this.spread, (PI * 2) / this.spread );
+        float angleY = map( noise(this.yoff), 0, 1, (-PI * 2) / this.spread, (PI * 2) / this.spread );
 
         PVector direction = this.particle.direction.copy();
         direction.rotate( angleX );

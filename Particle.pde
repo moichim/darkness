@@ -51,12 +51,12 @@ class Particle {
     this.movementNormal = new MovementNormal( this );
 
     this.movementRandom.on();
-    this.movementRandom.setImpact(0.7);
+    this.movementRandom.setImpact(0.3);
     this.movementJump.setImpact( 0.5 );
     this.movementFollow.setImpact(0.2);
 
     // this.movementNormal.on();
-    this.movementNormal.setImpact(1);
+    this.movementNormal.setImpact(0.3);
 
 
 
@@ -234,12 +234,21 @@ class Particle {
   }
 
   protected void updateMovements() {
-    this.movementRandom.update();
+    
     this.movementFollow.update();
     this.movementApproach.update();
     this.movementJump.update();
     this.movementColor.update();
     this.movementNormal.update();
+
+    this.movementRandom.update();
+
+    if ( this.blob != null ) {
+      if ( this.blob.tracker != null ) {
+        this.blob.tracker.particleRenderer.updateInParticle( this );
+      }
+    }
+
   }
 
   public void update() {
