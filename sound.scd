@@ -334,6 +334,8 @@ s.waitForBoot({
     OSCdef.newMatching(\kytar, { |msg, time, addr, recvPort|
 		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4], pivotx = msg[5], pivoty=msg[6];
 
+		msg.postln;
+
 
 		// Amplituda
 		if (amp != amp, {

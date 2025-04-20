@@ -18,20 +18,6 @@ class Trackers extends ArrayList<Tracker> {
     this.video = video;
   }
 
-  Tracker create(
-    int r,
-    int g,
-    int b,
-    float threshold,
-    float saturation,
-    float brightness,
-    String instrument
-    ) {
-    Tracker item = new Tracker( r, g, b, threshold, saturation, brightness, instrument );
-    this.add( item );
-    return item;
-  }
-
   void createColorDialog() {
 
     UiBooster ui = new UiBooster();
@@ -180,66 +166,6 @@ class Trackers extends ArrayList<Tracker> {
     }
 
     this.updateStatistics();
-    if ( controller.mutualBlobs() == true ) {
-      this.checkClosestTrackers();
-    }
-  }
-
-  protected void checkClosestTrackers() {
-
-    for ( Tracker current : this ) {
-
-      ArrayList<Blob> otherBlobs = new ArrayList<Blob>();
-
-
-      // Assign other blobs
-      for ( Tracker item : this ) {
-        if ( item != current ) {
-          for ( Blob b : item.blobs) {
-            otherBlobs.add(b);
-          }
-        }
-      }
-
-
-
-      for ( Blob thisBlob : current.blobs ) {
-
-        println(thisBlob, thisBlob.assignedToClosest);
-
-        if ( thisBlob.assignedToClosest == true ) {
-
-          float distance = thisBlob.center.dist( thisBlob.externalBlob.center );
-
-          if ( distance >= controller.mutualMaxDistance() ) {
-            thisBlob.unassignExternalBlob();
-          }
-
-        } else {
-
-          Blob closestBlob = null;
-          float closestDistance = 500000;
-
-          for ( Blob otherBlob : otherBlobs ) {
-
-            float distance = thisBlob.center.dist( otherBlob.center );
-
-            if ( distance < closestDistance ) {
-              closestDistance = distance;
-              closestBlob = otherBlob;
-            }
-
-          }
-
-          if ( closestBlob != null ) {
-
-            println("closest", closestBlob);
-
-            // thisBlob.assignToClosest( closestBlob );
-          }
-        }
-      }
-    }
   }
 
   protected void updateStatistics() {

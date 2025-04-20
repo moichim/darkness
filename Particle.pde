@@ -8,19 +8,28 @@ enum LIFE {
 
 class Particle {
 
+  /** The state that determines everything else. */
+  LIFE phase = LIFE.RUNSAWAY;
+
+  /** The current position */
   PVector position;
+  /** The previous position is stored for the purpose of render */
   PVector prev;
+  /** The direction = a normalised vector manipulated by movements */
   PVector direction;
+  /** The current speed */
   float speed;
+  /** The current speed is multiplied by this factor to enable temporal changements of speed in effects such as sumps etc. */
   float speedFactor = 1;
 
-  color col;
+  /** The current color */
+  color currentColor;
 
   int tick = 0;
 
   Blob blob;
 
-  LIFE phase = LIFE.RUNSAWAY;
+  
 
   protected float reachDistance = 30;
   protected float screenBoundary = 50;
@@ -34,7 +43,6 @@ class Particle {
   MovementApproach movementApproach;
   MovementJump movementJump;
   MovementColor movementColor;
-  MovementNormal movementNormal;
 
 
   Particle(
@@ -43,38 +51,46 @@ class Particle {
 
     this.blob = blob;
 
+    // Create the core properties
+    this.position = blob.center.copy();
+    this.prev = this.position;
+    this.speed = random( 1, 5 );
+    this.direction = new PVector(
+      random( -1, 1 ),
+      random(-1, 1 )
+    );
+    this.currentColor = blob.tracker.particleRenderer.getColor(); // The initial color comes from the renderer
+
+
+    // Create the movements
     this.movementRandom = new MovementRandom( this );
     this.movementFollow = new MovementFollow( this );
     this.movementApproach = new MovementApproach( this );
     this.movementJump = new MovementJump( this );
     this.movementColor = new MovementColor( this );
-    this.movementNormal = new MovementNormal( this );
-
-    this.movementRandom.on();
-    this.movementRandom.setImpact(0.3);
-    this.movementJump.setImpact( 0.5 );
-    this.movementFollow.setImpact(0.2);
-
-    // this.movementNormal.on();
-    this.movementNormal.setImpact(0.3);
-
-
-
-    this.position = blob.center.copy();
-    this.position.x += random( -20, 20 );
-    this.position.y += random( -20, 20 );
-    this.prev = this.position;
-
-    this.col = this.deviation( this.blob.tracker.emissionColor, (int) round( controller.colorDeviationThreshold() ) );// this.deviation( blob.tracker );
-    this.movementColor.setTarget( this.col );
 
     this.originalDiameter = blob.diameter;
 
-    this.speed = random( 1, 5 );
-    this.direction = new PVector(
-      random( -1, 1 ),
-      random(-1, 1 )
-      );
+    
+  }
+
+  /** Get the current renderer if any */
+  public RendererParticles getRenderer() {
+    if (this.blob != null) {
+      if ( this.blob.tracker != null ) {
+        return this.blob.tracker.particleRenderer;
+      }
+    }
+    return null;
+  }
+
+  void setDead() {
+    this.phase = LIFE.DEAD;
+    this.movementFollow.off();
+    this.movementApproach.off();
+    this.movementJump.off();
+    this.movementRandom.off();
+    this.movementColor.off();
   }
 
   void setLost() {
@@ -127,6 +143,7 @@ class Particle {
   }
 
 
+  /** Conditions that automatically evaluate the particle's lifecycle. */
   protected void evaluateLife() {
 
     // If there is no blob, mark as lost
@@ -160,12 +177,6 @@ class Particle {
     }
   }
 
-  
-
-  public void doJump( float amount ) {
-    this.movementJump.setJump( amount );
-  }
-
   protected void checkBoundaries() {
 
     if (
@@ -191,56 +202,18 @@ class Particle {
     this.position.add( change );
   }
 
-  public void setColor(
-    color col,
-    float deviation
-  ) {
-    this.movementColor.setTarget( 
-      color(
-        this.deviateChannel( red( col ), deviation ),
-        this.deviateChannel( green( col ), deviation ),
-        this.deviateChannel( blue(col), deviation )
-      ) 
-    );
-  }
-
-  public void setRandomColorFromTracker() {
-    this.movementColor.setTarget( 
-      this.deviation(this.blob.tracker.trackColor, 200) 
-    );
-  }
 
 
-
-
-  protected color deviation(
-    color col,
-    float deviation
-    ) {
-    return color(
-      this.deviateChannel( red(col), deviation ),
-      this.deviateChannel( green(col), deviation ),
-      this.deviateChannel( blue(col), deviation )
-    );
-  }
-
-  protected float deviateChannel(
-    float value,
-    float threshold
-    ) {
-    float min = max( value - threshold, 0 );
-    float max = min( value + threshold, 255 );
-    return random( min, max );
-  }
-
+  /** 
+   * Before move, all internal movements are applied.
+   * Also, the particle's oorders are applied. 
+   */
   protected void updateMovements() {
     
     this.movementFollow.update();
     this.movementApproach.update();
     this.movementJump.update();
     this.movementColor.update();
-    this.movementNormal.update();
-
     this.movementRandom.update();
 
     if ( this.blob != null ) {
@@ -268,7 +241,7 @@ class Particle {
     push();
 
     strokeWeight(2);
-    stroke( this.col );
+    stroke( this.currentColor );
     line( this.prev.x, this.prev.y, this.position.x, this.position.y );
 
     noStroke();

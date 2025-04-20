@@ -60,33 +60,6 @@ class ImageMap extends HashMap<Integer, ArrayList<PImage>> {
 }
 
 
-class SampleBank {
-
-    PApplet app;
-
-    ImageMap hundreds;
-    ImageMap exact;
-
-    SampleBank() {
-        this.hundreds = new ImageMap( img -> (int) round( img.width / 100 ) * 100 );
-        this.exact = new ImageMap( img -> img.width );
-    }
-
-    SampleBank load(
-        String path
-    ) {
-
-        PImage img = loadImage( path );
-        
-        this.hundreds.register( img );
-        this.exact.register( img );
-
-        return this;
-
-    }
-
-}
-
 class FolderBank {
 
     String path;

@@ -1,4 +1,4 @@
-class Tracker {
+abstract class Tracker {
 
   ArrayList<Blob> blobs = new ArrayList<Blob>();
   ArrayList<Blob> temp = new ArrayList<Blob>();
@@ -21,7 +21,9 @@ class Tracker {
   float g;
   float b;
 
-  boolean playing = false;
+  boolean isPlaying = false;
+  protected int isPlayingTick = 0;
+  protected int isPlayingTickThreshold = 10;
 
   float averageSpeed = 0;
   float averageParticleSpeed = 0;
@@ -41,8 +43,7 @@ class Tracker {
 
   RendererParticles particleRenderer = null;
   RendererCircles circleRenderer = null;
-  RendererSample bankRenderer = null;
-  RendererBitmap bitmapRenderer = null;
+  RendererFolderBank folderBankRenderer = null;
 
 
   Tracker(
@@ -64,39 +65,10 @@ class Tracker {
 
   }
 
-  protected Tracker addRenderer(
+  protected void addRenderer(
     RendererAbstract renderer
   ) {
     this.renderers.add( renderer );
-    return this;
-  }
-
-  RendererParticles addParticlesRenderer() {
-    RendererParticles renderer = new RendererParticles( this );
-    this.renderers.add( renderer );
-    this.particleRenderer = renderer;
-    return renderer;
-  }
-
-  RendererCircles addCircleRenderer() {
-    RendererCircles renderer = new RendererCircles( this );
-    this.renderers.add( renderer );
-    this.circleRenderer = renderer;
-    return renderer;
-  }
-
-  RendererBitmap addImageRenderer( PImage image ) {
-    RendererBitmap renderer = new RendererBitmap( this, image );
-    this.renderers.add( renderer );
-    this.bitmapRenderer = renderer;
-    return renderer;
-  }
-
-  RendererSample addBankRenderer( FolderBank bank ) {
-    RendererSample renderer = new RendererSample( this, bank );
-    this.renderers.add( renderer );
-    this.bankRenderer = renderer;
-    return renderer;
   }
 
   void reset() {
@@ -105,13 +77,12 @@ class Tracker {
     this.blobCounter = 0;
   }
 
+
+/** @deprecated */
   void doJump( float amount ) {
-    for (Blob blob : this.blobs ) {
-      for (Particle particle : blob.particles ) {
-        particle.doJump(amount);
-        particle.setRandomColorFromTracker();
-      }
-    }
+
+    this.particleRenderer.driverJump.doJump( amount );
+
   }
 
   void setColor( color col ) {
@@ -162,54 +133,21 @@ class Tracker {
 
   public void processPixel( color currentColor, int x, int y ) {
 
-    /*
-    float r1 = red(currentColor);
-    float g1 = green(currentColor);
-    float b1 = blue(currentColor);
 
-    float r2 = this.r;
-    float g2 = this.g;
-    float b2 = this.b;
-
-    float d = distSq(r1, g1, b1, r2, g2, b2);
-
-    */
-
-    /*
-
+    // Aktuální barva pixelu
     float h1 = hue(currentColor);
-  float s1 = saturation(currentColor);
-  float b1 = brightness(currentColor);
+    float s1 = saturation(currentColor);
+    float b1 = brightness(currentColor);
 
-  // Převod referenční barvy do HSB
-  color reference = color(this.r, this.g, this.b); // tvoříme barvu z uložených RGB složek
-  float h2 = hue(reference);
-  float s2 = saturation(reference);
-  float b2 = brightness(reference);
+    // Referenční barva (trackColor složený z RGB složek)
+    float h2 = this.trackHue;
+    float s2 = this.trackSaturation;
+    float b2 = this.trackBrightness;
 
-  // Výpočet vzdálenosti v HSB prostoru (s přihlédnutím ke kruhové povaze odstínu)
-  float dh = min(abs(h1 - h2), 360 - abs(h1 - h2)) / 360.0; // normované na 0–1
-  float ds = (s1 - s2) / 100.0;
-  float db = (b1 - b2) / 100.0;
-
-  float d = dh*dh + ds*ds + db*db;
-
-  */
-
-  // Aktuální barva pixelu
-  float h1 = hue(currentColor);
-  float s1 = saturation(currentColor);
-  float b1 = brightness(currentColor);
-
-  // Referenční barva (trackColor složený z RGB složek)
-  float h2 = this.trackHue;
-  float s2 = this.trackSaturation;
-  float b2 = this.trackBrightness;
-
-  // Rozdíl odstínu (s přihlédnutím ke kruhovému rozsahu)
-  float dh = min(abs(h1 - h2), 360 - abs(h1 - h2)) / 360.0;
-  float ds = abs(s1 - s2) / 100.0;
-  float db = abs(b1 - b2) / 100.0;
+    // Rozdíl odstínu (s přihlédnutím ke kruhovému rozsahu)
+    float dh = min(abs(h1 - h2), 360 - abs(h1 - h2)) / 360.0;
+    float ds = abs(s1 - s2) / 100.0;
+    float db = abs(b1 - b2) / 100.0;
 
     if (dh * dh < threshold * threshold &&
       ds * ds < thresholdSaturation * thresholdSaturation &&
@@ -237,16 +175,21 @@ class Tracker {
 
   public void update() {
 
+    // Perform renderer updates in blobs
     for ( Blob b: this.blobs ) {
-
-      // b.update( this );
 
       for ( RendererAbstract renderer : this.renderers ) {
         renderer.updateInBlob( b );
       }
 
-
     }
+
+    // Perform renderer updates in this tracker
+    for ( RendererAbstract renderer : this.renderers ) {
+      renderer.updateInTracker( this );
+    }
+
+    this.updateTool();
 
   }
 
@@ -254,7 +197,6 @@ class Tracker {
 
     for (int i = this.temp.size()-1; i >= 0; i--) {
       if (this.temp.get(i).size() < 800) {
-        this.temp.get(i).unassignExternalBlob();
         this.temp.remove(i);
       }
     }
@@ -341,7 +283,6 @@ class Tracker {
       for ( int i = this.blobs.size() - 1; i >= 0; i-- ) {
         Blob b = this.blobs.get(i);
         if (!b.taken) {
-          b.unassignExternalBlob();
           b.remove();
           this.blobs.remove(i);
         }
@@ -356,6 +297,7 @@ class Tracker {
   public void updateStatistics() {
 
     if ( this.blobs.size() > 0 ) {
+
       float speedSum = 0;
 
       float pivotX = 0;
@@ -382,7 +324,6 @@ class Tracker {
     } else {
       this.averageSpeed = lerp( normalisedSpeed, this.averageSpeed, 0.5 );
     }
-      
 
       this.pivot.x = map( pivotX / this.blobs.size(), 0, controller.mapping.output.x, 0, 1 );
       this.pivot.y = map( pivotY / this.blobs.size(), 0, controller.mapping.output.y, 0, 1 );
@@ -391,9 +332,26 @@ class Tracker {
       this.averageSpeed = lerp( this.averageSpeed, 0, 0.1 );
     }
 
+
+    // Update is playing
+    if ( this.blobs.size() > 0 ) {
+      this.isPlaying = true;
+      this.isPlayingTick = 0;
+    } else {
+
+      if ( this.isPlaying == true ) {
+        this.isPlayingTick++;
+        if ( this.isPlayingTick > this.isPlayingTickThreshold ) {
+          this.isPlaying = false;
+          this.isPlayingTick = 0;
+        }
+      }
+
+    }
+
   }
 
-
+/** @deprecated */
   public void debug() {
   }
 
@@ -403,7 +361,7 @@ class Tracker {
     }
   }
 
-
+/** @deprecated */
   public void drawSound( int index ) {
 
     push();
@@ -429,7 +387,7 @@ class Tracker {
     // Print the name of the instrument
     fill( this.trackColor );
     textSize( 10 );
-    text( this.instrument, 10, 10 );
+    text( this.instrument + " : " + this.blobs.size() + " - r:" + red(this.trackColor) + " g:" + green( this.trackColor ) + " b:" + blue( this.trackColor ), 50, 10 );
     // fill(0);
     text( this.averageParticleSpeed, 10, 20 );
 
@@ -511,6 +469,24 @@ class Tracker {
     // Sent the message at the end
     controller.send( msg );
 
+  }
+
+  protected abstract void updateTool();
+
+  protected float getRandomFloat( float high ) {
+    return random(high);
+  }
+
+  protected float getRandomFloat( float low, float high ) {
+    return random(low, high);
+  }
+
+  protected int getRoundedInt( float value ) {
+    return (int) round(value);
+  }
+
+  protected boolean getRandomBoolean() {
+    return random(1) > 0.5;
   }
 
 
