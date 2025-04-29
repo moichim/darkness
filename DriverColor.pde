@@ -12,9 +12,20 @@ class DriverColor extends DriverAbstract {
         this.threshold = constrain( value, 0, 255 );
     }
 
+    public float getThreshold() { return this.threshold; }
+
     /** Get the current render color of this renderer */
     protected color getRenderColor() {
         return this.getRenderer().getColor();
+    }
+
+    public void setRendererColor( color value ) {
+        this.getRenderer().setColor( value );
+        this.imposeTargetColor( value );
+    }
+
+    public void resetRendererColor() {
+        this.getRenderer().resetColor();
     }
 
 

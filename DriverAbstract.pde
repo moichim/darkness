@@ -36,7 +36,6 @@ abstract class DriverAbstract extends ObjectImpactableTracker {
 
     protected void forEveryParticle( Consumer<Particle> function ) {
         for ( Blob blob : this.tracker.blobs ) {
-            println(blob, blob.particles.size());
             for ( Particle particle : blob.particles ) {
                 function.accept( particle );
             }

@@ -26,14 +26,22 @@ Process sc;
 
 boolean isReady = false;
 
+int maxFrameRate = 30;
+int idealFrameRate = 15;
+float maxSpeedAspect = 0.5;
+float delta;
+
 void setup() {
     
     fullScreen();
     //size( 1920, 1080 );
     
-    frameRate(30);
+    frameRate(maxFrameRate);
+
+    OscProperties properties = new OscProperties();
+    properties.setListeningPort(47120); // osc receive port (from sc)
     
-    osc = new OscP5(this, 7772);
+    osc = new OscP5(this, properties);
     
     String[] cameras = Capture.list();
     
@@ -120,7 +128,7 @@ void setup() {
     
     controller.trackers.createColorDialog();
     
-    frameRate(40);
+    // frameRate(40);
     
     image(video, 0, 0);
     
@@ -130,7 +138,7 @@ void setup() {
     
     controller.trackers.startRecording();
     
-    //controller.scStart();
+    // controller.scStart();
 }
 
 void captureEvent(Capture video) {
@@ -138,6 +146,10 @@ void captureEvent(Capture video) {
 }
 
 void draw() {
+
+    float fr = (float) constrain(frameRate, idealFrameRate, maxFrameRate);
+
+    delta = map( fr, idealFrameRate, maxFrameRate, 1, maxSpeedAspect );
     
     isReady = true;
     
@@ -188,15 +200,15 @@ float distSq(float x1, float y1, float z1, float x2, float y2, float z2) {
 /* incoming osc message are forwarded to the oscEvent method. */
 void oscEvent(OscMessage theOscMessage) {
 
-if ( !isReady ) {
-return;
-}
-/* print the address pattern and the typetag of the received OscMessage */
-// print("### received an osc message.");
-// print(" addrpattern: "+theOscMessage.addrPattern());
-// println(" typetag: "+theOscMessage.typetag());
+    if ( !isReady ) {
+        // return;
+    }
+    /* print the address pattern and the typetag of the received OscMessage */
+    // print("### received an osc message.");
+    // print(" addrpattern: "+theOscMessage.addrPattern());
+    // println(" typetag: "+theOscMessage.typetag());
 
-story.listenOsc( theOscMessage );
+    story.listenOsc( theOscMessage );
 
 
 } `

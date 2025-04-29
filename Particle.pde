@@ -196,7 +196,7 @@ class Particle {
 
     // Calculate the new position based on speed and direction
     PVector change = this.direction.copy();
-    change.mult( this.speed * this.speedFactor );
+    change.mult( this.speed * this.speedFactor * delta );
 
     // Update the position
     this.position.add( change );

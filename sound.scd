@@ -22,7 +22,7 @@ s.waitForBoot({
 
 	// n = NetAddr.new( NetAddr.localAddr.hostname, 57133 );
 
-	~processing = NetAddr.new( NetAddr.localAddr.hostname, 7772 );
+	~processing = NetAddr.new( NetAddr.localAddr.hostname, 47120 );
 
 
 
@@ -316,7 +316,10 @@ s.waitForBoot({
 		\amp, Pdefn(\kytarAmp),
 		\pan, Pdefn(\kytarPan),
 		\out, 0,
-		\onNote, Pfunc({|event| ~processing.sendMsg("/kytar"); }),
+		\onNote, Pfunc({|event|
+			~processing.sendMsg("/kytar");
+			"/kytar".postln;
+		}),
 		\buf, ~kytar.bufnum
 	);
 
@@ -334,7 +337,7 @@ s.waitForBoot({
     OSCdef.newMatching(\kytar, { |msg, time, addr, recvPort|
 		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4], pivotx = msg[5], pivoty=msg[6];
 
-		msg.postln;
+		// msg.postln;
 
 
 		// Amplituda
@@ -753,8 +756,8 @@ s.waitForBoot({
 
 
 
-    s.plotTree;
-    s.meter;
+    // s.plotTree;
+    // s.meter;
 
 });
 

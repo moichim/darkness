@@ -10,6 +10,7 @@ class RendererParticles extends RendererAbstract {
 
     int emisionRate = 1;
 
+    protected color originalRendererColor;
     protected color renderColor;
 
     OrderColumns orderColumns;
@@ -31,6 +32,7 @@ class RendererParticles extends RendererAbstract {
         super( tracker );
 
         this.renderColor = renderColor;
+        this.originalRendererColor = renderColor;
         
         this.orderColumns = new OrderColumns( tracker );
         this.orderRound = new OrderRound( tracker );
@@ -80,6 +82,10 @@ class RendererParticles extends RendererAbstract {
 
     public color getColor() {
         return this.renderColor;
+    }
+
+    public void resetColor() {
+        this.renderColor = this.originalRendererColor;
     }
 
     void updateInTracker( Tracker tracker ) {

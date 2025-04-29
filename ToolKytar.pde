@@ -27,72 +27,125 @@ class ToolKytar extends ToolAbstract {
         
     }
 
-    public void onMutedOn() {}
+    public void onMutedOn() {
+    }
     public void onMutedOff() {}
 
+    public static final String EFFECT_COLOR = "one_effect_color";
+    public static final String EFFECT_GRID = "one_effect_grid";
+
     public void onOneOn() {
-        this.colors().setThreshold( 100 );
+
+        // Rise the random colors
+
+        this.colors().setThreshold( 80 );
+
+        EffectRaiseRandomColor randomColor = new EffectRaiseRandomColor(
+            this,
+            150,
+            500
+        );
+
+        this.addEffect( ToolKytar.EFFECT_COLOR, randomColor );
+
+
+        // Show dense grid for sort time in long intervals
+        EffectToggleGridOnJump toggleGrid = new EffectToggleGridOnJump(
+            this,
+            this.getRandomInt( 1, 3 ),
+            15,
+            25,
+            TOGGLE_GRID.TOGGLE
+        );
+
+        toggleGrid.setDelay( this.getRandomInt( 500, 2000 ) );
+        toggleGrid.setDuration( this.getRandomInt( 100, 300 ) );
+        toggleGrid.setImpact( 0.6 );
+
+        // Configure the repetition
+        toggleGrid.setRepeat( item -> {
+            item.setDelay( this.getRandomInt( 1000, 2000 ) );
+            item.setDuration( this.getRandomInt( 100, 300 ) );
+            item.getTool().columns().off();
+        } );
+
+        this.addEffect( ToolKytar.EFFECT_GRID, toggleGrid );
+        
 
         this.refreshPhaseAfter = 0;
     }
 
     public void onOneOff() {
-        this.colors().setThreshold( 100 );
+        // Cleanup after color changes
+        this.colors().setThreshold( 80 );
+        this.removeEffect( ToolKytar.EFFECT_COLOR );
+        this.colors().resetRendererColor();
+        // Cleanup after grid toggling
+        this.removeEffect( ToolKytar.EFFECT_GRID );
+        this.columns().off();
+        this.columns().setImpact( 0.5 );
     }
 
     public void onMultipleOn() {
 
-        this.columns().on();
-        this.columns().setNumber( this.getRoundedInt( this.getRandomFloat(4.0, 20) ) );
-        this.columns().setOrientation( this.refreshToggle );
-        this.columns().setImpact(0.5);
+        this.colors().setThreshold(120);
 
-        this.random().setImpact( 0.9 );
-        this.random().setSpread(4);
+        EffectRaiseRandomColor randomColor = new EffectRaiseRandomColor(
+            this,
+            110,
+            500
+        );
 
-        this.refreshPhaseAfter = (int) this.getRandomFloat( 10, 70 );
-        this.doRefreshPhase = true;
+        this.addEffect( ToolKytar.EFFECT_COLOR, randomColor );
+
+
+        // Show dense grid for sort time in long intervals
+        EffectToggleGridOnJump toggleGrid = new EffectToggleGridOnJump(
+            this,
+            3,
+            5,
+            40,
+            TOGGLE_GRID.TOGGLE
+        );
+
+        toggleGrid.setDelay( this.getRandomInt( 300, 1000 ) );
+        toggleGrid.setDuration( this.getRandomInt( 300, 500 ) );
+        toggleGrid.setImpact( 0.7 );
+
+        // Configure the repetition
+        toggleGrid.setRepeat( item -> {
+            item.setDelay( this.getRandomInt( 300, 1000 ) );
+            item.setDuration( this.getRandomInt( 300, 500 ) );
+            item.getTool().columns().off();
+        } );
+
+        this.addEffect( ToolKytar.EFFECT_GRID, toggleGrid );
 
     }
     public void onMultipleOff() {
+        // Cleanup after color changes
+        this.colors().setThreshold( 80 );
+        this.removeEffect( ToolKytar.EFFECT_COLOR );
+        this.colors().resetRendererColor();
+        // Cleanup after grid toggling
+        this.removeEffect( ToolKytar.EFFECT_GRID );
         this.columns().off();
-        this.random().setSpread(8);
-        this.random().setImpact(0.7);
-        this.refreshPhaseAfter = 0;
-        this.doRefreshPhase = false;
+        this.columns().setImpact( 0.5 );
     }
 
     public void onEventOn() {
-        this.jump().setImpact( 0.3 );
-        this.normal().setImpact(1);
-        this.normal().setMap( this.monkey );
+
         this.normal().on();
+        this.normal().setMap( this.monkey );
+        this.normal().setImpact(0.9);
+
     }
     public void onEventOff() {
+
         this.normal().off();
     }
 
     protected void onUpdateTool() {
-
-        if ( this.getPhase().current.key() == PHASE.ONE ) {
-
-            float index = constrain( this.phaseTick, 90, 200 );
-
-            float threshold = map( index, 90, 200, 100, 150 );
-
-            this.colors().setThreshold( threshold);
-
-        }
-
-        if ( this.getPhase().current.key() == PHASE.MULTIPLE ) {
-
-            float index = constrain( this.phaseTick, 90, 200 );
-
-            float threshold = map( index, 90, 200, 100, 150 );
-
-            this.colors().setThreshold( threshold);
-
-        }
 
     }
 

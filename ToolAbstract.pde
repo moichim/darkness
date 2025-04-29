@@ -1,3 +1,6 @@
+import java.util.Map;
+import java.util.Iterator;
+
 abstract class ToolAbstract extends Tracker {
 
     protected int phaseTick = 0;
@@ -6,6 +9,8 @@ abstract class ToolAbstract extends Tracker {
     protected boolean refreshToggle = false;
 
     public float jumpAmount = 5f;
+
+    HashMap<String, EffectAbstract> effects = new HashMap<String, EffectAbstract>();
 
     ToolAbstract(
         color trackColor,
@@ -135,6 +140,7 @@ abstract class ToolAbstract extends Tracker {
     protected void updateTool() {
         this.phaseTick++;
         this.onUpdateTool();
+        this.updateEffects();
 
         if ( this.refreshPhaseAfter > 0 && this.doRefreshPhase == true) {
 
@@ -161,6 +167,86 @@ abstract class ToolAbstract extends Tracker {
             }
 
         }
+
+    }
+
+    private void updateEffects() {
+
+        if ( this.effects.size() > 0 ) {
+
+
+            for ( Iterator<Map.Entry<String,EffectAbstract>> it = this.effects.entrySet().iterator(); it.hasNext(); ) {
+                
+                Map.Entry<String,EffectAbstract> entry = it.next();
+
+                EffectAbstract effect = ( EffectAbstract ) entry.getValue();
+
+                // Remove the effect if it is deactivated
+                if ( effect.active == false ) {
+                    effect.beforeRemoved();
+                    it.remove();
+                } 
+                // Update if the effect is active
+                else {
+                    effect.update();
+                }
+            }
+
+        }
+
+    }
+
+    public void addEffect( String key, EffectAbstract effect ) {
+        if ( this.effects.containsKey( key ) ) {
+            EffectAbstract old = this.effects.get( key );
+            old.deactivate();
+            this.effects.remove( key );
+        }
+        this.effects.put( key, effect );
+    }
+
+    public void removeEffect( String key ) {
+        if ( this.effects.containsKey( key ) ) {
+            this.effects.get( key ).deactivate();
+            this.effects.remove( key );
+        }
+    }
+
+    public <T extends EffectAbstract> void callOnEffect( String key, Consumer<T> callback ) {
+
+        if ( this.effects.containsKey( key ) ) {
+            
+            try {
+
+                EffectAbstract effect = this.effects.get( key );
+                
+                @SuppressWarnings("unchecked")
+                T casted = (T) effect;
+
+                callback.accept( casted );
+
+
+            } catch ( ClassCastException e ) {
+                println( e );
+            }
+
+        }
+
+    }
+
+    public void callOnEveryEffect( Consumer<EffectAbstract> callback ) {
+
+        for ( Map.Entry entry: this.effects.entrySet() ) {
+
+            EffectAbstract effect = (EffectAbstract) entry.getValue();
+
+            if ( effect.active ) {
+                callback.accept( effect );
+            }
+
+        }
+
+
 
     }
 

@@ -8,6 +8,10 @@ class OrderCircle extends AbstractOrder {
         this.tracker = tracker;
     }
 
+    public void setNumber( int num ) {
+        this.configure( num, this.width );
+    }
+
     public void configure(int number, float width) {
         this.number = max(1, number); // Zajistí, že počet kruhů je alespoň 1
         this.step = controller.mapping.output.x / (this.number + 1); // Vypočítá vzdálenost mezi kruhy

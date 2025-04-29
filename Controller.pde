@@ -202,8 +202,6 @@ class Controller {
     if ( max != this.maxSpeed ) { 
       this.setSpeedMax( max ); 
     }
-    
-
 
   }
 

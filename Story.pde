@@ -90,6 +90,7 @@ class Story {
             if ( tool.instrument.equals( address ) ) {
                 // println( "jumping", tool.instrument );
                 tool.jump().doJump( tool.jumpAmount );
+                tool.callOnEveryEffect( effect -> effect.onJump() );
             }
         });
 
