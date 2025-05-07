@@ -1,5 +1,11 @@
 class StoryPhaseOne extends StoryPhaseAbstract {
 
+    StoryPhaseOne(
+        Story story
+    ) {
+        super( story );
+    }
+
     PHASE key() {return PHASE.ONE; }
 
     int code() { return 1; }

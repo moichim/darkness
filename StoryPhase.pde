@@ -9,20 +9,29 @@ class StoryPhase {
 
     Story story;
 
-    protected StoryPhaseMuted muted = new StoryPhaseMuted();
-    protected StoryPhaseOne one = new StoryPhaseOne();
-    protected StoryPhaseMultiple multiple = new StoryPhaseMultiple();
-    protected StoryPhaseEvent event = new StoryPhaseEvent();
+    protected StoryPhaseMuted muted;
+    protected StoryPhaseOne one;
+    protected StoryPhaseMultiple multiple;
+    protected StoryPhaseEvent event;
 
     protected StoryPhaseAbstract current = this.muted;
 
     protected int ticks = 0;
 
     protected int phaseMinLife = 30 * 2;
-    protected int eventPhaseLimit = 300;
+    protected int eventPhaseLimit = 300; // Minimal amount of ticks until the next event triggers
 
     StoryPhase( Story story ) {
+
         this.story = story;
+
+        this.muted = new StoryPhaseMuted( this.story );
+        this.one = new StoryPhaseOne( this.story );
+        this.multiple = new StoryPhaseMultiple( this.story );
+        this.event = new StoryPhaseEvent( this.story );
+
+        this.current = this.muted;
+
     }
 
     public StoryPhaseAbstract getCurrentPhase() {
@@ -60,11 +69,17 @@ class StoryPhase {
         // If there are more than one tools playing, proceed...
         else if ( numPlayingTools > 1 ) {
 
-            if ( this.ticks > this.eventPhaseLimit ) {
-                this.holdPhaseActive( this.event );
+            if ( this.current != this.event ) {
+                if ( this.ticks > this.eventPhaseLimit ) {
+                    this.holdPhaseActive( this.event );
+                } else {
+                    this.holdPhaseActive( this.multiple );
+                }
             } else {
-                this.holdPhaseActive( this.multiple );
+                this.holdPhaseActive( this.event );
             }
+
+            
 
         }
 
@@ -79,6 +94,7 @@ class StoryPhase {
             || this.ticks < this.phaseMinLife
         ) {
             this.ticks += 1;
+            this.current.execute( this.ticks );
         }
         // If the phase is different, activate the new phase
         else {
@@ -89,7 +105,6 @@ class StoryPhase {
             this.current = phase;
             this.ticks = 0;
             
-
             // Send the phase code to the controller
             OscMessage msg = controller.msg("/phase");
             msg.add( this.current.code() );

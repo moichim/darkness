@@ -2,12 +2,20 @@ import java.util.function.Consumer;
 
 abstract class StoryPhaseAbstract {
 
+    protected Story story;
+
     abstract PHASE key();
 
     abstract int code();
 
     protected Story getStory() {
-        return story;
+        return this.story;
+    }
+
+    StoryPhaseAbstract(
+        Story story
+    ) {
+        this.story = story;
     }
 
     void activate() {

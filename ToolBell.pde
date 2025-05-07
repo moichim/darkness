@@ -68,16 +68,6 @@ class ToolBell extends ToolAbstract {
 
     protected void onUpdateTool() {
 
-        if ( this.getPhase().current.key() == PHASE.ONE ) {
-
-            float index = constrain( this.phaseTick, 90, 200 );
-
-            float threshold = map( index, 90, 200, 100, 150 );
-
-            this.colors().setThreshold( threshold);
-
-        }
-
     }
 
     protected void onRefresh() {}

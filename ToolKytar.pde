@@ -135,14 +135,9 @@ class ToolKytar extends ToolAbstract {
 
     public void onEventOn() {
 
-        this.normal().on();
-        this.normal().setMap( this.monkey );
-        this.normal().setImpact(0.9);
-
     }
     public void onEventOff() {
-
-        this.normal().off();
+        
     }
 
     protected void onUpdateTool() {

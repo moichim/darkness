@@ -65,36 +65,12 @@ class ToolVoice extends ToolAbstract {
 
     public void onEventOn() {
 
-        this.normal().setMap( this.monkey );
-        this.normal().on();
-
 
     }
     public void onEventOff() {
-         this.normal().off();
     }
 
     protected void onUpdateTool() {
-
-        if ( this.getPhase().current.key() == PHASE.ONE ) {
-
-            float index = constrain( this.phaseTick, 90, 200 );
-
-            float threshold = map( index, 90, 200, 100, 150 );
-
-            this.colors().setThreshold( threshold);
-
-        }
-
-        if ( this.getPhase().current.key() == PHASE.MULTIPLE ) {
-
-            float index = constrain( this.phaseTick, 90, 200 );
-
-            float threshold = map( index, 90, 200, 100, 150 );
-
-            this.colors().setThreshold( threshold);
-
-        }
 
     }
 

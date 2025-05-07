@@ -1,5 +1,11 @@
 class StoryPhaseMultiple extends StoryPhaseAbstract {
 
+    StoryPhaseMultiple(
+        Story story
+    ) {
+        super( story );
+    }
+
     PHASE key() {return PHASE.MULTIPLE; }
 
     int code() { return 2; }

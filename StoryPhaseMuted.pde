@@ -1,5 +1,11 @@
 class StoryPhaseMuted extends StoryPhaseAbstract {
 
+    StoryPhaseMuted(
+        Story story
+    ) {
+        super( story );
+    }
+
     PHASE key() {return PHASE.MUTED; }
 
     int code() { return 0; }
