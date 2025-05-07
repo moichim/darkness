@@ -4,44 +4,34 @@ class Particles {
 
   int max = 800;
 
-  // public PGraphics canvas;
-
   Particles(
     int w,
     int h
   ) {
-    // this.canvas = createGraphics( w, h );
+  
   }
 
-  Particle emit(
-    Blob blob
-    ) {
-
-
-
-    Particle item = new Particle(blob);
-    this.points.add( item );
-
+  public void recieveEmittedParticle( Particle particle ) {
+    // Add the new particle
+    this.points.add( particle );
+    // If there are more than the allowed number of particles, delete the oldest one
     if ( this.points.size() >= this.max ) {
+      // the first particle
+      Particle first = this.points.get( 0 );
+      // Set the first particle dead
+      first.setDead();
+      // Remove the particle from the blob
+      particle.blob.particles.remove( first );
+      // Remove it from the list
       this.points.remove( 0 );
     }
-    return item;
   }
 
-  void remove(
-    Particle particle
-    ) {
 
-    PVector position = particle.position;
-
-    Blob nearestBlob = null;
-    float nearestDiff = 0;
-  }
-
+  /** Remove the dead particles and reassign the lost particles to new blobs if possible */
   void update() {
 
     if ( this.points.size() > 0 ) {
-
 
       // First, perform updates with the particles
       for ( int i = this.points.size() - 1; i >= 0; i-- ) {
@@ -75,10 +65,10 @@ class Particles {
         }
       }
 
-
       for ( Particle p : this.points ) {
         p.update();
       }
+
     }
 
     this.syncToSound();
@@ -112,30 +102,22 @@ class Particles {
       freq = map( speedAvg, controller.minSpeed(), controller.maxSpeed(), controller.blipFreqMin(), controller.blipFreqMax() );
       pan = map( posAvg, 0, controller.mapping.output.x, -1, 1 );
 
-      // println(freq, speedAvg, controller.minSpeed(), controller.maxSpeed(), controller.blipFreqMin(), controller.blipFreqMax());
-
     }
-
-    // controller.syncBlip( pan, amp, freq );
 
   }
 
   void draw() {
 
-    // this.canvas.beginDraw();
+    // Draw the overlay
     blendMode(MULTIPLY);
     fill( 0, 0, 0, controller.bga() );
     rect( 0, 0, width, height );
     blendMode(BLEND);
 
+    // Draw the particles
     for ( Particle p : this.points ) {
-      p.draw( );
+      p.draw();
     }
-
-    // this.canvas.endDraw();
-
-    // image( this.canvas, 0, 0 );
-
 
   }
 }

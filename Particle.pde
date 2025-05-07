@@ -1,70 +1,115 @@
 enum LIFE {
   RUNSAWAY,
-    FOLLOWS,
-    LOST,
-    REACHED,
-    DEAD,
-    FOLLOWS_CLOSEST_NEIGHBOUR
+  FOLLOWS,
+  LOST,
+  REACHED,
+  DEAD
 }
 
 class Particle {
 
-  PVector position;
-  PVector prev;
-  PVector direction;
-  float speed;
-  float speedFactor = 1;
-  float speedJump = 0;
-
-  color col;
-  color colTarget;
-
-  int tick = 0;
-  float noiseStep = 0.09;
-  float xoff = random(1000);
-  float yoff = random(1000);
-
-  Blob blob;
-  Blob externalBlob;
-
+  /** The state that determines everything else. */
   LIFE phase = LIFE.RUNSAWAY;
 
-  float reachDistance = 30;
-  float screenBoundary = 50;
-  float lifeDuration = 200;
-  float originalDiameter;
+  /** The current position */
+  PVector position;
+  /** The previous position is stored for the purpose of render */
+  PVector prev;
+  /** The direction = a normalised vector manipulated by movements */
+  PVector direction;
+  /** The current speed */
+  float speed;
+  /** The current speed is multiplied by this factor to enable temporal changements of speed in effects such as sumps etc. */
+  float speedFactor = 1;
+
+  /** The current color */
+  color currentColor;
+
+  int tick = 0;
+
+  Blob blob;
+
+  
+
+  protected float reachDistance = 30;
+  protected float screenBoundary = 50;
+  protected float lifeDuration = 200;
+  protected float originalDiameter;
+
+
+
+  MovementRandom movementRandom;
+  MovementFollow movementFollow;
+  MovementApproach movementApproach;
+  MovementJump movementJump;
+  MovementColor movementColor;
 
 
   Particle(
     Blob blob
-    ) {
+  ) {
 
     this.blob = blob;
 
+    // Create the core properties
     this.position = blob.center.copy();
-    this.position.x += random( -20, 20 );
-    this.position.y += random( -20, 20 );
     this.prev = this.position;
-
-    this.col = this.deviation( this.blob.tracker.emissionColor, (int) round( controller.colorDeviationThreshold() ) );// this.deviation( blob.tracker );
-    this.colTarget = this.col;
-
-    this.originalDiameter = blob.diameter;
-
     this.speed = random( 1, 5 );
     this.direction = new PVector(
       random( -1, 1 ),
       random(-1, 1 )
-      );
+    );
+    this.currentColor = blob.tracker.particleRenderer.getColor(); // The initial color comes from the renderer
+
+
+    // Create the movements
+    this.movementRandom = new MovementRandom( this );
+    this.movementFollow = new MovementFollow( this );
+    this.movementApproach = new MovementApproach( this );
+    this.movementJump = new MovementJump( this );
+    this.movementColor = new MovementColor( this );
+
+    this.originalDiameter = blob.diameter;
+
+    
+  }
+
+  /** Get the current renderer if any */
+  public RendererParticles getRenderer() {
+    if (this.blob != null) {
+      if ( this.blob.tracker != null ) {
+        return this.blob.tracker.particleRenderer;
+      }
+    }
+    return null;
+  }
+
+  void setDead() {
+    this.phase = LIFE.DEAD;
+    this.movementFollow.off();
+    this.movementApproach.off();
+    this.movementJump.off();
+    this.movementRandom.off();
+    this.movementColor.off();
   }
 
   void setLost() {
     if ( this.phase != LIFE.LOST ) {
       this.blob = null;
       this.phase = LIFE.LOST;
-      this.colTarget = color(0);
       this.tick = 0;
       this.lifeDuration = round( random( 20, 100 ) );
+      
+      // Update movements
+      this.movementFollow.off();
+      this.movementApproach.off();
+      this.movementJump.off();
+      this.movementRandom.on();
+      this.movementRandom.setImpact( 0.5 );
+      this.movementColor.on();
+      this.movementColor.setTarget( color(0) );
+      // this.movementColor.setImpact( 0.1 );
+
     }
   }
 
@@ -72,26 +117,33 @@ class Particle {
     if ( this.blob != blob ) {
       this.blob = blob;
       this.phase = LIFE.FOLLOWS;
-      this.colTarget = blob.tracker.trackColor;
+      this.movementFollow.on();
+      this.movementFollow.setTarget( blob );
+      this.movementApproach.on();
+      this.movementApproach.setTarget( blob );
+      this.movementColor.setTarget( blob.tracker.trackColor );
     }
   }
 
   void assignToExternalBlob(
     Blob externalBlob
-  ) {
-    this.phase = LIFE.FOLLOWS_CLOSEST_NEIGHBOUR;
-    this.externalBlob = blob;
-    this.colTarget = blob.tracker.trackColor;
+    ) {
+    this.phase = LIFE.FOLLOWS;
+    this.movementFollow.setTarget( externalBlob );
+    this.movementFollow.on();
+    this.movementApproach.setTarget( externalBlob );
+    this.movementApproach.on();
+    if ( externalBlob.tracker != null ) {
+      this.movementColor.setTarget( externalBlob.tracker.trackColor );
+    }
   }
 
   void unassignExternalBlob() {
-    this.blob = null;
-    this.externalBlob = null;
-    this.phase = LIFE.LOST;
-    this.colTarget = color(0,0,0);
+    this.setLost();
   }
 
 
+  /** Conditions that automatically evaluate the particle's lifecycle. */
   protected void evaluateLife() {
 
     // If there is no blob, mark as lost
@@ -103,28 +155,14 @@ class Particle {
       }
     }
 
-    // Check if the external blob is near enough to die
-    else if ( this.phase == LIFE.FOLLOWS_CLOSEST_NEIGHBOUR ) {
-      if ( this.externalBlob == null ) {
-        this.phase = LIFE.DEAD;
-      } else {
-
-        float distance = this.position.dist( this.externalBlob.center );
-        if ( distance <= this.reachDistance ) {
-          this.phase = LIFE.DEAD;
-        }
-
-      }
-    }
-
     // If the phase is out, check for the distance towards the blob and eventually set as null
     else if ( this.phase == LIFE.RUNSAWAY ) {
-
-      
 
       float dist = this.blob.center.dist( this.position );
       if ( dist >= this.originalDiameter / 2 ) {
         this.phase = LIFE.FOLLOWS;
+        this.movementFollow.on();
+        this.movementApproach.on();
       }
 
     }
@@ -132,72 +170,10 @@ class Particle {
     // If follows, check if reached already and eventually set the reach
     else if ( this.phase == LIFE.FOLLOWS ) {
 
-      
-
       float dist = this.blob.center.dist( this.position );
       if ( dist <= this.reachDistance ) {
         this.phase = LIFE.REACHED;
       }
-    }
-  }
-
-  public void applyDirection() {
-
-
-    switch ( this.phase ) {
-
-      case LOST:
-        this.rotateRandomly();
-        break;
-
-      case RUNSAWAY:
-        this.rotateRandomly();
-        break;
-
-      case FOLLOWS_CLOSEST_NEIGHBOUR:
-
-        if ( this.externalBlob == null ) {
-          this.phase = LIFE.LOST;
-        } else {
-          PVector target = this.externalBlob.center.copy();
-          target.sub( this.position );
-          target.normalize();
-          this.direction.lerp( target, .5 );
-          this.rotateRandomly();
-        }
-
-        break;
-
-      case FOLLOWS:
-        PVector change = this.blob.center.copy();
-        change.sub( this.position );
-        change.normalize();
-        this.direction.lerp( change, .5 );
-        this.rotateRandomly();
-        break;
-
-      case REACHED:
-        this.rotateRandomly();
-        break;
-
-
-    }
-
-  }
-
-  public void doJump( float amount ) {
-    this.speedJump = abs( amount );
-  }
-
-  protected void adjustSpeedFactor() {
-    float jump = abs( this.speedJump );
-    if ( jump <= 0.1 ) {
-      this.speedJump = 0;
-      this.speedFactor = 1;
-    } else {
-      jump = lerp( jump, 0, 0.5 );
-      this.speedJump = jump;
-      this.speedFactor = 1 + jump;
     }
   }
 
@@ -208,115 +184,44 @@ class Particle {
       || this.position.x > controller.mapping.output.x + this.screenBoundary
       || this.position.y < -1 * this.screenBoundary
       || this.position.y > controller.mapping.output.y + this.screenBoundary
-      ) {
+    ) {
       this.phase = LIFE.DEAD;
     }
   }
 
   protected void doMove() {
 
-    // this.syncFromBlob();
-
-    this.adjustSpeedFactor();
-
     // Store the current position as previous
     this.prev = this.position.copy();
 
     // Calculate the new position based on speed and direction
     PVector change = this.direction.copy();
-    change.mult( this.speed * this.speedFactor );
+    change.mult( this.speed * this.speedFactor * delta );
+
+    // Update the position
     this.position.add( change );
   }
 
-  /** @deprecated */
-  protected void syncFromBlob() {
 
-    // Update the speed by blob movement
-    // map the speed from 1 to 20
+
+  /** 
+   * Before move, all internal movements are applied.
+   * Also, the particle's oorders are applied. 
+   */
+  protected void updateMovements() {
+    
+    this.movementFollow.update();
+    this.movementApproach.update();
+    this.movementJump.update();
+    this.movementColor.update();
+    this.movementRandom.update();
+
     if ( this.blob != null ) {
-
-      if ( this.blob.movement != 0 ) {
-
-        float movement = map( this.blob.movement, 0, controller.mapping.output.x / 10, 0, 1 );
-        movement = constrain(movement, 0, 1);
-
-        float distance = this.position.dist( this.blob.center );
-
-        float d = constrain( 
-          map( distance, 0, 300, 2, 1 ), 
-          1, 
-          2 
-        );
-
-        this.speed = controller.minSpeed() + ( controller.maxSpeed() * movement );
-        // this.speed *= d;
-
+      if ( this.blob.tracker != null ) {
+        this.blob.tracker.particleRenderer.updateInParticle( this );
       }
     }
 
-    // Update the noise offset by
-  }
-
-  protected void updateColor() {
-    if ( this.col != this.colTarget ) {
-      this.col = lerpColor( this.col, this.colTarget, 0.01 );
-    }
-  }
-
-  public void setColorFromTracker() {
-    if ( this.blob != null ) {
-      this.colTarget = this.deviation( this.blob.tracker.trackColor, controller.colorDeviationThreshold() );
-    }
-  }
-
-  public void setColor(
-    color col,
-    float deviation
-  ) {
-    this.colTarget = color(
-      this.deviateChannel( red( col ), deviation ),
-      this.deviateChannel( green( col ), deviation ),
-      this.deviateChannel( blue(col), deviation )
-    );
-  }
-
-  public void setRandomColorFromTracker() {
-    this.colTarget = this.deviation(this.blob.tracker.trackColor, 200);
-  }
-
-
-
-
-  protected color deviation(
-    color col,
-    float deviation
-    ) {
-    return color(
-      this.deviateChannel( red(col), deviation ),
-      this.deviateChannel( green(col), deviation ),
-      this.deviateChannel( blue(col), deviation )
-    );
-  }
-
-  protected float deviateChannel(
-    float value,
-    float threshold
-    ) {
-    float min = max( value - threshold, 0 );
-    float max = min( value + threshold, 255 );
-    return random( min, max );
-  }
-
-  protected void rotateRandomly() {
-
-    float angleX = map( noise(this.xoff), 0, 1, -PI / 4, PI / 4 );
-    float angleY = map( noise(this.yoff), 0, 1, -PI / 4, PI / 4 );
-
-    this.direction.rotate( angleX );
-    this.direction.rotate( angleY );
-
-    this.xoff += this.noiseStep;
-    this.yoff += this.noiseStep;
   }
 
   public void update() {
@@ -325,25 +230,21 @@ class Particle {
 
     this.evaluateLife();
 
-    this.applyDirection();
+    this.updateMovements();
 
     this.doMove();
-
-    this.updateColor();
+    
   }
 
-  public void draw(
-  ) {
+  public void draw() {
 
     push();
 
     strokeWeight(2);
-    stroke( this.col );
+    stroke( this.currentColor );
     line( this.prev.x, this.prev.y, this.position.x, this.position.y );
 
     noStroke();
-    //fill( this.col );
-    // ellipse( this.position.x, this.position.y, 10, 10 );
 
     pop();
   }

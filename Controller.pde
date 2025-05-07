@@ -21,8 +21,8 @@ class Controller {
 
 
   protected float bga = 15;
-  protected boolean displayTrackers = false;
-  protected boolean displayCamera = false;
+  protected boolean displayTrackers = true;
+  protected boolean displayCamera = true;
   protected boolean displayFps = true;
   protected float colorDeviationThreshold = 100;
   protected float minSpeed = 4;
@@ -32,7 +32,7 @@ class Controller {
   protected float blipFreqMin = 3;
   protected float blipFreqMax = 20;
 
-  protected boolean mutualBlobs = false;
+  protected boolean mutualBlobs = true;
   protected float mutualMinDistance = 100;
   protected float mutualMaxDistance = 500;
 
@@ -202,8 +202,6 @@ class Controller {
     if ( max != this.maxSpeed ) { 
       this.setSpeedMax( max ); 
     }
-    
-
 
   }
 

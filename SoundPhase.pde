@@ -55,7 +55,7 @@ class SoundPhaseOne extends SoundPhase {
     void execute( int ticks ) {
 
         controller.goSpeedTo( 4, 10, 1 );
-        controller.goBgaTo( 2, 1 );
+        controller.goBgaTo( 20, 1 );
 
         controller.setColorDeviationThreshold(75);
 
@@ -208,9 +208,9 @@ class SoundPhaseMelody extends SoundPhase {
         for ( Particle particle : controller.particles.points ) {
 
             if ( implicite == true ) {
-                particle.setColorFromTracker();
+                // particle.movementColor.grabColorFromTracker();
             } else {
-                particle.setColor( col, deviation );
+                // particle.setColor( col, deviation );
             }
 
         }
