@@ -123,5 +123,19 @@ class Story {
         }
     }
 
+    public void sendEventStart( int code ) {
+        OscMessage msg = this.controller.msg( "/event" );
+        msg.add( true );
+        msg.add( code );
+        this.controller.send( msg );
+    }
+
+    public void sendEventEnd() {
+        OscMessage msg = this.controller.msg( "/event" );
+        msg.add( false );
+        msg.add( -1 );
+        this.controller.send( msg );
+    }
+
 
 }

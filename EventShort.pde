@@ -10,6 +10,10 @@ class EventShort extends EventAbstract {
         super(story);
     }
 
+    public int getCode() {
+        return 4;
+    }
+
     public void onInit() {
         
     }
@@ -17,12 +21,14 @@ class EventShort extends EventAbstract {
     public void onActivate() {
 
         this.renderStart( color(255) );
+        this.story.sendEventStart( this.getCode() );
 
     }
 
     public void onDeactivate() {
 
         this.renderEnd( color(255) );
+        this.story.sendEventEnd();
 
     }
 

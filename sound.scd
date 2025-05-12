@@ -142,6 +142,8 @@ s.waitForBoot({
 
 	~phase = 0;
 
+	Pdefn(\master, 0.2);
+
 
 
 
@@ -181,6 +183,13 @@ s.waitForBoot({
 		}, inf)
 	);
 
+	// Konverze volume
+	Pdefn(\starVolume,
+		Pfuncn({
+			Pdefn(\starAmp) * Pdefn(\master)
+		}, inf)
+	);
+
 
 	Pbindef(\starPattern,
 		\instrument, \sample,
@@ -188,15 +197,21 @@ s.waitForBoot({
 		\degree, Pdefn(\starDegree).asStream.next(1),
 		\scale, Pdefn(\starScale),
 		\octave, Pdefn(\starOctave),
-		\amp, Pdefn(\starAmp),
+		\amp, Pdefn(\starVolume),
 		\pan, Pdefn(\starPan),
 		\out, 0,
-		\onNote, Pfunc({|event| ~processing.sendMsg("/bell"); })
+		\onNote, Pfunc({|event|
+			~processing.sendMsg("/bell");
+			// "spuštěno /piano".postln;
+		}),
+		\buf, ~s1.bufnum
 	);
 
-	Pbindef(\starPattern).play(~sc);
+	// Pbindef(\starPattern).play(~sc);
 
-	~starPlays = true;
+	Pbindef(\starPattern).pause;
+
+	~starPlays = false;
 
 
 
@@ -212,14 +227,18 @@ s.waitForBoot({
 			Pdefn(\starAmp, 0);
 			if (~starPlays==true,{
 				Pbindef(\starPattern).stop;
+				Pdefn(\starAmp, 0);
 				~starPlays = false;
 			});
 		}, {
 			if (~starPlays==false, {
 				Pbindef(\starPattern).play(~sc);
-				~starPlays = false;
-			},{});
-			Pdefn(\starAmp, amp);
+				~starPlays = true;
+				Pdefn(\starAmp, amp);
+			},{
+				Pdefn(\starAmp, amp);
+			});
+
 
 		} );
 
@@ -296,13 +315,20 @@ s.waitForBoot({
 	Pdefn(\kytarPan, 0);
 	Pdefn(\kytarAmp, 0);
 	Pdefn(\kytarScale, Scale.minorPentatonic);
-	Pdefn(\kytarScale, Scale.chinese);
+	// Pdefn(\kytarScale, Scale.chinese);
 	Pdefn(\kytarOctave, 4);
 
 	// Konvertor stupňů
 	Pdefn(\kytarDegree,
 		Pfuncn({
 			Pdefn(\kytarMelody) + Pdefn(\kytarShift)
+		}, inf)
+	);
+
+	// Konverze volume
+	Pdefn(\kytarVolume,
+		Pfuncn({
+			Pdefn(\kytarAmp) * Pdefn(\master)
 		}, inf)
 	);
 
@@ -313,21 +339,23 @@ s.waitForBoot({
 		\degree, Pdefn(\kytarDegree).asStream.next(1),
 		\scale, Pdefn(\kytarScale),
 		\octave, Pdefn(\kytarOctave),
-		\amp, Pdefn(\kytarAmp),
+		\amp, Pdefn(\kytarVolume),
 		\pan, Pdefn(\kytarPan),
 		\out, 0,
 		\onNote, Pfunc({|event|
 			~processing.sendMsg("/kytar");
-			"/kytar".postln;
+			"spuštěno /kytar".postln;
 		}),
 		\buf, ~kytar.bufnum
 	);
 
 	// Pbindef(\kytar, \amp, 0.5);
 
-	Pbindef(\kytarPattern).play(~kc);
+	Pbindef(\kytarPattern).stop;
 
-	~kytarPlays = true;
+	// Pbindef(\kytarPattern).play(~kc);
+
+	~kytarPlays = false;
 
 
 
@@ -337,22 +365,27 @@ s.waitForBoot({
     OSCdef.newMatching(\kytar, { |msg, time, addr, recvPort|
 		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4], pivotx = msg[5], pivoty=msg[6];
 
-		// msg.postln;
-
+		msg.postln;
 
 		// Amplituda
 		if (amp != amp, {
 			Pdefn(\kytarAmp, 0);
 			if (~kytarPlays==true,{
 				Pbindef(\kytarPattern).stop;
+				Pdefn(\kytarAmp, 0);
 				~kytarPlays = false;
 			});
 		}, {
 			if (~kytarPlays==false, {
 				Pbindef(\kytarPattern).play(~kc);
+				~kytarPlays = true;
+				Pdefn(\kytarAmp, amp);
+			},{
+				Pbindef(\kytarPattern).stop;
 				~kytarPlays = false;
-			},{});
-			Pdefn(\kytarAmp, amp);
+				Pdefn(\kytarAmp, amp);
+			});
+
 
 		} );
 
@@ -418,8 +451,6 @@ s.waitForBoot({
 	~drum = Buffer.read(s, ~path.value( "drum/bassdrum02.ogg" ));
 	~ding = Buffer.read(s, ~path.value( "ding/dong02.ogg" ));
 
-	~pianoPlays = true;
-
 
 
 	// Samply
@@ -451,6 +482,13 @@ s.waitForBoot({
 		}, inf)
 	);
 
+		// Konverze volume
+	Pdefn(\pianoVolume,
+		Pfuncn({
+			Pdefn(\pianoAmp) * Pdefn(\master)
+		}, inf)
+	);
+
 
 	Pbindef(\pianoPattern,
 		\instrument, \sample,
@@ -458,7 +496,7 @@ s.waitForBoot({
 		\degree, Pdefn(\pianoDegree).asStream.next(1),
 		\scale, Pdefn(\pianoScale),
 		\octave, Pdefn(\pianoOctave),
-		\amp, Pdefn(\pianoAmp),
+		\amp, Pdefn(\pianoVolume),
 		\pan, Pdefn(\pianoPan),
 		\out, 0,
 		\onNote, Pfunc({|event| ~processing.sendMsg("/piano"); }),
@@ -469,7 +507,9 @@ s.waitForBoot({
 
 	// Pbindef(\pianoPattern).play(~pc);
 
-	Pbindef(\pianoPattern).stop;
+	// Pbindef(\pianoPattern).stop;
+
+	~pianoPlays = false;
 
 
 
@@ -486,7 +526,23 @@ s.waitForBoot({
 
 		// Amplituda pro Ndef
 		if (amp != amp, {}, {
-			Ndef(\saber).set(\amp, amp);
+			if (amp != amp, {
+			Pdefn(\pianoAmp, 0);
+			if (~pianoPlays==true,{
+				Pbindef(\pianoPattern).stop;
+				~pianoPlays = false;
+				Pdefn(\pianoAmp, 0);
+			});
+		}, {
+			if (~pianoPlays==false, {
+				Pbindef(\pianoPattern).play(~pc);
+				~pianoPlays = true;
+				Pdefn(\pianoAmp, amp);
+			},{
+				Pdefn(\pianoAmp, amp);
+			});
+
+		} );
 		});
 
 		// Pan
@@ -584,6 +640,13 @@ s.waitForBoot({
 		}, inf)
 	);
 
+		// Konverze volume
+	Pdefn(\voiceVolume,
+		Pfuncn({
+			Pdefn(\voiceAmp) * Pdefn(\master)
+		}, inf)
+	);
+
 
 	Pbindef(\voicePattern,
 		\instrument, \sample,
@@ -591,7 +654,7 @@ s.waitForBoot({
 		\degree, Pdefn(\voiceDegree).asStream.next(1),
 		\scale, Pdefn(\voiceScale),
 		\octave, Pdefn(\voiceOctave),
-		\amp, Pdefn(\voiceAmp),
+		\amp, Pdefn(\voiceVolume),
 		\pan, Pdefn(\voicePan),
 		\out, 0,
 		\onNote, Pfunc({|event| ~processing.sendMsg("/voice"); }),
@@ -600,9 +663,9 @@ s.waitForBoot({
 
 	// Pbindef(\kytar, \amp, 0.5);
 
-	Pbindef(\voicePattern).play(~vc);
+	// Pbindef(\voicePattern).play(~vc);
 
-	~voicePlays = true;
+	~voicePlays = false;
 
 
 
@@ -618,15 +681,19 @@ s.waitForBoot({
 		if (amp != amp, {
 			Pdefn(\voiceAmp, 0);
 			if (~voicePlays==true,{
-				Pbindef(\pianoPattern).stop;
+				Pbindef(\voicePattern).stop;
 				~voicePlays = false;
+				Pdefn(\voiceAmp, 0);
 			});
 		}, {
 			if (~voicePlays==false, {
-				Pbindef(\pianoPattern).play(~vc);
-				~voicePlays = false;
-			},{});
-			Pdefn(\voiceAmp, amp);
+				Pbindef(\voicePattern).play(~vc);
+				~voicePlays = true;
+				Pdefn(\voiceAmp, amp);
+			},{
+				Pdefn(\voiceAmp, amp);
+			});
+
 
 		} );
 
@@ -686,7 +753,30 @@ s.waitForBoot({
 
 
 
+	~akord = Buffer.read(s, ~path.value( "akord/akord_4_rich_raw.wav" ));
 
+	// a = Synth.new(\sample, [\buf, ~akord.bufnum, \amp, 0.3 ]);
+
+	OSCdef.newMatching(\event, { |msg, time, addr, recvPort|
+		var start = msg[1], code = msg[2];
+
+		[start, code].postln;
+
+		if(start == true, {
+			"Playing buffered content".postln;
+			Pdefn(\master, 0.1);
+			Synth.new(\sample, [\buf, ~akord.bufnum, \amp, 0.3 ]);
+		},{
+			Pdefn(\master, 1);
+		});
+
+
+	},
+	"/event",
+	recvPort: 57133
+	);
+
+	OSCdef(\event).enable;
 
 
 

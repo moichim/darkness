@@ -12,11 +12,17 @@ class EventLong extends EventAbstract {
         super(story);
     }
 
+    public int getCode() {
+        return 1;
+    }
+
     public void onInit() {
         this.monkey = loadImage("normals/flower_central.png");
     }
 
     public void onActivate() {
+
+        this.story.sendEventStart( this.getCode() );
 
         this.renderStart( color(255,0,0) );
 
@@ -46,6 +52,8 @@ class EventLong extends EventAbstract {
         this.story.piano.normal().off();
         this.story.kytar.normal().off();
         this.story.bell.normal().off();
+
+        this.story.sendEventEnd();
 
     }
 

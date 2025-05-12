@@ -1,3 +1,41 @@
+s.boot;
+
+
+b = DarknessTool.new( "test", 1, 2 );
+
+b.init(~s1.bufnum);
+b.listenerB;
+b.name;
+b.name_( "something" );
+
+b.pattern.set(\instrument, \sample);
+b.pattern.set(\dur, 2);
+
+b.pattern.play();
+b.pattern.stop();
+
+b.pattern.gui(10, 100);
+
+b.pattern.;
+
+t = PdefAllGui(8);
+
+b.setPan( -10 );
+
+Pdefn( b.symbol("Pan"), -1);
+
+b.amp.set(0);
+
+Pdefn(\testPan, -1);
+
+b.getListener;
+b.setListener( "wtf" );
+
+b.listeningPort;
+
+b.amp.next(1);
+
+
 // Synthdef A
 	SynthDef(\a, { arg i_out, freq = 360, gate = 1, pan, amp=0.1, lagf=0.2, lagp=0.2;
 		var out, eg, fc, osc, a, b, w, smoothedFreq, smoothedAmp;
