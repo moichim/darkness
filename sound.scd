@@ -10,8 +10,6 @@ s = Server.default;
 
 // s.options.outDevice;
 
-
-
 (
 
 // Počkejte, dokud není server připraven

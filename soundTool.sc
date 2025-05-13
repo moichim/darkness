@@ -191,6 +191,19 @@ DarknessTool {
 			^this;
 		};
 
+		sanitized = value.min(this.octaveMax).max( this.octaveMin ).floor.asInteger;
+
+		Pdefn( this.octave, sanitized );
+	}
+
+	mapOctave {
+		|value|
+		var sanitized;
+		if (value.isNil) {
+			("[" ++ this.name ++ "] shoft is nil").postln;
+			^this;
+		};
+
 		sanitized = value.linlin( 0.0, 1.0, this.octaveMax, this.octaveMin ).floor.asInteger;
 
 		Pdefn( this.octave, sanitized );

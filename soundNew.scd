@@ -37,12 +37,27 @@ Pbindef( ~test.pattern ).gui(10);
 
 Pbindef(~test.pattern);
 
+~bell.play;
 ~bell.stop;
-~bell.setMelody( Pseq([0, 1, 2, 3, 4, 0, 0], inf) );
-~bell.setAmp(0);
-~bell.setShift(Pseq([0,1,2], inf));
+~bell.setMelody( Pseq([0, 1, 3, 5, 4, 2], inf) );
+~bell.setAmp(0.5);
+~bell.setPan( Pseq([-1,1], inf) );
+~bell.setOctave(5);
+~bell.setOctaveRange( 3, 10 );
+~bell.setScale( Scale.minorPentatonic );
+~bell.setShift(0);
 
+~bell.mute;
 
+~kytar.play;
+~kytar.stop;
+~kytar.setAmp(0.5);
+~kytar.setShift(0);
+~kytar.setMelody(Pseq([0, 1, 3, 5, 4, 2], inf));
+(
+~bell.play;
+~kytar.play;
+)
 
 (
 
