@@ -28,13 +28,13 @@ boolean isReady = false;
 
 int maxFrameRate = 30;
 int idealFrameRate = 15;
-float maxSpeedAspect = 0.5;
+float maxSpeedAspect = 0.7;
 float delta;
 
 void setup() {
     
-    fullScreen();
-    //size( 1920, 1080 );
+    // fullScreen();
+    size( 1920, 1080 );
     
     frameRate(maxFrameRate);
 
