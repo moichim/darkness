@@ -3,7 +3,7 @@
  */
 class MovementColor extends MovementAbstract {
 
-    protected float impact = 0.1;
+    protected float impact = 0.05;
 
     protected color target;
 

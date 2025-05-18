@@ -28,7 +28,11 @@ boolean isReady = false;
 
 int maxFrameRate = 30;
 int idealFrameRate = 15;
-float maxSpeedAspect = 0.7;
+float maxSpeedAspect = 0.9;
+float speedMultiplicator = 1.2;
+void setSpeedMultiplocator(float value) {
+    speedMultiplicator = constrain(value,1, 5);
+}
 float delta;
 
 void setup() {
@@ -70,65 +74,8 @@ void setup() {
 
     story.start();
     
-    FolderBank bank = new FolderBank("multicolor");
-    bank.load();
-    
-    FolderBank bank2 = new FolderBank("blue");
-    bank2.load();
-    
-    FolderBank flowers = new FolderBank("flowers");
-    flowers.load();
-    
-    // stripes = loadImage("weights/stripes.png");
-    // mask = loadImage("weights/circles.png");
-    // colorfulMask = loadImage("weights/grid.png");
-    // normal = loadImage("normals/countryside_raw.png");
-    
-    /*
-    
-    //Green
-    piano = controller.trackers.create(50, 200, 57,
-        0.052,
-        0.372,
-        0.174,
-        "/piano"
-       );
-    //piano.addCircleRenderer();
-    // piano.addParticlesRenderer();
-    
-    //Red is mapped to stars
-    bell = controller.trackers.create(255, 10, 10,
-        0.110,
-        0.762,
-        0.703,
-        "/bell"
-       );
-    // bell.addBankRenderer(bank2);
-    // bell.addParticlesRenderer();
-    
-    //Blue
-    kytar = controller.trackers.create(15, 52, 230,
-        0.047,
-        0.802,
-        0.762,
-        "/kytar");
-    // kytar.addParticlesRenderer();
-    
-    //Blue
-    voice = controller.trackers.create(200, 200, 80,
-        0,//0.081,
-        0.814,
-        0.791,
-        "/voice"
-       );
-    // voice.addBankRenderer(flowers);
-    // voice.addParticlesRenderer();
-
-    */
-    
     controller.trackers.createColorDialog();
-    
-    // frameRate(40);
+
     
     image(video, 0, 0);
     
@@ -139,6 +86,8 @@ void setup() {
     controller.trackers.startRecording();
     
     // controller.scStart();
+
+    
 }
 
 void captureEvent(Capture video) {
@@ -154,9 +103,6 @@ void draw() {
     isReady = true;
     
     controller.updateUi();
-    
-    //video.loadPixels();
-    //image(video, 0, 0);
     
     
     controller.trackers.update();
@@ -179,6 +125,8 @@ void draw() {
     
     
     controller.drawDebug();
+
+    // println( frameCount );
 
     
     

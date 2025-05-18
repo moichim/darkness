@@ -482,11 +482,11 @@ abstract class Tracker {
   }
 
   protected int getRandomInt( int high ) {
-    return (int) random( high );
+    return (int) random( (int) high );
   }
 
   protected int getRandomInt( int low, int high ) {
-    return (int) random( low, high );
+    return (int) random( (int) low, (int) high );
   }
 
   protected int getRoundedInt( float value ) {

@@ -69,54 +69,21 @@ abstract class EffectAbstract {
         // Update only when the effect is active
         if ( this.active == true ) {
 
-            // If there is no delay, check duration and eventually do update
-            if ( this.delay <= 0 ) {
-
-                // If there is no duration, perform the update
-                if ( this.duration == 0 ) {
-                    this.performUpdate();
-                } 
-                // if there is a duration, check if the tick is inside and perform the update
-                else if ( this.tickRunning < this.duration ) {
-                    this.performUpdate();
-                } 
-                // In other cases, deactivate self
-                else {
-                    this.performDeactivateOrRefresh();
-                }
-
-
-            }
-            // If there is a delay, analyse its inner logic
-            else if ( this.delay > 0 ) {
-
-                // If the absoluteTick is below the delay, do nothing
-                if ( this.tickActive < this.delay ) {
-                    //
-                } 
-                // If the tick is above the delay, validate the duration
-                else {
-
-                    // If there is no duration, do update anyway
-                    if ( this.duration <= 0 ) {
-                        this.performUpdate();
-                    } 
-                    // If there is a duration, validate it
-                    else {
-
-                        if ( this.tickRunning < this.duration ) {
-                            this.performUpdate();
-                        } else {
-                            this.performDeactivateOrRefresh();
-                        }
-
-                    }
-                }
-
+            // If the effect is not triggered already, do nothing
+            if ( this.delay > 0 && this.tickActive < this.delay ) {
+                this.tickActive += 1;
+                return;
             }
 
-            // The absolute ticker is augmented every time when the effect is active
-            this.tickActive += 1;
+            // Execute the effect
+            this.performUpdate();
+
+            // The duration
+            if ( this.duration > 0 && this.tickRunning >= this.duration ) {
+                this.performDeactivateOrRefresh();
+            } else {
+                this.tickRunning += 1;
+            }
 
         }
 
@@ -136,17 +103,21 @@ abstract class EffectAbstract {
 
     private void performDeactivateOrRefresh() {
 
-        if ( this.refreshesItself == true ) {
-            this.tickActive = 0;
-            this.tickRunning = 0;
-            this.running = false;
+        this.tickActive = 0;
+        this.tickRunning = 0;
+        this.running = false;
+        this.active = false;
 
+        if ( this.refreshesItself == true ) {
             if ( this.refreshCallback != null ) {
                 this.refreshCallback.accept( this );
             }
 
         } else {
             this.deactivate();
+            if ( this.removeCallback != null ) {
+                this.removeCallback.accept( this.tool );
+            }
         }
 
     }
@@ -163,6 +134,8 @@ abstract class EffectAbstract {
         if ( this.active == true ) {
             this.active = false;
             this.running = false;
+            this.tickActive = 0;
+            this.tickRunning = 0;
             println( "deactivating effect", this, "on", this.tool );
             this.onDeactivate();
         }

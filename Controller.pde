@@ -76,7 +76,7 @@ class Controller {
       .addButton( "Stop", () -> this.trackers.endRecording() )
       .run();
 
-    // this.state.close();
+    this.state.close();
     // this.trackers.startRecording();
 
     this.isMac = System.getProperty("os.name").contains( "Mac OS X" );

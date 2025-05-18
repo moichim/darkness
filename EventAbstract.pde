@@ -11,6 +11,8 @@ abstract class EventAbstract {
         this.onInit();
     }
 
+    public abstract int getCode();
+
     public abstract void onInit();
 
     public abstract void onActivate();

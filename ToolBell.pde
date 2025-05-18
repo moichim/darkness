@@ -29,6 +29,9 @@ class ToolBell extends ToolAbstract {
         
     }
 
+    public static final String EFFECT_COLOR = "one_effect_color";
+    public static final String EFFECT_GRID = "one_effect_grid";
+
     public void onMutedOn() {}
     public void onMutedOff() {}
 
@@ -44,15 +47,33 @@ class ToolBell extends ToolAbstract {
 
     public void onMultipleOn() {
 
-        this.circle().on();
-        this.circle().configure( this.getRoundedInt( this.getRandomFloat(4.0, 10) ), 20 );
-        this.circle().setImpact(0.5);
+        // this.circle().on();
+        // this.circle().configure( this.getRoundedInt( this.getRandomFloat(4.0, 10) ), 20 );
+        // this.circle().setImpact(0.5);
 
         this.random().setImpact( 0.9 );
         this.random().setSpread(4);
 
-        this.refreshPhaseAfter = (int) this.getRandomFloat( 50, 150 );
-        this.doRefreshPhase = true;
+        // this.refreshPhaseAfter = (int) this.getRandomFloat( 50, 150 );
+        // this.doRefreshPhase = true;
+
+        EffectToggleCirclesOnJump circleEffect = new EffectToggleCirclesOnJump(this, 5, 3, 20 );
+
+        this.circle().setImpact(0.9);
+        circleEffect.setDelay( (int) this.getRandomInt( 20, 100 ) );
+        circleEffect.setDuration( (int) this.getRandomInt(300, 500) );
+        circleEffect.setImpact( 0.9 );
+        circleEffect.activate();
+
+        circleEffect.setRepeat( item -> {
+            println("Circle refreshes");
+            item.setDelay( (int) this.getRandomInt( 20, 100 ) );
+            item.setDuration( (int) this.getRandomInt( 300, 1000 ) );
+            item.getTool().circle().off();
+            item.activate();
+        } );
+
+        this.addEffect( ToolBell.EFFECT_GRID, circleEffect );
 
     }
     public void onMultipleOff() {
@@ -61,6 +82,7 @@ class ToolBell extends ToolAbstract {
         this.random().setImpact(0.7);
         this.refreshPhaseAfter = 0;
         this.doRefreshPhase = false;
+        this.removeEffect( ToolBell.EFFECT_GRID );
     }
 
     public void onEventOn() {}

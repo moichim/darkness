@@ -38,9 +38,13 @@ class EffectToggleGridOnJump extends EffectAbstract {
         this.tool.columns().off();
     }
 
+    public void setEvery( int value ) {
+        this.every = value;
+    }
+
     public void onJump() {
 
-        if ( this.counter == this.every ) {
+        if ( this.counter == this.every - 1 ) {
             this.counter = 0;
             this.numJumps = this.numJumps >= 10 ? 0 : this.numJumps + 1;
             this.resetColumns();

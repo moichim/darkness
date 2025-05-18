@@ -1,8 +1,5 @@
 class ToolVoice extends ToolAbstract {
 
-    PImage monkey;
-    PImage monkeys;
-
     public float jumpAmount = 1f;
 
     ToolVoice(
@@ -25,13 +22,13 @@ class ToolVoice extends ToolAbstract {
             this,
             renderColor
         );
-        // this.addRenderer( circles );
-
-        this.monkey = loadImage("normals/countryside_raw.png");
-        this.monkeys = loadImage( "normals/monkeys.png" );
+        this.addRenderer( circles );
         this.jump().setImpact( 0.3 );
         
     }
+
+    public static final String EFFECT_COLOR = "one_effect_color";
+    public static final String EFFECT_GRID = "one_effect_grid";
 
     public void onMutedOn() {}
     public void onMutedOff() {}
@@ -39,23 +36,26 @@ class ToolVoice extends ToolAbstract {
     public void onOneOn() {
         this.colors().setThreshold( 100 );
 
-        this.normal().setMap( this.monkeys );
-        this.normal().on();
-        this.normal().setImpact(1);
+        EffectRaiseRandomColor randomColor = new EffectRaiseRandomColor(
+            this,
+            150,
+            500
+        );
+
+        this.addEffect( ToolKytar.EFFECT_COLOR, randomColor );
 
         this.refreshPhaseAfter = 0;
     }
 
     public void onOneOff() {
+        // Cleanup after color changes
         this.colors().setThreshold( 100 );
-        this.normal().off();
+        this.removeEffect( ToolKytar.EFFECT_COLOR );
+        this.colors().resetRendererColor();
     }
 
     public void onMultipleOn() {
-
-        this.normal().setMap( this.monkey );
         this.normal().on();
-
     }
     public void onMultipleOff() {
 

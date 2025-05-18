@@ -24,10 +24,14 @@ class ToolKytar extends ToolAbstract {
         );
         this.addRenderer( circles );
         this.monkey = loadImage("normals/countryside_raw.png");
+        this.colors().setImpact(0.05);
         
     }
 
     public void onMutedOn() {
+
+        this.random().setImpact( this.getRandomFloat(0.2,0.9) );
+        this.random().setSpread( this.getRandomFloat( 12, 20 ) );
     }
     public void onMutedOff() {}
 
@@ -58,13 +62,14 @@ class ToolKytar extends ToolAbstract {
             TOGGLE_GRID.TOGGLE
         );
 
-        toggleGrid.setDelay( this.getRandomInt( 500, 2000 ) );
+        toggleGrid.setDelay( this.getRandomInt( 500, 1000 ) );
         toggleGrid.setDuration( this.getRandomInt( 100, 300 ) );
         toggleGrid.setImpact( 0.6 );
 
+
         // Configure the repetition
         toggleGrid.setRepeat( item -> {
-            item.setDelay( this.getRandomInt( 1000, 2000 ) );
+            item.setDelay( this.getRandomInt( 500, 1000 ) );
             item.setDuration( this.getRandomInt( 100, 300 ) );
             item.getTool().columns().off();
         } );
@@ -102,21 +107,23 @@ class ToolKytar extends ToolAbstract {
         // Show dense grid for sort time in long intervals
         EffectToggleGridOnJump toggleGrid = new EffectToggleGridOnJump(
             this,
-            3,
+            2,
             5,
             40,
             TOGGLE_GRID.TOGGLE
         );
 
-        toggleGrid.setDelay( this.getRandomInt( 300, 1000 ) );
-        toggleGrid.setDuration( this.getRandomInt( 300, 500 ) );
+        toggleGrid.setDelay( (int) this.getRandomInt( 20, 100 ) );
+        toggleGrid.setDuration( (int) this.getRandomInt( 60, 60*3 ) );
         toggleGrid.setImpact( 0.7 );
+        toggleGrid.activate();
 
         // Configure the repetition
         toggleGrid.setRepeat( item -> {
-            item.setDelay( this.getRandomInt( 300, 1000 ) );
-            item.setDuration( this.getRandomInt( 300, 500 ) );
+            item.setDelay( (int) this.getRandomInt( 20, 100 ) );
+            item.setDuration( (int) this.getRandomInt( 60, 60*5 ) );
             item.getTool().columns().off();
+            item.activate();
         } );
 
         this.addEffect( ToolKytar.EFFECT_GRID, toggleGrid );

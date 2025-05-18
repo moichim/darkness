@@ -17,6 +17,7 @@ class EffectToggleCirclesOnJump extends EffectAbstract {
         this.minCircles = minCircles;
         this.maxCircles = maxCircles;
         this.setImpact( this.tool.circle().getImpact() );
+        this.resetCircles();
     }
 
     protected void onActivate() {}

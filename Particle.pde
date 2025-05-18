@@ -44,6 +44,8 @@ class Particle {
   MovementJump movementJump;
   MovementColor movementColor;
 
+  float speedMultiplocatorLocal;
+
 
   Particle(
     Blob blob
@@ -60,6 +62,7 @@ class Particle {
       random(-1, 1 )
     );
     this.currentColor = blob.tracker.particleRenderer.getColor(); // The initial color comes from the renderer
+    this.speedMultiplocatorLocal = random(1,2);
 
 
     // Create the movements
@@ -196,7 +199,7 @@ class Particle {
 
     // Calculate the new position based on speed and direction
     PVector change = this.direction.copy();
-    change.mult( this.speed * this.speedFactor * delta );
+    change.mult( this.speed * ( this.speedFactor * delta ) * speedMultiplicator * this.speedMultiplocatorLocal);
 
     // Update the position
     this.position.add( change );

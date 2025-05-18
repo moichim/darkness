@@ -1,5 +1,7 @@
 class DriverColor extends DriverAbstract {
 
+    protected float impact = 0.05;
+
     protected float threshold = 100;
 
     DriverColor( Tracker tracker ) {
@@ -79,6 +81,7 @@ class DriverColor extends DriverAbstract {
     public void applyToNewParticle( Particle particle ) {
 
         particle.movementColor.setOn( this.on );
+        particle.movementColor.setImpact( this.impact );
 
         // Generate the color from current threshold
         color newColor = this.generateRgbDeviation(
