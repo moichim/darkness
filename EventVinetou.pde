@@ -1,10 +1,10 @@
-class EventMiddle extends EventAbstract {
+class EventVinetou extends EventAbstract {
 
     public int getDuration() {
         return 1000;
     }
 
-    EventMiddle(
+    EventVinetou(
         Story story
     ) {
         super(story);

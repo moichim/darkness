@@ -10,6 +10,8 @@ s = Server.default;
 
 // s.options.outDevice;
 
+Dictionary
+
 
 (
 
@@ -255,14 +257,46 @@ s.waitForBoot({
 
 
 
-
-
-
-
-
-
-
 	~akord = Buffer.read(s, ~path.value( "akord/akord_4_rich_raw.wav" ));
+
+
+	~control = DarknessControl.new;
+	~control
+	.addTool( ~bell )
+	.addTool( ~kytar )
+	.addTool( ~piano )
+	.addTool( ~voice );
+
+	~control.addSample(\akord, ~akord);
+
+	~control.addEvent(\acordEvent, SoundEvent.new({
+		"started".postln;
+		Pdefn(\master, 0.5);
+		~control.playSample( \akord, 0.3 );
+	},{
+		Pdefn(\master, 1);
+	}));
+
+	~control.addEvent(\vinetou, SoundEvent.new({
+
+		~bell.setMelody( Pseq([0,2,4,6,8], inf) );
+		~kytar.setMelody( Pseq([8, 6, 4, 2, 0], inf) );
+		~voice.setMelody( Pseq([1,3,7,2,8], inf) );
+		~piano.setMelody( Pseq([7,3,0,1], inf) );
+		~control.setTempoToggling(1);
+
+	},{
+		~control.setTempoNormal();
+	}));
+
+	// ~control.playEvent(\vinetou);
+	// ~control.endEvent();
+	// ~control.stopAll();
+	// ~control.playAll();
+
+
+
+
 
 	// a = Synth.new(\sample, [\buf, ~akord.bufnum, \amp, 0.3 ]);
 
@@ -273,10 +307,15 @@ s.waitForBoot({
 
 		if(start == true, {
 			"Playing buffered content".postln;
-			Pdefn(\master, 0.5);
-			Synth.new(\sampler, [\buf, ~akord.bufnum, \amp, 0.3 ]);
+
+			code.switch(
+				1, { ~control.playEvent(\acordEvent); },
+				2, { ~control.playEvent(\vinetou) }
+			);
+
 		},{
 			Pdefn(\master, 1);
+			~control.endEvent();
 		});
 
 
@@ -286,6 +325,16 @@ s.waitForBoot({
 	);
 
 	OSCdef(\event).enable;
+
+
+
+
+
+
+
+
+
+
 
 
 

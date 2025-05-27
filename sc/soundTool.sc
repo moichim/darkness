@@ -30,6 +30,10 @@ DarknessTool {
 	var <>octaveMin = 2;
 	var <>octaveMax = 6;
 
+	var <>durPrevious;
+
+	var <>acceptsDur = true;
+
 
 
 
@@ -82,7 +86,7 @@ DarknessTool {
 			\octave, Pdefn(this.octave ) ,
 			\pan, Pdefn( this.pan ),
 			\onNote, Pfunc({
-				this.name.postln;
+				// this.name.postln;
 				processing.sendMsg(this.msg);
 			})
 		);
@@ -98,6 +102,11 @@ DarknessTool {
 			this.setPan( pan );
 
 			this.setOctave( pivoty );
+
+			if (this.acceptsDur, {
+				this.setDur( this.pivotx.linlin(0.0,1.0) );
+			},{});
+			
 
 		},
 		this.msg,
@@ -135,6 +144,14 @@ DarknessTool {
 	setDur {
 		|value|
 		Pdefn( this.dur, value );
+		this.durPrevious = value;
+	}
+
+	resetDur {
+		if(this.durPrevious.notNil, {
+			this.setDur( this.durPrevious );
+			this.durPrevious = nil;
+		},{});
 	}
 
 	setAmp {| value |

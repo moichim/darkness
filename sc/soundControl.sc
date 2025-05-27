@@ -1,11 +1,17 @@
 DarknessControl {
 
 	var <>tools;
+	var <>samples;
+	var <>events;
+
+	var <>event;
 
 	*new {
 		var instance = super.new();
 
 		instance.tools = Array.new(4);
+		instance.samples = Dictionary.new;
+		instance.events = Dictionary.new;
 
 		^instance;
 	}
@@ -61,6 +67,39 @@ DarknessControl {
 		this.tools.do({|item|
 			item.resetDur();
 		});
+	}
+
+	addSample {| name, value |
+		this.samples.put(name,value);
+	}
+
+	playSample {|name, amp|
+		this.samples.at(name).postln;
+		Synth.new(\sampler, [
+			\buf, this.samples.at(name).bufnum,
+			\amp, amp.min(0.0).max(1.0)
+		]);
+	}
+
+
+	addEvent {|name, value|
+		this.events.put(name, value);
+	}
+
+	playEvent {|name|
+		name.postln;
+		if(this.event.isNil and: {this.events.includesKey(name)}, {
+			this.event = this.events.at(name);
+			this.event.start;
+			this.event.postln;
+		},{});
+	}
+
+	endEvent {
+		if(this.event.notNil, {
+			this.event.end;
+			this.event = nil;
+		},{});
 	}
 
 }

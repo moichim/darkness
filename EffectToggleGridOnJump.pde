@@ -33,7 +33,9 @@ class EffectToggleGridOnJump extends EffectAbstract {
         this.tool.columns().on();
         this.tool.columns().setImpact( this.getImpact() );
     }
-    protected void onUpdate( int effectTick, int effectDuration ) {}
+    protected void onUpdate( int effectTick, int effectDuration ) {
+        println(frameCount + " - EffectToggleGridOnJump: " + effectTick + " / " + effectDuration);
+    }
     protected void onDeactivate() {
         this.tool.columns().off();
     }

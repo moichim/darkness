@@ -1,12 +1,12 @@
-class EventLong extends EventAbstract {
+class EventAcord extends EventAbstract {
 
     public int getDuration() {
-        return 100000;
+        return 13 * (int) round( frameRate );
     }
 
     PImage monkey;
 
-    EventLong(
+    EventAcord(
         Story story
     ) {
         super(story);

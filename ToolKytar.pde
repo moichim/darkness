@@ -62,8 +62,8 @@ class ToolKytar extends ToolAbstract {
             TOGGLE_GRID.TOGGLE
         );
 
-        toggleGrid.setDelay( this.getRandomInt( 500, 1000 ) );
-        toggleGrid.setDuration( this.getRandomInt( 100, 300 ) );
+        toggleGrid.setDelay( (int) this.getRandomInt( 500, 1000 ) );
+        toggleGrid.setDuration( (int) this.getRandomInt( 100, 300 ) );
         toggleGrid.setImpact( 0.6 );
 
 
@@ -113,17 +113,15 @@ class ToolKytar extends ToolAbstract {
             TOGGLE_GRID.TOGGLE
         );
 
-        toggleGrid.setDelay( (int) this.getRandomInt( 20, 100 ) );
-        toggleGrid.setDuration( (int) this.getRandomInt( 60, 60*3 ) );
+        toggleGrid.setDelay( (int) this.getRandomInt( 100, 200 ) );
+        toggleGrid.setDuration(50);
         toggleGrid.setImpact( 0.7 );
-        toggleGrid.activate();
 
         // Configure the repetition
         toggleGrid.setRepeat( item -> {
             item.setDelay( (int) this.getRandomInt( 20, 100 ) );
-            item.setDuration( (int) this.getRandomInt( 60, 60*5 ) );
+            toggleGrid.setDuration(50);
             item.getTool().columns().off();
-            item.activate();
         } );
 
         this.addEffect( ToolKytar.EFFECT_GRID, toggleGrid );
