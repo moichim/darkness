@@ -1,7 +1,80 @@
 s.boot;
 
 
+(
+
+SynthDef.new(\pulse, {
+	arg out=0, freq=440, factor= 2, atk=0.01, rel=0.3, sus=0.5, amp=1, pan=0, vibratoFrequency=40, vibratoAmout=1, vibratoDepth = 5;
+
+	var env, freqEnv, sig, vibrato, low;
+
+	low = freq * factor;
+
+	env = EnvGen.kr( Env.perc(atk, 0.1, sus, rel), doneAction: 2 );
+
+	vibrato = SinOsc.kr( vibratoFrequency, 0, vibratoDepth ) * vibratoAmout;
+
+	freqEnv = LinExp.kr( env, 0, 1, low, freq ) + vibrato;
+	sig = SinOsc.ar( freqEnv, 0.5 ) * env * amp;
+	sig = Pan2.ar( sig, pan );
+	Out.ar( out, sig );
+
+}).add;
+
+)
+
+Synth.new(\pulse, [\freq, 440, \factor, 0.25, \atk, 0.1, \vibratoAmout, 1, \vibratoDepth, 100 ]);
+
+(
+Pbindef(\pulsar,
+	\instrument, \pulse,
+	\dur, 1,
+	\scale, Scale.minorPentatonic,
+	\octave, 4,
+	\degree, Pseq([0, 1, 2, 3, 4,5], inf),
+	\factor, 2,
+	\amp, 1,
+	\vibratoFrequency, 40,
+	\vibratoAmout, 1,
+	\vibratoDepth, 100,
+).play;
+)
+
+Pbindef(\pulsar, \sus, 1);
+Pbindef(\pulsar, \atk, 0.01);
+Pbindef(\pulsar, \atk, 0.05);
+Pbindef(\pulsar, \sus, 0.7);
+
+Pbindef(\pulsar, \vibratoFrequency, Pseq([20, 40, 50], inf));
+
+Pbindef(\pulsar, \vibratoAmout, 0);
+Pbindef(\pulsar, \vibratoAmout, 1);
+Pbindef(\pulsar, \vibratoAmout, Pxrand([0,1,0.5, 0, 0.25, 0.75], inf));
+Pbindef(\pulsar, \vibratoAmout, Pxrand([0,1,0.5, 1, 0.75, 0.95], inf));
+Pbindef(\pulsar, \vibratoDepth, 100);
+
+Pbindef(\pulsar, \dur, 1);
+Pbindef(\pulsar, \dur, Pxrand([1, 0.5, 0.25, 0.1, 0.15, 0.3, 0.75], inf));
+
+(
+Pbindef(\pulsar,
+	\factor, Pseq([
+		Pseq([2, 4], 4),
+		Pseq([0.25], 4)
+	], inf),
+	\degree, Pseq([
+		Pseq([0,1,2,3,4,5], 1),
+		Pxrand([5,4,3], 5)
+	], inf),
+);
+)
+Pbindef(\pulsar).stop;
+
+s.freeAll;
+
+
 b = DarknessTool.new( "test", 1, 2 );
+
 
 b.init(~s1.bufnum);
 b.listenerB;
