@@ -28,8 +28,8 @@ boolean isReady = false;
 
 int maxFrameRate = 30;
 int idealFrameRate = 15;
-float maxSpeedAspect = 0.9;
-float speedMultiplicator = 1.2;
+float maxSpeedAspect = 0.7;
+float speedMultiplicator = 1;
 void setSpeedMultiplocator(float value) {
     speedMultiplicator = constrain(value,1, 5);
 }

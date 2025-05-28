@@ -3,6 +3,7 @@ DarknessControl {
 	var <>tools;
 	var <>samples;
 	var <>events;
+	var <>melodies;
 
 	var <>event;
 
@@ -12,6 +13,7 @@ DarknessControl {
 		instance.tools = Array.new(4);
 		instance.samples = Dictionary.new;
 		instance.events = Dictionary.new;
+		instance.melodies = Dictionary.new;
 
 		^instance;
 	}
@@ -100,6 +102,16 @@ DarknessControl {
 			this.event.end;
 			this.event = nil;
 		},{});
+	}
+
+	addMelody {|key,value|
+		this.melodies.put(key, value);
+	}
+
+	playMelody {|key|
+		if(this.melodies.includesKey(key), {
+			this.melodies.at(key).apply;
+		});
 	}
 
 }

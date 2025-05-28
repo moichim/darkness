@@ -34,6 +34,8 @@ DarknessTool {
 
 	var <>acceptsDur = true;
 
+	var <>clock;
+
 
 
 
@@ -45,6 +47,7 @@ DarknessTool {
 		instance.init;
 
 		processing = NetAddr.new( NetAddr.localAddr.hostname, sendingPort );
+		instance.clock = TempoClock.new(0.5);
 
 		^instance;
 
@@ -100,11 +103,18 @@ DarknessTool {
 			this.setAmp( amp );
 
 			this.setPan( pan );
+			[this.name, speed, speed.asStringPrec(2).asFloat.linexp(0.0, 1.0, 1, 6.0).min(4).max(1)].postln;
 
-			this.setOctave( pivoty );
+			this.setTempo( speed.asStringPrec(2).asFloat.linexp(0.0, 1.0, 1, 6.0).min(6).max(1) );
+
+			this.mapOctave( pivoty );
+
+			if (speed.notNil, {
+				speed.postln;
+			},{});
 
 			if (this.acceptsDur, {
-				this.setDur( this.pivotx.linlin(0.0,1.0) );
+				// this.setTempo( pivotx.linlin(0.0, 1.0, 0.5, 2.0).min(2).max(0.5) );
 			},{});
 			
 
@@ -124,7 +134,7 @@ DarknessTool {
 
 	play {
 
-		Pbindef(this.pattern).play;
+		Pbindef(this.pattern).play(this.clock);
 		"Spouštím".postln;
 
 	}
@@ -134,6 +144,16 @@ DarknessTool {
 		Pbindef(this.pattern).stop;
 		"Zastavuji".postln;
 
+	}
+
+	setTempo { |tempo|
+
+	this.clock.tempo = tempo;
+		if (this.acceptsDur == true, {
+			// this.clock.tempo = tempo;
+		},{
+			// this.clock.tempo = 1;
+		});
 	}
 
 	setBuf {
@@ -177,7 +197,7 @@ DarknessTool {
 			};
 		} {
 			if (this.isPlaying.not) {
-				Pbindef(this.pattern).play;
+				Pbindef(this.pattern).play(this.clock);
 				("[" ++ this.name ++ "] started due to sufficient amp").postln;
 			};
 		};
@@ -210,6 +230,8 @@ DarknessTool {
 
 		sanitized = value.min(this.octaveMax).max( this.octaveMin ).floor.asInteger;
 
+		[sanitized, this.name].postln;
+
 		Pdefn( this.octave, sanitized );
 	}
 
@@ -227,7 +249,7 @@ DarknessTool {
 	}
 
 	setOctaveRange {|min,max|
-		this.octaveMin = min.min(max).min(10).max(0).floor.asInteger;
+		this.octaveMin = min.min(max).min(15).max(0).floor.asInteger;
 		this.octaveMax = max.max(min).max(0).floor.asInteger;
 	}
 
