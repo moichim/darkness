@@ -451,6 +451,10 @@ abstract class Tracker {
     msg.add(this.pivot.x);
     msg.add(this.pivot.y);
 
+    if (frameCount % 100 == 0) {
+      println( this, this.pivot.x, this.pivot.y );
+    }
+
     // Lastly, add average particle speed
     msg.add(
       map(

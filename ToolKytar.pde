@@ -56,21 +56,21 @@ class ToolKytar extends ToolAbstract {
         // Show dense grid for sort time in long intervals
         EffectToggleGridOnJump toggleGrid = new EffectToggleGridOnJump(
             this,
-            this.getRandomInt( 1, 3 ),
+            this.getRandomInt( 3, 8 ),
             15,
             25,
             TOGGLE_GRID.TOGGLE
         );
 
         toggleGrid.setDelay( (int) this.getRandomInt( 500, 1000 ) );
-        toggleGrid.setDuration( (int) this.getRandomInt( 100, 300 ) );
+        toggleGrid.setDuration( (int) this.getRandomInt( 100, 3000 ) );
         toggleGrid.setImpact( 0.6 );
 
 
         // Configure the repetition
         toggleGrid.setRepeat( item -> {
             item.setDelay( this.getRandomInt( 500, 1000 ) );
-            item.setDuration( this.getRandomInt( 100, 300 ) );
+            item.setDuration( this.getRandomInt( 100, 3000 ) );
             item.getTool().columns().off();
         } );
 
@@ -107,20 +107,20 @@ class ToolKytar extends ToolAbstract {
         // Show dense grid for sort time in long intervals
         EffectToggleGridOnJump toggleGrid = new EffectToggleGridOnJump(
             this,
-            2,
+            this.getRandomInt(3,8),
             5,
             40,
             TOGGLE_GRID.TOGGLE
         );
 
         toggleGrid.setDelay( (int) this.getRandomInt( 100, 200 ) );
-        toggleGrid.setDuration(50);
+        toggleGrid.setDuration(3000);
         toggleGrid.setImpact( 0.7 );
 
         // Configure the repetition
         toggleGrid.setRepeat( item -> {
             item.setDelay( (int) this.getRandomInt( 20, 100 ) );
-            toggleGrid.setDuration(50);
+            toggleGrid.setDuration(2000);
             item.getTool().columns().off();
         } );
 

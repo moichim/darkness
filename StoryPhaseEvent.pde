@@ -15,8 +15,10 @@ class StoryPhaseEvent extends StoryPhaseAbstract {
         super(story);
 
         // this.events.add( new EventRandom( story ) );
-        this.events.add( new EventAcord( this.story ) );
-        this.events.add( new EventVinetou( this.story ) );
+        // this.events.add( new EventAcord( this.story ) );
+        // this.events.add( new EventVinetou( this.story ) );
+        this.events.add( new EventMantraFour( this.story ) );
+        this.events.add( new EventMantraFive( this.story ) );
         // this.events.add( new EventMiddle( story ) );
 
     }

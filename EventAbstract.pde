@@ -21,17 +21,17 @@ abstract class EventAbstract {
 
     protected void renderStart( color col ) {
         push();
-        translate(100, 100);
+        translate(20, 100);
         fill( col );
-        ellipse( 0, 0, 100, 100 );
+        ellipse( 0, 0, 20, 20 );
         pop();
     }
 
     protected void renderEnd( color col ) {
         push();
-        translate(100, 100);
+        translate(20, 100);
         fill( col );
-        rect( 100, 0, 100, 100 );
+        rect( 100, 0, 20, 20 );
         pop();
     }
 
