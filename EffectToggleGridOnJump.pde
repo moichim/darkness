@@ -26,15 +26,16 @@ class EffectToggleGridOnJump extends EffectAbstract {
         this.minColumns = minColumns;
         this.maxColumns = maxColumns;
         this.mode = mode;
+        this.resetColumns();
     }
 
-    protected void onActivate() {}
+    protected void onActivate() {
+    }
     protected void onStart( int effectDuration ) {
         this.tool.columns().on();
         this.tool.columns().setImpact( this.getImpact() );
     }
     protected void onUpdate( int effectTick, int effectDuration ) {
-        println(frameCount + " - EffectToggleGridOnJump: " + effectTick + " / " + effectDuration);
     }
     protected void onDeactivate() {
         this.tool.columns().off();
