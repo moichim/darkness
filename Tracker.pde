@@ -40,6 +40,7 @@ abstract class Tracker {
   float particleCount = 0;
 
   boolean closest = false;
+  boolean ready = false;
 
   RendererParticles particleRenderer = null;
   RendererCircles circleRenderer = null;
@@ -55,15 +56,116 @@ abstract class Tracker {
     float brightness,
     String instrument
   ) {
-    this.setColor( r, g, b );
-    this.threshold = threshold;
-    this.thresholdSaturation = saturation;
-    this.thresholdBrightness = brightness;
+    // Look for the color configuration
+    JSONObject config = this.loadColorConfig( instrument, r, g, b, threshold, saturation, brightness );
+
+    float storedHue = config.getFloat( "hue" );
+    float storedSaturation = config.getFloat( "saturation" );
+    float storedBrightness = config.getFloat( "brightness" );
+
+    float storedR = config.getFloat( "r" );
+    float storedG = config.getFloat( "g" );
+    float storedB = config.getFloat( "b" );
+
+
+    this.setColor( storedR, storedG, storedB );
+    this.threshold = storedHue;
+    this.thresholdSaturation = storedSaturation;
+    this.thresholdBrightness = storedBrightness;
     this.emissionColor = this.trackColor;
     this.instrument = instrument;
     this.calculateTrasholds(this.trackColor);
 
+    this.ready = true;
+
   }
+
+  public JSONObject loadColorConfig(
+        String instrument,
+        float defaultR,
+        float defaultG,
+        float defaultB,
+        float defaultHue,
+        float defaultSaturation,
+        float defaultBrightness
+    ) {
+        String filename = this.getConfigFileName( instrument );
+        JSONObject obj = null;
+        try {
+            obj = loadJSONObject( filename );
+        } catch( Exception e ) {
+            obj = this.saveColorConfig( instrument, defaultR, defaultG, defaultB, defaultHue, defaultSaturation, defaultBrightness );
+        }
+
+        if (obj == null) {
+          // Pokud se stále nepodařilo vytvořit, vytvoř prázdný objekt s výchozími hodnotami
+          obj = new JSONObject();
+          obj.setFloat( "r", defaultR );
+          obj.setFloat( "g", defaultG );
+          obj.setFloat( "b", defaultB );
+          obj.setFloat( "hue", defaultHue );
+          obj.setFloat( "saturation", defaultSaturation );
+          obj.setFloat( "brightness", defaultBrightness );
+          saveJSONObject(obj, filename);
+      }
+
+        println( filename, obj );
+
+        return obj;
+    }
+
+    public String getConfigFileName( String inst ) {
+        return dataPath( "config_" + inst.replace("/", "") + ".json" );
+    }
+
+    public JSONObject saveColorConfig(
+        String instrument,
+        float r,
+        float g,
+        float b,
+        float trackHue,
+        float trackSaturation,
+        float trackBrightness
+    ) {
+        String filename = this.getConfigFileName( instrument );
+        JSONObject obj = new JSONObject();
+        obj.setFloat( "r", r );
+        obj.setFloat( "g", g );
+        obj.setFloat( "b", b );
+        obj.setFloat( "hue", trackHue );
+        obj.setFloat( "saturation", trackSaturation );
+        obj.setFloat( "brightness", trackBrightness );
+        saveJSONObject( obj, filename );
+        return obj;
+    }
+
+    protected void persist() {
+      
+      if ( this.ready == true ) {
+        this.saveColorConfig( this.instrument, red( this.trackColor), green(this.trackColor), blue(this.trackColor), this.threshold, this.thresholdSaturation, this.thresholdBrightness );
+      }
+      
+    }
+
+
+    public void setThresholdHue( float value ) {
+      this.threshold = value;
+      this.persist();
+    }
+
+    public void setThresholdSaturation( float value ) {
+      this.thresholdSaturation = value;
+      this.persist();
+    }
+
+    public void setThresholdBrightness( float value ) {
+      this.thresholdBrightness = value;
+      this.persist();
+    }
+
+
+
+
 
   protected void addRenderer(
     RendererAbstract renderer
@@ -92,6 +194,7 @@ abstract class Tracker {
     this.trackColor = col;
     this.emissionColor = col;
     this.calculateTrasholds(this.trackColor);
+    this.persist();
   }
 
   void setColor( float r, float g, float b ) {
@@ -101,6 +204,7 @@ abstract class Tracker {
     this.trackColor = color( r, g, b );
     this.emissionColor = this.trackColor;
     this.calculateTrasholds(this.trackColor);
+    this.persist();
   }
 
   public void preprocessPixels() {
@@ -403,9 +507,9 @@ abstract class Tracker {
 
     // Print the amplitude
     rectMode(CORNER);
-    rect( 
-      w - 10, 
-      0, 
+    rect(
+      w - 10,
+      0,
       10,
       map( this.amplitudeAspect, 0, 1, 0, h )
     );
@@ -458,9 +562,9 @@ abstract class Tracker {
     // Lastly, add average particle speed
     msg.add(
       map(
-        constrain( 
-          Float.isNaN( this.averageParticleSpeed ) ? 0 : this.averageParticleSpeed, 
-          controller.minSpeed(), 
+        constrain(
+          Float.isNaN( this.averageParticleSpeed ) ? 0 : this.averageParticleSpeed,
+          controller.minSpeed(),
           controller.maxSpeed()
         ),
         controller.minSpeed(),
