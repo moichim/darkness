@@ -44,8 +44,6 @@ class StoryPhaseEvent extends StoryPhaseAbstract {
         // Mirror the duration
         this.duration = this.current.getDuration();
 
-        println( "dur of the next", this.current.getDuration(), this.current );
-
         this.localTick = 0;
 
     }
@@ -95,8 +93,6 @@ class StoryPhaseEvent extends StoryPhaseAbstract {
 
 
     void execute( int ticks ) {
-
-        println( frameCount, ticks, this.localTick, "dur", this.duration );
 
         this.localTick += 1;
 

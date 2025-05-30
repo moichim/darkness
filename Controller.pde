@@ -261,7 +261,6 @@ class Controller {
     OscMessage msg
   ) {
     this.osc.send( msg, "127.0.0.1", 57133 );
-    // println( msg );
   }
 
   public void syncBlip(
@@ -274,7 +273,6 @@ class Controller {
     msg.add( constrain( amp, 0, 1 ) );
     msg.add( 
       freq
-      // constrain( freq, this.blipFreqMin, this.blipFreqMax ) 
     );
     if ( this.trackers.recording ) {
       this.send(msg);
