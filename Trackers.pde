@@ -38,17 +38,11 @@ class Trackers extends ArrayList<Tracker> {
 
       RowFormBuilder row = builder.startRow( tracker.instrument );
 
-      row.addSlider( "hue_" + tracker.instrument, 0, 1000, (int) tracker.threshold, 100, 0 )
-        // .bind( tracker.threshold )
-        ;
+      row.addSlider( "hue_" + tracker.instrument, 0, 1000, (int) (tracker.threshold * 1000), 500, 0 );
 
-      row.addSlider( "sat_" + tracker.instrument, 0, 1000, (int) tracker.thresholdSaturation, 100, 0 )
-        // .bind( tracker.thresholdSaturation )
-        ;
+      row.addSlider( "sat_" + tracker.instrument, 0, 1000, (int) (tracker.thresholdSaturation * 1000), 500, 0 );
 
-      row.addSlider( "bri_" + tracker.instrument, 0, 1000, (int) tracker.thresholdBrightness, 100, 0 )
-        // .bind(tracker.thresholdBrightness)
-        ;
+      row.addSlider( "bri_" + tracker.instrument, 0, 1000, (int) (tracker.thresholdBrightness * 1000), 500, 0 );
 
 
 
@@ -77,15 +71,15 @@ class Trackers extends ArrayList<Tracker> {
         }
 
         if ( element.getLabel().equals( hue ) ) {
-          tracker_.threshold = ((Integer) value) / 1000f;
+          tracker_.setThresholdHue( ((Integer) value) / 1000f );
         }
 
         if ( element.getLabel().equals( sat ) ) {
-          tracker_.thresholdSaturation = ((Integer) value) / 1000f;
+          tracker_.setThresholdSaturation( ((Integer) value) / 1000f );
         }
 
         if ( element.getLabel().equals( bri ) ) {
-          tracker_.thresholdBrightness = ((Integer) value) / 1000f;
+          tracker_.setThresholdBrightness( ((Integer) value) / 1000f );
         }
       }
     }
