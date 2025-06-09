@@ -2,6 +2,234 @@ s.boot;
 
 
 (
+SynthDef(\freqPulse, {
+    |out = 0, freq = 440, depthStart = 2, depthEnd = 3, atk = 0.1, sus = 0.2, rel = 0.3, amp = 0.3|
+
+    var freqStart = freq / depthStart;
+    var freqEnd = freq / depthEnd;
+    var freqEnv, ampEnv, osc;
+
+    // Obálka frekvence: freqStart → freq → freqEnd
+    freqEnv = EnvGen.kr(
+        Env.new(
+            levels: [freqStart, freq, freqEnd],
+            times: [atk, sus, rel],
+            curve: 'lin' // můžeš změnit na 'exp', 'wel', atd.
+        )
+    );
+
+    // Amplitudová obálka
+    ampEnv = EnvGen.kr(
+        Env.perc(atk, rel, 1, curve: -4),
+        doneAction: 2
+    );
+
+    // Oscilátor řízený obálkou frekvence
+    osc = SinOsc.ar(freqEnv) * ampEnv * amp;
+
+    Out.ar(out, osc.dup); // stereo
+}).add;
+)
+
+
+(
+SynthDef(\beatPulse, {
+    |out = 0, freq = 60, depthStart = 4, depthEnd = 1.5, atk = 0.01, sus = 0.05, rel = 0.1, amp = 0.8|
+
+    var freqStart = freq / depthStart;
+    var freqEnd = freq / depthEnd;
+    var freqEnv, ampEnv, osc;
+
+    // Frekvenční obálka (exponenciální tvar pro ostřejší přechod)
+    freqEnv = EnvGen.kr(
+        Env.new(
+            levels: [freqStart, freq, freqEnd],
+            times: [atk, sus, rel],
+            curve: ['exp', 'exp']
+        )
+    );
+
+    // Rychlá obálka hlasitosti
+    ampEnv = EnvGen.kr(
+        Env.perc(atk, rel, 1, curve: -4),
+        doneAction: 2
+    );
+
+    // Pulse wave zní ostřeji než sinus
+    osc = SinOsc.ar(freqEnv, 0.5) * ampEnv * amp;
+
+    Out.ar(out, osc.dup);
+}).add;
+)
+
+
+(
+// Krátký beat (něco jako subkick)
+Synth(\beatPulse, [
+    \freq, 440,
+    \depthStart, 5,
+    \depthEnd, 1.2,
+    \atk, 0.005,
+    \sus, 0.05,
+    \rel, 0.08,
+    \amp, 0.9
+]);
+)
+
+
+
+
+
+
+(
+SynthDef(\sinePulseVibRel, {
+    |out = 0, freq = 440, depthStart = 3, depthEnd = 2,
+     atk = 0.01, sus = 0.1, rel = 0.2, amp = 0.5,
+     vibRate = 6, vibDepth = 0.05|  // vibDepth jako podíl (např. 0.05 = ±5 %)
+
+    var freqStart = freq / depthStart;
+    var freqEnd = freq / depthEnd;
+    var freqEnv, ampEnv, osc, vibrato;
+
+    // Frekvenční obálka
+    freqEnv = EnvGen.kr(
+        Env.new(
+            levels: [freqStart, freq, freqEnd],
+            times: [atk, sus, rel],
+            curve: ['exp', 'exp']
+        )
+    );
+
+    // Vibrato – relativní kolísání ± vibDepth * freq
+    vibrato = SinOsc.kr(vibRate).range(-1, 1) * freq * vibDepth;
+
+    // Výsledná frekvence
+    osc = SinOsc.ar(freqEnv + vibrato);
+
+    // Amplitudová obálka
+    ampEnv = EnvGen.kr(
+        Env.perc(atk, rel, 1, curve: -4),
+        doneAction: 2
+    );
+
+    Out.ar(out, osc * ampEnv * amp ! 2);
+}).add;
+)
+
+
+(
+Synth(\sinePulseVibRel, [
+    \freq, 330,
+    \depthStart, 0.5,
+    \depthEnd, 1.5,
+    \atk, 0.01,
+    \sus, 0.2,
+    \rel, 2,
+    \vibRate, 20,
+    \vibDepth, 0.5,  // ±8 % z frekvence = cca ±26 Hz u 330 Hz
+    \amp, 0.6
+]);
+)
+
+
+
+
+
+
+
+(
+SynthDef(\sineBeatLayered, {
+    |out = 0, freq = 440, depthStart = 3, depthEnd = 1.5,
+     atk = 0.01, sus = 0.1, rel = 0.2, amp = 0.5,
+     vibRate = 6, vibDepth = 0.05,
+     beatFreqRatio = 0.5, beatAmp = 0.4, beatRel = 0.08|
+
+    var freqStart, freqEnd, freqEnv, ampEnv, vibrato, mainOsc;
+    var beatEnv, beatOsc, sig;
+
+    freqStart = freq / depthStart;
+    freqEnd = freq / depthEnd;
+
+    // Frekvenční obálka
+    freqEnv = EnvGen.kr(
+        Env([freqStart, freq, freqEnd], [atk, sus, rel], ['exp', 'exp'])
+    );
+
+    // Vibrato jako relativní odchylka
+    vibrato = SinOsc.kr(vibRate).range(-1, 1) * freq * vibDepth;
+
+    // Hlavní sinusovka s frekvenční obálkou a vibratem
+    mainOsc = SinOsc.ar(freqEnv + vibrato);
+
+    // Amplitudová obálka
+    ampEnv = EnvGen.kr(Env.perc(atk, rel, 1, curve: -4), doneAction: 2);
+
+    // Beatová vrstva – nízká sinusovka s rychlým dozvukem
+    beatEnv = EnvGen.kr(Env.perc(0.001, beatRel), levelScale: beatAmp);
+    beatOsc = SinOsc.ar(freq * beatFreqRatio) * beatEnv;
+
+    // Výstup
+    sig = (mainOsc * ampEnv * amp) + beatOsc;
+
+    Out.ar(out, sig ! 2);
+}).add;
+)
+
+
+
+
+
+
+
+
+
+(
+
+Synth(\sineBeatLayered, [
+    \freq, 220,
+    \depthStart, 4,
+    \depthEnd, 1.5,
+    \atk, 0.005,
+    \sus, 0.5,
+    \rel, 1,
+    \vibRate, 50,
+    \vibDepth, 1,
+    \beatFreqRatio, 0.5,  // druhý oscilátor bude na 110 Hz
+    \beatAmp, 0.8,
+    \beatRel, 0.5,
+    \amp, 0.6
+]);
+
+)
+
+
+(
+Pbindef(\sinePulseTest,
+    \instrument, \sineBeatLayered,
+    \dur, 0.4,
+    \freq, Pseq([110, 220, 330, 440, 660, 1000].scramble, inf),
+    \depthStart, Pseq([6, 4, 2], inf),
+    \depthEnd, Pseq([1.2, 2, 1.8, 5, 0.75], inf),
+    \atk, Pwhite(0.005, 0.02, inf),
+    \sus, Pwhite(0.05, 0.15, inf),
+    \rel, Pwhite(0.05, 1, inf),
+	\vibRate, Pseq([4.0, 50.0, 20.0, 15.0], inf),
+    \vibDepth, Pseq([0.01, 0.05, 0.15], inf),
+    \beatAmp, Pseq([1.0, 0.3, 0.6, 0.9].scramble, inf),
+    \beatFreqRatio, Pseq([0.25, 0.5, 1, 2].scramble, inf),
+    \beatRel, Pwhite(0.03, 0.5, inf),
+    \amp, 0.4
+).play;
+)
+
+
+
+
+
+
+
+
+(
 
 SynthDef.new(\pulse, {
 	arg out=0, freq=440, factor= 2, atk=0.01, rel=0.3, sus=0.5, amp=1, pan=0, vibratoFrequency=40, vibratoAmout=1, vibratoDepth = 5;
@@ -23,7 +251,7 @@ SynthDef.new(\pulse, {
 
 )
 
-Synth.new(\pulse, [\freq, 440, \factor, 0.25, \atk, 0.1, \vibratoAmout, 1, \vibratoDepth, 100 ]);
+Synth.new(\pulse, [\freq, 440, \atk, 0.01, \vibratoAmout, 2, \vibratoDepth, 100, \factor, 0.5 ]);
 
 (
 Pbindef(\pulsar,
