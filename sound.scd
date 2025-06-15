@@ -62,7 +62,7 @@ s.waitForBoot({
 	 * Pokud není nota specifikována vůbec, tak se sample přehraje v původní podobě.
 	 */
 	SynthDef(\sampler, {
-		arg amp = 1, pan = 0, out = 0, buf, rate = 1, freq = 440;
+		arg amp = 1, pan = 0, out = 0, buf, rate = 1, freq = 440, bpfFreq=0, bpfQ = 0.707;
 		var sig, playbackRate;
 
 		// Přepočet frekvence na playbackRate vůči základní frekvenci samplu
@@ -70,6 +70,13 @@ s.waitForBoot({
 		playbackRate = freq / 440;
 
 		sig = PlayBuf.ar(1, buf, BufRateScale.kr(buf) * rate * playbackRate, doneAction: 2);
+
+	  	sig = Select.ar( bpfFreq > 5.0, [
+			sig,
+			BPF.ar( sig, bpfFreq, bpfQ )
+		] );
+
+
 		sig = Pan2.ar(sig, pan);
 		sig = sig * amp;
 		Out.ar(out, sig);
@@ -94,8 +101,12 @@ s.waitForBoot({
 		vibRate = 6, vibDepth = 0.05,
 		beatFreqRatio = 0.5, beatAmp = 0.4, beatRel = 0.08, pan = 0|
 
-		var freqStart, freqEnd, freqEnv, ampEnv, vibrato, mainOsc;
+		var freqStart, freqEnd, freqEnv, ampEnv, vibrato, mainOsc, mainAmp, secondaryAmp;
 		var beatEnv, beatOsc, sig;
+
+		secondaryAmp = amp.min(1).max(0) * beatAmp.min(1).max(0);
+		mainAmp = amp - secondaryAmp;
+
 
 		freqStart = freq / depthStart;
 		freqEnd = freq / depthEnd;
@@ -115,26 +126,26 @@ s.waitForBoot({
 		ampEnv = EnvGen.kr(Env.perc(atk, rel, 1, curve: -4), doneAction: 2);
 
 		// Beatová vrstva – nízká sinusovka s rychlým dozvukem
-		beatEnv = EnvGen.kr(Env.perc(0.001, beatRel), levelScale: beatAmp);
+		beatEnv = EnvGen.kr(Env.perc(0.001, beatRel), levelScale: secondaryAmp * 2);
 		beatOsc = SinOsc.ar(freq * beatFreqRatio) * beatEnv;
 
 		// Výstup
 		sig = (mainOsc * ampEnv) + beatOsc;
 
-		sig = sig * amp;
+		sig = sig * mainAmp;
 
 		// sig = Limiter.ar( sig, 1, 0.01 );
 
 		// Kompresor: vstup, kontrolní signál, thresh, slopeBelow, slopeAbove, clampTime, relaxTime
-sig = Compander.ar(
-    sig,         // vstupní signál
-    sig,         // kontrolní signál (self)
-    0.5,         // práh (threshold) - kde začne komprese
-    1,           // slopeBelow - pod prahem neměníme (1 = žádná změna)
-    0.2,         // slopeAbove - nad prahem zeslabíme (0.2 = silná komprese)
-    0.01,        // attack (clampTime)
-    0.1          // release (relaxTime)
-);
+		sig = Compander.ar(
+			sig,         // vstupní signál
+			sig,         // kontrolní signál (self)
+			0.5,         // práh (threshold) - kde začne komprese
+			1,           // slopeBelow - pod prahem neměníme (1 = žádná změna)
+			0.2,         // slopeAbove - nad prahem zeslabíme (0.2 = silná komprese)
+			0.01,        // attack (clampTime)
+			0.1          // release (relaxTime)
+		);
 
 		sig = Pan2.ar( sig, pan );
 
@@ -268,14 +279,34 @@ sig = Compander.ar(
 
 	~p1 = Buffer.read(s, ~path.value( "piano/c.wav" ));
 
-	~piano = DarknessToolSample.new("piano_", ~in, ~out);
+	~piano = DarknessToolSample.new("piano", ~in, ~out);
 	~piano
 	.setDur(1)
-	.setMelody(Pseq([0, 2, 4, 4, 5, 6, 3, 2, 1, 0],inf))
-	.setShift(Pxrand(#[0,1,2],inf))
+	.setMelody(Pseq([0, 2, 4, 4, 5, 12],inf))
+	.setShift(0)
 	.setOctaveRange(4,8)
 	.setOctave(6)
 	.setBuf(~drum.bufnum);
+
+	~piano.setMelody( Pseq([0, 2, 4, 6, 8, 10],inf) );
+
+	~piano.setBpfMapper({|msg|
+		var orientation = msg[8], pivotx = msg[5], pivoty=msg[6];
+		var freq = 0, q = 0.707, amount = 0.0;
+
+		//q = -2 * (pivotx - 0.5).squared + 0.7;
+		q = pivoty.linlin(0, 1, 0.4, 1.0);
+
+		// freq = -2800 * (pivoty - 0.5).squared + 800;
+		// freq = pivotx.linlin(0, 1, 1000, 100);
+		freq = orientation.linlin(-1, 1, 1000, 80);
+
+		[orientation, pivotx, freq, q].postln;
+
+		~piano.setBpf(freq, 0.707);
+
+	});
+
 
 	~piano.listen;
 
@@ -285,8 +316,9 @@ sig = Compander.ar(
 
 
 	// Pulse
-	~pulse = DarknessToolSynth.new( "piano", \beatLayered, ~in, ~out );
+	~pulse = DarknessToolSynth.new( "pulse", \beatLayered, ~in, ~out );
 
+	~pulse.setMelody( Pseq([0, 4, 2, 6], inf) );
 	~pulse.setDur(1);
 	~pulse.setShift(0);
 	~pulse.setPan(0);
@@ -302,8 +334,6 @@ sig = Compander.ar(
 	~pulse.listen;
 	// ~pulse.play;
 	// ~pulse.stop;
-
-
 
 
 
@@ -530,9 +560,6 @@ sig = Compander.ar(
 
 	*/
 
-
-
-	Pdefn(\master, 0.25);
 
 	~control.addMelody( \mantraOne, ~mantraOne );
 	~control.addMelody( \mantraTwo, ~mantraTwo );

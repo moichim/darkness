@@ -13,6 +13,7 @@ class Story {
     ToolKytar kytar;
     ToolBell bell;
     ToolVoice voice;
+    ToolPulse pulse;
 
     Story( Controller controller ) {
         this.controller = controller;
@@ -67,6 +68,18 @@ class Story {
         );
 
         this.addTool( this.voice );
+
+        color pulseColor = color( 168, 165, 44);
+        color pulseRenderColor = color( 151, 102, 207 );
+        this.pulse = new ToolPulse(
+            pulseColor,
+            0.128,
+            0.384,
+            0.419,
+            pulseRenderColor
+        );
+
+        this.addTool( this.pulse );
 
 
     }

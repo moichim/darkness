@@ -25,6 +25,10 @@ DarknessToolSample {
 	var <>ampFn;
 	var <>panFn;
 
+	var <>bpfFreq;
+	var <>bpfQ;
+	var <>bpfMapper; // anonymní funkce pro mapping
+
 	classvar <processing;
 
 	var <>octaveMin = 2;
@@ -68,6 +72,9 @@ DarknessToolSample {
 		this.pattern = this.symbol("Pattern");
 		this.listener = this.symbol("Listener");
 
+		this.bpfFreq = this.symbol("BpfFreq");
+  		this.bpfQ = this.symbol("BpfQ");
+
 		// Inicializace výchozích hodnot
 		Pdefn( this.buf, 0 );
 		Pdefn( this.dur, 1 );
@@ -77,6 +84,9 @@ DarknessToolSample {
 		Pdefn( this.melody, 0 );
 		Pdefn( this.octave, 3 );
 		Pdefn( this.scale, Scale.minorPentatonic );
+
+		Pdefn( this.bpfFreq, 0 );
+		Pdefn( this.bpfQ, 0.707 );
 
 		// Inicializace vzorku
 		Pbindef.new(this.pattern,
@@ -88,6 +98,8 @@ DarknessToolSample {
 			\scale, Pdefn( this.scale ),
 			\octave, Pdefn(this.octave ) ,
 			\pan, Pdefn( this.pan ),
+			\bpfFreq, Pdefn( this.bpfFreq ),
+			\bpfQ, Pdefn( this.bpfQ ),
 			\onNote, Pfunc({
 				// this.name.postln;
 				processing.sendMsg(this.msg);
@@ -108,6 +120,12 @@ DarknessToolSample {
 			this.setTempo( speed.asStringPrec(2).asFloat.linexp(0.0, 1.0, 1, 6.0).min(6).max(1) );
 
 			this.mapOctave( pivoty );
+
+			if(this.bpfMapper.notNil, {
+				this.bpfMapper.value(msg);
+			}, {
+				this.setBpf(0, 0.707);
+			});
 
 			if (speed.notNil, {
 				// speed.postln;
@@ -262,6 +280,21 @@ DarknessToolSample {
 		var sanitized = value.max(-1.0).min(1.0);
 		Pdefn( this.pan, sanitized );
 		Pbindef( this.pattern ).set(\pan, sanitized);
+	}
+
+
+	setBpfFreq { |value|
+        Pdefn(this.bpfFreq, value);
+    }
+    setBpfQ { |value|
+        Pdefn(this.bpfQ, value);
+    }
+	setBpf { |freq, q|
+		this.setBpfFreq(freq);
+		this.setBpfQ(q);
+	}
+	setBpfMapper { |func|
+		bpfMapper = func;
 	}
 
 	isPlaying {

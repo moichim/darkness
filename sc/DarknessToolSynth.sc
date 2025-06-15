@@ -39,6 +39,7 @@ DarknessToolSynth {
     var <>beatRel;
 
     var <>vibAmount;
+    var <>relMax;
 
 
 
@@ -64,7 +65,7 @@ DarknessToolSynth {
 		instance.init;
 
 		processing = NetAddr.new( NetAddr.localAddr.hostname, sendingPort );
-		instance.clock = TempoClock.new(0.5);
+		instance.clock = TempoClock.new(1);
 
 		^instance;
 
@@ -98,6 +99,7 @@ DarknessToolSynth {
         this.beatRel = this.symbol( "BeatRel" );
 
         this.vibAmount = this.symbol( "VibAmount" );
+        this.relMax = this.symbol( "RelMax" );
 
 
 		// Inicializace výchozích hodnot
@@ -107,22 +109,25 @@ DarknessToolSynth {
 		Pdefn( this.pan, -1 );
 		Pdefn( this.shift, 0 );
 		Pdefn( this.melody, 0 );
-		Pdefn( this.octave, 3 );
+		Pdefn( this.octave, 4 );
 		Pdefn( this.scale, Scale.minorPentatonic );
+
+        Pdefn( this.vibAmount, 1 );
+         Pdefn(this.relMax, 0.5);
 
         // Specifické pro syntetizovaný tool
         Pdefn( this.depthStart, Pseq([6,4,2], inf) );
         Pdefn( this.depthEnd, Pseq( [1.2,2,1.8,5,0.75], inf ) );
         Pdefn( this.atk, Pwhite(0.005, 0.02, inf) );
         Pdefn( this.sus, Pwhite(0.02, 0.25, inf) );
-        Pdefn( this.rel, Pwhite(0.5, 1, inf) );
+        Pdefn( this.rel, Pwhite( 0.1, Pdefn(this.relMax), inf ));
         Pdefn( this.vibRate, Pseq( [4.0, 50.0, 20.0, 15.0], inf ) );
         Pdefn( this.vibDepth, Pseq([0.01, 0.05, 0.15], inf) );
         Pdefn( this.beatAmp, Pseq([1.0, 0.3, 0.6, 0.9], inf) );
         Pdefn( this.beatFreqRatio, Pseq([0.25, 0.5, 1, 2], inf) );
         Pdefn( this.beatRel, Pwhite(0.03, 0.5, inf) );
 
-        Pdefn( this.vibAmount, 1 );
+        
 
 		// Inicializace vzorku
 		Pbindef.new(this.pattern,
@@ -165,19 +170,25 @@ DarknessToolSynth {
 
 			this.setPan( pan );
 
-			[this.name, "orientation", orientation,"speedAvg", speedAvg, "speed", speed].postln;
+			// [this.name, "orientation", orientation,"speedAvg", speedAvg, "speed", speed].postln;
 
             if (orientation.notNil, {
-			    this.setVibAmount( orientation.linlin(-1.0, 1.0, 0.0, 10.0) );
+			    this.setVibAmount( orientation.linlin(-1.0, 1.0, 0.1, 10.0) );
+                this.setRel( orientation.linlin(-1.0, 1.0, 0.2, 1) );
+                this.setAtk( orientation.linlin(-1.0, 1.0, 0.2, 0.02) );
 			},{});
 
 
             if (speed.notNil, {
-			    this.setVibRate( speed.linlin(0.0, 1.0, 0.8, 20.0) );
+			    this.setVibRate( speed.linlin(0.0, 1.0, 10.0, 50.0) );
 			},{});
+
+            this.setDepthStart( pivotx.linlin(0.0, 1.0, 6.0, 2.0) );
+            this.setDepthEnd( pivoty.linlin(0.0, 1.0, 1.2, 5.0) );
             
 
-			this.setTempo( speedAvg.asStringPrec(2).asFloat.linexp(0.0, 1.0, 1, 3.0).min(6).max(1) );
+			this.setTempo( speedAvg.asStringPrec(2).asFloat.linexp(0.0, 1.0, 1, 1.5).min(1.5).max(1) );
+            // this.setRelMax( speedAvg.max(1.0).linlin(0.0, 1.0, 0.5, 2.5) );
 
 			this.mapOctave( pivoty );
 
@@ -395,6 +406,10 @@ DarknessToolSynth {
 
     setBeatRel {|value|
         Pdefn( this.beatRel, value );
+    }
+
+    setRelMax {|value|
+        Pdefn( this.relMax, value )
     }
 
 	mute {

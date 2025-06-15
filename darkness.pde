@@ -32,8 +32,8 @@ float delta;
 
 void setup() {
     
-    // fullScreen();
-    size( 1920, 1080 );
+    fullScreen();
+    // size( 1920, 1080 );
 
     background(0);
     
@@ -104,7 +104,7 @@ void draw() {
     } else if (initialised == false ) {
         initialised = true;
         controller.trackers.startRecording();
-        controller.trackers.createColorDialog();
+        // controller.trackers.createColorDialog();
     }
 
     float fr = (float) constrain(frameRate, idealFrameRate, maxFrameRate);

@@ -1,4 +1,5 @@
 import java.util.Map;
+import java.util.Arrays;
 
 class Trackers extends ArrayList<Tracker> {
 
@@ -20,76 +21,114 @@ class Trackers extends ArrayList<Tracker> {
 
   void createColorDialog() {
 
+    if ( this.colors != null ) {
+      return;
+    }
+
     UiBooster ui = new UiBooster();
 
     FormBuilder builder = ui.createForm( "Colors and attributes" );
 
-    for ( Tracker tracker : this ) {
+    RowFormBuilder ctrl = builder.startRow();
 
-      Color c = new Color(
-        (int) red( tracker.trackColor ),
-        (int) green( tracker.trackColor ),
-        (int) blue( tracker.trackColor )
-        );
+    ctrl.addButton("Camera", () -> {
+      controller.displayCamera = !controller.displayCamera;
+    });
 
-      String col = "color_" + tracker.instrument;
+    ctrl.addButton( "Trackers", () -> {
+      controller.displayTrackers = !controller.displayTrackers;
+    } );
 
-      builder.addColorPicker( col, c );
+    ctrl.addButton( "FPS", () -> {
+      controller.displayFps = !controller.displayFps;
+    } );
 
-      RowFormBuilder row = builder.startRow( tracker.instrument );
-
-      row.addSlider( "hue_" + tracker.instrument, 0, 1000, (int) (tracker.threshold * 1000), 500, 0 );
-
-      row.addSlider( "sat_" + tracker.instrument, 0, 1000, (int) (tracker.thresholdSaturation * 1000), 500, 0 );
-
-      row.addSlider( "bri_" + tracker.instrument, 0, 1000, (int) (tracker.thresholdBrightness * 1000), 500, 0 );
+    ctrl.endRow();
 
 
 
-      row.endRow();
+    RowFormBuilder row = builder.startRow();
+
+    for (Tracker tracker : this) {
+        row.addButton("Zobraz " + tracker.instrument, () -> {
+            showInstrumentDialog(tracker);
+        });
     }
 
-    Trackers self = this;
+    row.endRow();
 
-
-    builder.setChangeListener( (element, value, f) -> {
-
-      println( element, element.getValue(), self );
-
-      for ( Tracker tracker_ : self ) {
-
-        String col = "color_" + tracker_.instrument;
-        String hue = "hue_" + tracker_.instrument;
-        String sat = "sat_" + tracker_.instrument;
-        String bri = "bri_" + tracker_.instrument;
-
-        // println( element.getLabel(), " -> ", col, tresh, tracker, element.getValue() );
-
-        if ( element.getLabel().equals( col ) ) {
-          Color c = (Color) value;
-          tracker_.setColor( c.getRed(), c.getGreen(), c.getBlue() );
-        }
-
-        if ( element.getLabel().equals( hue ) ) {
-          tracker_.setThresholdHue( ((Integer) value) / 1000f );
-        }
-
-        if ( element.getLabel().equals( sat ) ) {
-          tracker_.setThresholdSaturation( ((Integer) value) / 1000f );
-        }
-
-        if ( element.getLabel().equals( bri ) ) {
-          tracker_.setThresholdBrightness( ((Integer) value) / 1000f );
-        }
-      }
+    // Připrav data do tabulky
+    String[][] tableData = new String[this.size()][6];
+    int i = 0;
+    for (Tracker tracker : this) {
+        tableData[i][0] = tracker.instrument;
+        tableData[i][1] = hue( tracker.trackColor ) + ", " + saturation( tracker.trackColor ) + ", " + brightness( tracker.trackColor );
+        tableData[i][2] = red( tracker.trackColor ) + ", " + green( tracker.trackColor ) + ", " + blue( tracker.trackColor );
+        tableData[i][3] = str(tracker.threshold);
+        tableData[i][4] = str(tracker.thresholdSaturation);
+        tableData[i][5] = str(tracker.thresholdBrightness);
+        i++;
     }
+
+    builder.addTable(
+      "Hodnoty",
+      Arrays.asList("Instrument", "HSB", "RGB", "Hue", "Saturation", "Brightness"),
+      tableData
     );
 
+    int x = 800;
+    int y = 300;
+    int gap = 20;
 
-
+    builder.andWindow()
+      .setSize( x, y )
+      .setPosition( width - x - gap, height - y - gap )
+      .save();
 
     this.colors = builder.run();
-    this.colors.close();
+  }
+
+
+  void showInstrumentDialog( Tracker tracker ) {
+    UiBooster ui = new UiBooster();
+    FormBuilder builder = ui.createForm( "Instrument: " + tracker.instrument );
+    builder.startRow();
+
+    builder.endRow();
+    String col = "color_" + tracker.instrument;
+    Color c = new Color(
+      (int) red( tracker.trackColor ),
+      (int) green( tracker.trackColor ),
+      (int) blue( tracker.trackColor )
+      );
+    builder.addColorPicker( col, c );
+    builder.addSlider( "hue_" + tracker.instrument, 0, 1000, (int) (tracker.threshold * 1000), 500, 0 );
+    builder.addSlider( "sat_" + tracker.instrument, 0, 1000, (int) (tracker.thresholdSaturation * 1000), 500, 0 );
+    builder.addSlider( "bri_" + tracker.instrument, 0, 1000, (int) (tracker.thresholdBrightness * 1000), 500, 0 );
+    
+    builder.setChangeListener( (element, value, f) -> {
+
+      println( element, element.getValue(), tracker );
+
+      if ( element.getLabel().equals( col ) ) {
+        Color c_ = (Color) value;
+        tracker.setColor( c_.getRed(), c_.getGreen(), c_.getBlue() );
+      }
+
+      if ( element.getLabel().equals( "hue_" + tracker.instrument ) ) {
+        tracker.setThresholdHue( ((Integer) value) / 1000f );
+      }
+
+      if ( element.getLabel().equals( "sat_" + tracker.instrument ) ) {
+        tracker.setThresholdSaturation( ((Integer) value) / 1000f );
+      }
+
+      if ( element.getLabel().equals( "bri_" + tracker.instrument ) ) {
+        tracker.setThresholdBrightness( ((Integer) value) / 1000f );
+      }
+    } );
+
+    builder.run();
   }
 
 
