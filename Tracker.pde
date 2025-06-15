@@ -46,6 +46,8 @@ abstract class Tracker {
   RendererCircles circleRenderer = null;
   RendererFolderBank folderBankRenderer = null;
 
+  float orientation = 0;
+
 
   Tracker(
     int r,
@@ -407,11 +409,42 @@ abstract class Tracker {
       float pivotX = 0;
       float pivotY = 0;
 
+      PVector orientationMin = new PVector( controller.mapping.output.x, controller.mapping.output.y );
+      PVector orientationMax = new PVector(0,0);
+
       for ( Blob blob : this.blobs ) {
         speedSum += blob.movement;
         pivotX += blob.center.x;
         pivotY += blob.center.y;
+
+        orientationMin.x = min( orientationMin.x, blob.center.x - (blob.width / 2) );
+        orientationMin.y = min( orientationMin.y, blob.center.y - ( blob.height / 2 ) );
+
+        orientationMax.x = max( orientationMax.x, blob.center.x + ( blob.width / 2 ) );
+        orientationMax.y = max( orientationMax.y, blob.center.y + ( blob.height / 2 ) );
+
       }
+
+      float dimensionX = orientationMax.x - orientationMin.x;
+      float dimensionY = orientationMax.y - orientationMin.y;
+
+      boolean isHorizontal = dimensionX > dimensionY;
+      float mapTo = isHorizontal ? 1 : -1;
+
+      float a = min( dimensionX, dimensionY );
+      float b = max( dimensionX, dimensionY );
+
+      float clear = a * 3.0;
+      b = constrain( b, 0, clear );
+
+      float aspect = map( b, 0.0, clear, 0.0, mapTo );
+      // aspect = constrain( aspect, 0.0, mapTo );
+      this.orientation = aspect;
+
+
+      float orientation = (dimensionX - dimensionY) / max(dimensionX, dimensionY);
+      orientation = constrain(orientation, -1, 1);
+      // this.orientation = orientation;
 
       float speed = speedSum / this.blobs.size();
 
@@ -491,6 +524,7 @@ abstract class Tracker {
     // Print the name of the instrument
     fill( this.trackColor );
     textSize( 10 );
+    textAlign( LEFT );
     text( this.instrument + " : " + this.blobs.size() + " - r:" + red(this.trackColor) + " g:" + green( this.trackColor ) + " b:" + blue( this.trackColor ), 50, 10 );
     // fill(0);
     text( this.averageParticleSpeed, 10, 20 );
@@ -498,6 +532,7 @@ abstract class Tracker {
     text( this.threshold, 10, 30 );
     text( this.thresholdSaturation, 10, 40 );
     text( this.thresholdBrightness, 10, 50 );
+    text( "ORI: " + this.orientation, 10, 70 );
 
     // Print the pan
     noStroke();
@@ -573,6 +608,9 @@ abstract class Tracker {
         1
       )
     );
+
+    // Add orientation -1 = horizontal, 1 = vertical, 0 = square
+    msg.add( this.orientation );
 
     // Sent the message at the end
     controller.send( msg );
