@@ -76,6 +76,7 @@ s.waitForBoot({
 	}).add;
 
 
+	/** Effector pro každou stopu */
 	SynthDef.new(
 		\effector, {
 			arg in, out=0, bpfFreq=1000, bpfQ=0.707;
@@ -85,6 +86,60 @@ s.waitForBoot({
 			Out.ar(out, signal);
 		}
 	).add;
+
+
+	SynthDef(\beatLayered, {
+		|out = 0, freq = 440, depthStart = 3, depthEnd = 1.5,
+		atk = 0.01, sus = 0.1, rel = 0.2, amp = 0.5,
+		vibRate = 6, vibDepth = 0.05,
+		beatFreqRatio = 0.5, beatAmp = 0.4, beatRel = 0.08, pan = 0|
+
+		var freqStart, freqEnd, freqEnv, ampEnv, vibrato, mainOsc;
+		var beatEnv, beatOsc, sig;
+
+		freqStart = freq / depthStart;
+		freqEnd = freq / depthEnd;
+
+		// Frekvenční obálka
+		freqEnv = EnvGen.kr(
+			Env([freqStart, freq, freqEnd], [atk, sus, rel], ['exp', 'exp'])
+		);
+
+		// Vibrato jako relativní odchylka
+		vibrato = SinOsc.kr(vibRate).range(-1, 1) * freq * vibDepth;
+
+		// Hlavní sinusovka s frekvenční obálkou a vibratem
+		mainOsc = SinOsc.ar(freqEnv + vibrato);
+
+		// Amplitudová obálka
+		ampEnv = EnvGen.kr(Env.perc(atk, rel, 1, curve: -4), doneAction: 2);
+
+		// Beatová vrstva – nízká sinusovka s rychlým dozvukem
+		beatEnv = EnvGen.kr(Env.perc(0.001, beatRel), levelScale: beatAmp);
+		beatOsc = SinOsc.ar(freq * beatFreqRatio) * beatEnv;
+
+		// Výstup
+		sig = (mainOsc * ampEnv) + beatOsc;
+
+		sig = sig * amp;
+
+		// sig = Limiter.ar( sig, 1, 0.01 );
+
+		// Kompresor: vstup, kontrolní signál, thresh, slopeBelow, slopeAbove, clampTime, relaxTime
+sig = Compander.ar(
+    sig,         // vstupní signál
+    sig,         // kontrolní signál (self)
+    0.5,         // práh (threshold) - kde začne komprese
+    1,           // slopeBelow - pod prahem neměníme (1 = žádná změna)
+    0.2,         // slopeAbove - nad prahem zeslabíme (0.2 = silná komprese)
+    0.01,        // attack (clampTime)
+    0.1          // release (relaxTime)
+);
+
+		sig = Pan2.ar( sig, pan );
+
+		Out.ar(out, sig);
+	}).add;
 
 
 
@@ -157,7 +212,7 @@ s.waitForBoot({
 	~s2 = Buffer.read(s, ~path.value( "star/star_2.aiff" ));
 	~s3 = Buffer.read(s, ~path.value( "star/star_3.aiff" ));
 
-	~bell = DarknessTool.new("bell", ~in, ~out);
+	~bell = DarknessToolSample.new("bell", ~in, ~out);
 	~bell.setBuf( ~s1.bufnum );
 	~bell
 	.setOctave(6)
@@ -182,7 +237,7 @@ s.waitForBoot({
 
 	~k1 = Buffer.read(s, ~path.value( "string/string_cut.aiff" ));
 
-	~kytar = DarknessTool("kytar",~in,~out);
+	~kytar = DarknessToolSample.new("kytar",~in,~out);
 	~kytar
 	.setBuf(~k1.bufnum)
 	.setOctave(4)
@@ -213,7 +268,7 @@ s.waitForBoot({
 
 	~p1 = Buffer.read(s, ~path.value( "piano/c.wav" ));
 
-	~piano = DarknessTool.new("piano", ~in, ~out);
+	~piano = DarknessToolSample.new("piano_", ~in, ~out);
 	~piano
 	.setDur(1)
 	.setMelody(Pseq([0, 2, 4, 4, 5, 6, 3, 2, 1, 0],inf))
@@ -224,6 +279,29 @@ s.waitForBoot({
 
 	~piano.listen;
 
+
+
+
+
+
+	// Pulse
+	~pulse = DarknessToolSynth.new( "piano", \beatLayered, ~in, ~out );
+
+	~pulse.setDur(1);
+	~pulse.setShift(0);
+	~pulse.setPan(0);
+	~pulse.setOctave( 5 );
+	~pulse.setAmp( 1 );
+
+	// ~pulse.setVibDepth( 0.2 );
+	// ~pulse.setVibRate( 10 );
+	// ~pulse.setBeatAmp( 0.2 );
+
+	~pulse.setOctaveRange( 4, 7 );
+
+	~pulse.listen;
+	// ~pulse.play;
+	// ~pulse.stop;
 
 
 
@@ -245,7 +323,7 @@ s.waitForBoot({
 	~voice2 = Buffer.read(s, ~path.value( "voice/07_c2_rev_2.aiff" ));
 	~voice3 = Buffer.read(s, ~path.value( "voice/07_c2_rev_3.aiff" ));
 
-	~voice = DarknessTool.new("voice", ~in, ~out );
+	~voice = DarknessToolSample.new("voice", ~in, ~out );
 	~voice
 	.setDur(1)
 	.setOctave(6)
@@ -272,7 +350,7 @@ s.waitForBoot({
 
 	~control.addSample(\akord, ~akord);
 
-	~control.addEvent(\acordEvent, SoundEvent.new({
+	~control.addEvent(\acordEvent, DarknessEvent.new({
 		"started".postln;
 		Pdefn(\master, 0.5);
 		~control.playSample( \akord, 0.3 );
@@ -280,7 +358,7 @@ s.waitForBoot({
 		Pdefn(\master, 1);
 	}));
 
-	~control.addEvent(\vinetou, SoundEvent.new({
+	~control.addEvent(\vinetou, DarknessEvent.new({
 
 		~bell.setMelody( Pseq([0,2,4,6,8], inf) );
 		~kytar.setMelody( Pseq([8, 6, 4, 2, 0], inf) );
@@ -292,7 +370,7 @@ s.waitForBoot({
 		~control.setTempoNormal();
 	}));
 
-	~mantraOne = SoundMelody.new();
+	~mantraOne = DarknessMelody.new();
 	~mantraOneMelody = Pseq([0, 2, 5, 8], inf);
 	~mantraOne.addLine(~kytar,
 		melody: ~mantraOneMelody,
@@ -311,7 +389,7 @@ s.waitForBoot({
 	);
 
 
-	~mantraTwo = SoundMelody.new();
+	~mantraTwo = DarknessMelody.new();
 	~mantraTwoMelody = Pseq([0, 5, 2, 3], inf);
 	~mantraTwo.addLine(~kytar,
 		melody: ~mantraTwoMelody,
@@ -329,7 +407,7 @@ s.waitForBoot({
 		octave: 5
 	);
 
-	~mantraThree = SoundMelody.new();
+	~mantraThree = DarknessMelody.new();
 	~mantraThreeMelody = Pseq([0, 5, 2, 8], inf);
 	~mantraThree.addLine(~kytar,
 		melody: ~mantraTwoMelody,
@@ -347,7 +425,7 @@ s.waitForBoot({
 		octave: 5
 	);
 
-	~mantraFour = SoundMelody.new();
+	~mantraFour = DarknessMelody.new();
 	~mantraFourMelody = Pseq([0, 5, 2, 8], inf);
 	~mantraFour.addLine(~kytar,
 		melody: ~mantraFourMelody,
@@ -365,7 +443,7 @@ s.waitForBoot({
 		octave: 5
 	);
 
-	~mantraFive = SoundMelody.new();
+	~mantraFive = DarknessMelody.new();
 	~mantraFive.addLine(~kytar,
 		melody: Pseq( [0, 2, 8, 4, 6, 2, 0], inf ),
 		dur: Pseq([Pseq([0.5],7),2], inf),
@@ -382,7 +460,7 @@ s.waitForBoot({
 		octave: 5
 	);
 
-	~mantraSix = SoundMelody.new();
+	~mantraSix = DarknessMelody.new();
 	~mantraSix.addLine(~kytar,
 		melody: Pseq( [4, 0, 5, 1, 2, 0], inf ),
 		dur: Pseq([Pseq([0.5],6),3], inf),
@@ -399,7 +477,7 @@ s.waitForBoot({
 		octave: 5
 	);
 
-	~mantraSeven = SoundMelody.new();
+	~mantraSeven = DarknessMelody.new();
 	~mantraSeven.addLine(~kytar,
 		melody: Pseq( [0, 0, 3, 3, 5, 5, Pxrand([2, 0], 1)], inf ),
 		dur: Pseq([Pseq([0.5],6),1], inf),

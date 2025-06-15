@@ -1,4 +1,4 @@
-SoundEvent {
+DarknessEvent {
     var <>onStart;
     var <>onStop;
     var <>active = false;

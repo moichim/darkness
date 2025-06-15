@@ -1,4 +1,4 @@
-SoundMelody {
+DarknessMelody {
 
     var <>durs;
     var <>melodies;
