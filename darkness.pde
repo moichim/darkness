@@ -35,6 +35,8 @@ void setup() {
     fullScreen();
     // size( 1920, 1080 );
 
+    noCursor();
+
     background(0);
     
     frameRate(maxFrameRate);
@@ -98,12 +100,13 @@ void draw() {
         background(0);
         fill(255);
         textAlign( CENTER );
-        text( "Loading", width / 2, height / 2 - 50 );
+        text( "Symfonie barev", width / 2, height / 2 - 50 );
 
         textSize( 20 );
-        text( "key 'c' = calibration", width / 2, height / 2 + 50 );
+        text( "© Jan Jáchim, 2025", width / 2, height / 2 + 50 );
 
-        text( "© Jan Jáchim, 2025", width / 2, height / 2 + 100 );
+        fill( 0, 255, 0 );
+        text( "'c' = calibration", width / 2, height / 2 + 100 );
 
         textSize( 15 );
 

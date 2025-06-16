@@ -169,20 +169,20 @@ abstract class Tracker {
   }
 
   public void storeBackup() {
-    String filename = this.getConfigFileName( "backup" );
+    String filename = this.getConfigFileName( "_backup" );
     JSONObject backup = this.toJson();
     saveJSONObject( backup, filename );
   }
 
   public void storeCurrent() {
-    String filename = this.getConfigFileName( "current" );
+    String filename = this.getConfigFileName( "_current" );
     JSONObject current = this.toJson();
     saveJSONObject( current, filename );
   }
 
   public void applyBackup() {
-    String filename = this.getConfigFileName( "backup" );
-    JSONObject backup = this.loadJson( "backup" );
+    String filename = this.getConfigFileName( "_backup" );
+    JSONObject backup = this.loadJson( "_backup" );
     if (backup != null) {
       this.applyJson( backup );
       // this.setColor( this.r, this.g, this.b );
@@ -194,8 +194,8 @@ abstract class Tracker {
   }
 
   public void applyFactory() {
-    String filename = this.getConfigFileName( "factory" );
-    JSONObject backup = this.loadJson( "factory" );
+    String filename = this.getConfigFileName( "_factory" );
+    JSONObject backup = this.loadJson( "_factory" );
     if (backup != null) {
       this.applyJson( backup );
       // this.setColor( this.r, this.g, this.b );
@@ -219,7 +219,7 @@ abstract class Tracker {
         float defaultBrightness,
         int defaultRenderColor
     ) {
-        String filename = this.getConfigFileName( "current" );
+        String filename = this.getConfigFileName( "_current" );
         File file = new File(filename);
         JSONObject obj = null;
         if ( file.exists() ) {
@@ -227,13 +227,13 @@ abstract class Tracker {
             obj = loadJSONObject( filename );
           } catch( Exception e ) {
             obj = this.createDefaultJson( defaultR, defaultG, defaultB, defaultHue, defaultSaturation, defaultBrightness, this.enabled, defaultRenderColor );
-            this.saveJson( obj, "current" );
+            this.saveJson( obj, "_current" );
           }
         }
 
         else {
           obj = this.createDefaultJson( defaultR, defaultG, defaultB, defaultHue, defaultSaturation, defaultBrightness, this.enabled, defaultRenderColor );
-          this.saveJson( obj, "current" );
+          this.saveJson( obj, "_current" );
         }
 
         println( filename, obj );

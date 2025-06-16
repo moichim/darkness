@@ -1,4 +1,5 @@
 /samples/
 *.blend
 *.blend1
-/data/config_*.json
+/data/_current/config_*.json
+/data/_backup/config_*.json

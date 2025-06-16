@@ -322,11 +322,11 @@ class Controller {
         if ( keyPressed ) {
             
             if ( key == 'r' ) {
-                this.trackers.startRecording();
+                // this.trackers.startRecording();
             }
 
             if ( key == 'e' ) {
-                this.trackers.endRecording();
+                // this.trackers.endRecording();
             }
 
             if ( key == 'u' ) {
@@ -338,11 +338,11 @@ class Controller {
             }
 
             if ( key == 's' ) {
-              this.scStart();
+              // this.scStart();
             }
 
             if ( key == 'd' ) {
-              this.scEnd();
+              // this.scEnd();
             }
 
             if ( key == 'c' ) {
@@ -350,7 +350,8 @@ class Controller {
             }
 
             if ( key == 'x' ) {
-              this.trackers.colors.close();
+              if ( this.trackers.colors != null ) 
+                this.trackers.colors.close();
             }
 
 
