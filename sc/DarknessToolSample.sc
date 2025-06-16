@@ -28,6 +28,7 @@ DarknessToolSample {
 	var <>bpfFreq;
 	var <>bpfQ;
 	var <>bpfMapper; // anonymní funkce pro mapping
+	var <>mapper; // anonymní funkce pro mapping orientace
 
 	classvar <processing;
 
@@ -110,7 +111,7 @@ DarknessToolSample {
 
 		// Inicializace listeneru
 		OSCdef.newMatching(this.listener, { |msg, time, addr, recvPort|
-		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[7], pivotx = msg[5], pivoty=msg[6];
+		var amp=msg[1], pan = msg[2], h = msg[3], speed = msg[7], pivotx = msg[5], pivoty=msg[6], orientation=msg[8];
 
 			this.setAmp( amp );
 
@@ -123,9 +124,11 @@ DarknessToolSample {
 
 			if(this.bpfMapper.notNil, {
 				this.bpfMapper.value(msg);
-			}, {
-				this.setBpf(0, 0.707);
-			});
+			}, {});
+
+			if(this.mapper.notNil, {
+				this.mapper.value(amp, pan, h, speed, pivotx, pivoty, orientation);
+			}, {});
 
 			if (speed.notNil, {
 				// speed.postln;
@@ -294,7 +297,11 @@ DarknessToolSample {
 		this.setBpfQ(q);
 	}
 	setBpfMapper { |func|
-		bpfMapper = func;
+		this.bpfMapper = func;
+	}
+
+	setMapper { |func|
+		this.orientationMapper = func;
 	}
 
 	isPlaying {

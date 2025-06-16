@@ -64,6 +64,10 @@ class EventMantraSeven extends EventAbstract {
         this.story.piano.normal().setImpact( 0.9 );
         this.story.piano.normal().setMap( this.monkey );
 
+        this.story.angels.normal().on();
+        this.story.angels.normal().setImpact( 0.7 );
+        this.story.angels.normal().setMap( this.flowers );
+
     }
 
     public void onDeactivate() {

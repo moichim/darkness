@@ -41,6 +41,8 @@ DarknessToolSynth {
     var <>vibAmount;
     var <>relMax;
 
+	var <>mapper; // anonymní funkce pro mapping orientace
+
 
 
 	classvar <processing;
@@ -170,35 +172,33 @@ DarknessToolSynth {
 
 			this.setPan( pan );
 
+			this.mapOctave( pivoty );
+
 			// [this.name, "orientation", orientation,"speedAvg", speedAvg, "speed", speed].postln;
 
             if (orientation.notNil, {
-			    this.setVibAmount( orientation.linlin(-1.0, 1.0, 0.1, 10.0) );
-                this.setRel( orientation.linlin(-1.0, 1.0, 0.2, 1) );
-                this.setAtk( orientation.linlin(-1.0, 1.0, 0.2, 0.02) );
+			    // this.setVibAmount( orientation.linlin(-1.0, 1.0, 0.1, 10.0) );
+                // this.setRel( orientation.linlin(-1.0, 1.0, 0.2, 1) );
+                // this.setAtk( orientation.linlin(-1.0, 1.0, 0.2, 0.02) );
 			},{});
+
+			if(this.mapper.notNil, {
+				this.mapper.value(amp, pan, h, speed, pivotx, pivoty, orientation);
+			}, {});
 
 
             if (speed.notNil, {
-			    this.setVibRate( speed.linlin(0.0, 1.0, 10.0, 50.0) );
+			    // this.setVibRate( speed.linlin(0.0, 1.0, 10.0, 50.0) );
 			},{});
 
-            this.setDepthStart( pivotx.linlin(0.0, 1.0, 6.0, 2.0) );
-            this.setDepthEnd( pivoty.linlin(0.0, 1.0, 1.2, 5.0) );
+            // this.setDepthStart( pivotx.linlin(0.0, 1.0, 6.0, 2.0) );
+            // this.setDepthEnd( pivoty.linlin(0.0, 1.0, 1.2, 5.0) );
             
 
 			this.setTempo( speedAvg.asStringPrec(2).asFloat.linexp(0.0, 1.0, 1, 1.5).min(1.5).max(1) );
             // this.setRelMax( speedAvg.max(1.0).linlin(0.0, 1.0, 0.5, 2.5) );
 
-			this.mapOctave( pivoty );
-
-			if (speedAvg.notNil, {
-				// speed.postln;
-			},{});
-
-			if (this.acceptsDur, {
-				// this.setTempo( pivotx.linlin(0.0, 1.0, 0.5, 2.0).min(2).max(0.5) );
-			},{});
+			
 			
 
 		},
@@ -411,6 +411,10 @@ DarknessToolSynth {
     setRelMax {|value|
         Pdefn( this.relMax, value )
     }
+
+	setMapper { |func|
+		this.mapper = func;
+	}
 
 	mute {
 		OSCdef(this.listener).enable;

@@ -27,7 +27,7 @@ class Trackers extends ArrayList<Tracker> {
 
     UiBooster ui = new UiBooster();
 
-    FormBuilder builder = ui.createForm( "Colors and attributes" );
+    FormBuilder builder = ui.createForm( "Calibration" );
 
     RowFormBuilder ctrl = builder.startRow();
 
@@ -39,8 +39,34 @@ class Trackers extends ArrayList<Tracker> {
       controller.displayTrackers = !controller.displayTrackers;
     } );
 
-    ctrl.addButton( "FPS", () -> {
-      controller.displayFps = !controller.displayFps;
+    ctrl.addButton( "Enable all", () -> {
+      controller.trackers.forEach( t -> {
+        t.enable();
+      } );
+    } );
+
+    ctrl.addButton( "Disable all", () -> {
+      controller.trackers.forEach( t -> {
+        t.disable();
+      } );
+    } );
+
+    ctrl.addButton( "Store", () -> {
+      controller.trackers.forEach( t -> {
+        t.storeBackup();
+      } );
+    } );
+
+    ctrl.addButton( "Restore", () -> {
+      controller.trackers.forEach( t -> {
+        t.applyBackup();
+      } );
+    } );
+
+    ctrl.addButton( "Factory", () -> {
+      controller.trackers.forEach( t -> {
+        t.applyFactory();
+      } );
     } );
 
     ctrl.endRow();
@@ -50,40 +76,44 @@ class Trackers extends ArrayList<Tracker> {
     RowFormBuilder row = builder.startRow();
 
     for (Tracker tracker : this) {
-        row.addButton("Zobraz " + tracker.instrument, () -> {
+
+      Color t = new Color( ( brightness( tracker.trackColor ) ) > 127 ? color( 0 ) : color( 255 ) );
+
+        row.addButton(
+          tracker.instrument, 
+          (element, form) -> {
             showInstrumentDialog(tracker);
-        });
+          },
+          new Color( tracker.trackColor ),
+          t
+        );
+  
     }
 
     row.endRow();
 
-    // Připrav data do tabulky
-    String[][] tableData = new String[this.size()][6];
-    int i = 0;
+    RowFormBuilder onoff = builder.startRow();
+
     for (Tracker tracker : this) {
-        tableData[i][0] = tracker.instrument;
-        tableData[i][1] = hue( tracker.trackColor ) + ", " + saturation( tracker.trackColor ) + ", " + brightness( tracker.trackColor );
-        tableData[i][2] = red( tracker.trackColor ) + ", " + green( tracker.trackColor ) + ", " + blue( tracker.trackColor );
-        tableData[i][3] = str(tracker.threshold);
-        tableData[i][4] = str(tracker.thresholdSaturation);
-        tableData[i][5] = str(tracker.thresholdBrightness);
-        i++;
+        onoff.addButton("Přepni " + tracker.instrument, () -> {
+            tracker.toggle();
+        });
     }
 
-    builder.addTable(
-      "Hodnoty",
-      Arrays.asList("Instrument", "HSB", "RGB", "Hue", "Saturation", "Brightness"),
-      tableData
-    );
+    onoff.endRow();
 
     int x = 800;
-    int y = 300;
+    int y = 200;
     int gap = 20;
 
     builder.andWindow()
       .setSize( x, y )
       .setPosition( width - x - gap, height - y - gap )
       .save();
+
+    builder.setCloseListener((form) -> {
+      this.colors = null;
+    });
 
     this.colors = builder.run();
   }
@@ -286,10 +316,28 @@ class Trackers extends ArrayList<Tracker> {
 
   public void draw() {
 
+    stroke( 255 );
+
+    rect( 0, 0, controller.mapping.input.x, controller.mapping.input.y );
+
+    noStroke();
+
     for ( int i = 0; i < this.size(); i++ ) {
       Tracker tracker = this.get(i);
       tracker.draw();
       tracker.drawSound( i );
     }
+
+    float gap = 50;
+
+    fill(0);
+    rectMode(CORNER);
+    rect( controller.mapping.input.x + gap, 125, 200, 50 );
+
+    textAlign( LEFT );
+    fill( 255 );
+    textSize( 20 );
+    text( story.phase.getCurrentPhase().key().toString(), controller.mapping.input.x + gap, 125 );
+    text( "FPS: " + frameRate, controller.mapping.input.x + gap, 145 );
   }
 }

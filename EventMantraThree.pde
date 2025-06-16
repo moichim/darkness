@@ -48,6 +48,14 @@ class EventMantraThree extends EventAbstract {
         this.story.voice.round().on();
         this.story.voice.round().configure(6);
 
+        this.story.pulse.circle().on();
+        this.story.pulse.circle().setImpact( 0.6 );
+        this.story.pulse.circle().setNumber((int) random(5, 10));
+
+        this.story.angels.circle().on();
+        this.story.angels.circle().setImpact( 0.6 );
+        this.story.angels.circle().setNumber((int) random(5, 10));
+
     }
 
     public void onDeactivate() {
@@ -60,6 +68,8 @@ class EventMantraThree extends EventAbstract {
         this.story.bell.colors().setThreshold(80);
         this.story.voice.colors().setThreshold(80);
         this.story.voice.round().off();
+        this.story.pulse.circle().off();
+        this.story.angels.circle().off();
 
     }
 

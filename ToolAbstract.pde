@@ -138,6 +138,10 @@ abstract class ToolAbstract extends Tracker {
     protected abstract void onRefresh();
 
     protected void updateTool() {
+
+        // Vypnutí vypnutých trackerů
+        if ( !this.enabled ) { return; }
+
         this.phaseTick++;
         this.onUpdateTool();
         this.updateEffects();

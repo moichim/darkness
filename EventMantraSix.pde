@@ -55,6 +55,10 @@ class EventMantraSix extends EventAbstract {
         this.story.pulse.circle().setImpact( 0.6 );
         this.story.pulse.circle().setNumber(7);
 
+        this.story.angels.columns().on();
+        this.story.angels.columns().setImpact( 0.7 );
+        this.story.angels.columns().setNumber( 6 );
+
     }
 
     public void onDeactivate() {
@@ -70,6 +74,7 @@ class EventMantraSix extends EventAbstract {
         this.story.voice.colors().setThreshold(80);
         this.story.voice.round().off();
         this.story.pulse.circle().off();
+        this.story.angels.columns().off();
 
     }
 

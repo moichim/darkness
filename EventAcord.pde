@@ -46,6 +46,10 @@ class EventAcord extends EventAbstract {
         this.story.pulse.normal().setImpact( 0.2 );
         this.story.pulse.normal().setMap( this.monkey );
 
+        this.story.angels.columns().on();
+        this.story.angels.columns().setImpact( 0.7 );
+        this.story.angels.columns().setNumber( (int) random( 4, 100 ) );
+
     }
 
     public void onDeactivate() {
@@ -57,6 +61,7 @@ class EventAcord extends EventAbstract {
         this.story.kytar.normal().off();
         this.story.bell.normal().off();
         this.story.pulse.normal().off();
+        this.story.angels.columns().off();
 
         this.story.sendEventEnd();
 

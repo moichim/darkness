@@ -42,6 +42,8 @@ abstract class Tracker {
   boolean closest = false;
   boolean ready = false;
 
+  protected boolean enabled = true;
+
   RendererParticles particleRenderer = null;
   RendererCircles circleRenderer = null;
   RendererFolderBank folderBankRenderer = null;
@@ -58,8 +60,11 @@ abstract class Tracker {
     float brightness,
     String instrument
   ) {
+
+    this.instrument = instrument;
+
     // Look for the color configuration
-    JSONObject config = this.loadColorConfig( instrument, r, g, b, threshold, saturation, brightness );
+    JSONObject config = this.loadColorConfig( instrument, r, g, b, threshold, saturation, brightness, color( r,g,b ) );
 
     float storedHue = config.getFloat( "hue" );
     float storedSaturation = config.getFloat( "saturation" );
@@ -75,12 +80,134 @@ abstract class Tracker {
     this.thresholdSaturation = storedSaturation;
     this.thresholdBrightness = storedBrightness;
     this.emissionColor = this.trackColor;
-    this.instrument = instrument;
+
+    this.applyJson( config );
+    
     this.calculateTrasholds(this.trackColor);
 
     this.ready = true;
 
   }
+
+  protected JSONObject toJson() {
+    JSONObject obj = new JSONObject();
+    obj.setFloat("r", this.r);
+    obj.setFloat("g", this.g);
+    obj.setFloat("b", this.b);
+    obj.setFloat("hue", this.threshold);
+    obj.setFloat("saturation", this.thresholdSaturation);
+    obj.setFloat("brightness", this.thresholdBrightness);
+    obj.setString("instrument", this.instrument);
+    obj.setBoolean("enabled", this.enabled);
+    obj.setInt( "renderColor", this.emissionColor );
+    return obj;
+  }
+
+  protected JSONObject createDefaultJson(
+    float r,
+    float g,
+    float b,
+    float threshold,
+    float thresholdSaturation,
+    float thresholdBrightness,
+    boolean enabled,
+    int renderColor
+  ) {
+    JSONObject obj = new JSONObject();
+    obj.setFloat("r", r);
+    obj.setFloat("g", g);
+    obj.setFloat("b", b);
+    obj.setFloat("hue", threshold);
+    obj.setFloat("saturation", thresholdSaturation);
+    obj.setFloat("brightness", thresholdBrightness);
+    obj.setString("instrument", this.instrument);
+    obj.setBoolean("enabled", enabled);
+    obj.setInt("renderColor", renderColor);
+    return obj;
+  }
+
+  protected void saveJson(
+    JSONObject obj,
+    String path
+  ) {
+    String filename = this.getConfigFileName( path );
+    saveJSONObject( obj, filename );
+    println( "Saved config to", filename );
+  }
+
+  protected JSONObject loadJson( String path ) {
+    String filename = this.getConfigFileName( path );
+    JSONObject obj = null;
+    try {
+      obj = loadJSONObject( filename );
+    } catch (Exception e) {
+      println("Error loading JSON from", filename, e);
+    }
+    return obj;
+  }
+
+
+  protected void applyJson(JSONObject obj) {
+    if (obj == null) return;
+
+    if (obj.hasKey("r")) this.r = obj.getFloat("r");
+    if (obj.hasKey("g")) this.g = obj.getFloat("g");
+    if (obj.hasKey("b")) this.b = obj.getFloat("b");
+    if (obj.hasKey("hue")) this.threshold = obj.getFloat("hue");
+    if (obj.hasKey("saturation")) this.thresholdSaturation = obj.getFloat("saturation");
+    if (obj.hasKey("brightness")) this.thresholdBrightness = obj.getFloat("brightness");
+    if (obj.hasKey("instrument")) this.instrument = obj.getString("instrument");
+    if (obj.hasKey("enabled")) this.enabled = obj.getBoolean("enabled");
+    if (obj.hasKey("renderColor")) this.emissionColor = obj.getInt("renderColor");
+
+    // Pokud měníš barvu, aktualizuj trackColor a emissionColor
+    if (obj.hasKey("r") && obj.hasKey("g") && obj.hasKey("b")) {
+      this.trackColor = color(this.r, this.g, this.b);
+      this.emissionColor = this.trackColor;
+      this.calculateTrasholds(this.trackColor);
+    }
+  }
+
+  public void storeBackup() {
+    String filename = this.getConfigFileName( "backup" );
+    JSONObject backup = this.toJson();
+    saveJSONObject( backup, filename );
+  }
+
+  public void storeCurrent() {
+    String filename = this.getConfigFileName( "current" );
+    JSONObject current = this.toJson();
+    saveJSONObject( current, filename );
+  }
+
+  public void applyBackup() {
+    String filename = this.getConfigFileName( "backup" );
+    JSONObject backup = this.loadJson( "backup" );
+    if (backup != null) {
+      this.applyJson( backup );
+      // this.setColor( this.r, this.g, this.b );
+      this.storeCurrent();
+      println("Applied backup from", filename);
+    } else {
+      println("No backup found at", filename);
+    }
+  }
+
+  public void applyFactory() {
+    String filename = this.getConfigFileName( "factory" );
+    JSONObject backup = this.loadJson( "factory" );
+    if (backup != null) {
+      this.applyJson( backup );
+      // this.setColor( this.r, this.g, this.b );
+      this.storeCurrent();
+      println("Applied backup from", filename);
+    } else {
+      println("No backup found at", filename);
+    }
+  }
+
+
+
 
   public JSONObject loadColorConfig(
         String instrument,
@@ -89,65 +216,79 @@ abstract class Tracker {
         float defaultB,
         float defaultHue,
         float defaultSaturation,
-        float defaultBrightness
+        float defaultBrightness,
+        int defaultRenderColor
     ) {
-        String filename = this.getConfigFileName( instrument );
+        String filename = this.getConfigFileName( "current" );
+        File file = new File(filename);
         JSONObject obj = null;
-        try {
+        if ( file.exists() ) {
+          try {
             obj = loadJSONObject( filename );
-        } catch( Exception e ) {
-            obj = this.saveColorConfig( instrument, defaultR, defaultG, defaultB, defaultHue, defaultSaturation, defaultBrightness );
+          } catch( Exception e ) {
+            obj = this.createDefaultJson( defaultR, defaultG, defaultB, defaultHue, defaultSaturation, defaultBrightness, this.enabled, defaultRenderColor );
+            this.saveJson( obj, "current" );
+          }
         }
 
-        if (obj == null) {
-          // Pokud se stále nepodařilo vytvořit, vytvoř prázdný objekt s výchozími hodnotami
-          obj = new JSONObject();
-          obj.setFloat( "r", defaultR );
-          obj.setFloat( "g", defaultG );
-          obj.setFloat( "b", defaultB );
-          obj.setFloat( "hue", defaultHue );
-          obj.setFloat( "saturation", defaultSaturation );
-          obj.setFloat( "brightness", defaultBrightness );
-          saveJSONObject(obj, filename);
-      }
+        else {
+          obj = this.createDefaultJson( defaultR, defaultG, defaultB, defaultHue, defaultSaturation, defaultBrightness, this.enabled, defaultRenderColor );
+          this.saveJson( obj, "current" );
+        }
 
         println( filename, obj );
 
         return obj;
     }
 
-    public String getConfigFileName( String inst ) {
-        return dataPath( "config_" + inst.replace("/", "") + ".json" );
-    }
 
-    public JSONObject saveColorConfig(
-        String instrument,
-        float r,
-        float g,
-        float b,
-        float trackHue,
-        float trackSaturation,
-        float trackBrightness
-    ) {
-        String filename = this.getConfigFileName( instrument );
-        JSONObject obj = new JSONObject();
-        obj.setFloat( "r", r );
-        obj.setFloat( "g", g );
-        obj.setFloat( "b", b );
-        obj.setFloat( "hue", trackHue );
-        obj.setFloat( "saturation", trackSaturation );
-        obj.setFloat( "brightness", trackBrightness );
-        saveJSONObject( obj, filename );
-        return obj;
+  
+
+
+
+
+    public String getConfigFileName(String path ) {
+        return dataPath( path + "/config_" + this.instrument.replace("/", "") + ".json" );
     }
 
     protected void persist() {
       
       if ( this.ready == true ) {
-        this.saveColorConfig( this.instrument, red( this.trackColor), green(this.trackColor), blue(this.trackColor), this.threshold, this.thresholdSaturation, this.thresholdBrightness );
+
+        this.storeCurrent();
       }
       
     }
+
+
+    public boolean isEnabled() {
+    return this.enabled;
+  }
+
+  public void enable() {
+    this.enabled = true;
+    this.persist();
+  }
+
+  public void disable() {
+    this.enabled = false;
+    this.persist();
+    // Nastav všechny částice tohoto trackeru jako mrtvé
+    for (Particle p : controller.particles.points) {
+      if (p.blob != null && p.blob.tracker == this) {
+        p.setDead();
+      }
+    }
+  }
+
+  public void toggle() {
+    this.enabled = !this.enabled;
+    if ( !this.enabled ) {
+      this.disable();
+    } else {
+      this.enable();
+    }
+  }
 
 
     public void setThresholdHue( float value ) {
@@ -239,6 +380,9 @@ abstract class Tracker {
 
   public void processPixel( color currentColor, int x, int y ) {
 
+    // Vypnutí vypnutých trackerů
+    if ( !this.enabled ) { return; }
+
 
     // Aktuální barva pixelu
     float h1 = hue(currentColor);
@@ -280,6 +424,9 @@ abstract class Tracker {
   }
 
   public void update() {
+
+    // Vypnutí vypnutých trackerů
+    if ( !this.enabled ) { return; }
 
     // Perform renderer updates in blobs
     for ( Blob b: this.blobs ) {
@@ -402,6 +549,9 @@ abstract class Tracker {
 
   public void updateStatistics() {
 
+    // Vypnutí vypnutých trackerů
+    if ( !this.enabled ) { return; }
+
     if ( this.blobs.size() > 0 ) {
 
       float speedSum = 0;
@@ -511,8 +661,11 @@ abstract class Tracker {
     translate( start, 0 );
 
     // print bg
-    fill( 0 );
-    stroke(255);
+    fill( this.enabled
+      ? this.blobs.size() > 0 ? 255 : 200
+      : 0
+    );
+    stroke( this.trackColor );
     rect( 0, 0, w, h );
 
     // Print pan
@@ -522,17 +675,18 @@ abstract class Tracker {
     );
 
     // Print the name of the instrument
-    fill( this.trackColor );
+    fill( this.enabled ? 0 : 255 );
     textSize( 10 );
     textAlign( LEFT );
-    text( this.instrument + " : " + this.blobs.size() + " - r:" + red(this.trackColor) + " g:" + green( this.trackColor ) + " b:" + blue( this.trackColor ), 50, 10 );
+    text( this.instrument + " : " + this.blobs.size() + " - r:" + red(this.trackColor) + " g:" + green( this.trackColor ) + " b:" + blue( this.trackColor ), 10, 10 );
     // fill(0);
-    text( this.averageParticleSpeed, 10, 20 );
-
-    text( this.threshold, 10, 30 );
-    text( this.thresholdSaturation, 10, 40 );
-    text( this.thresholdBrightness, 10, 50 );
+    text( "AVG PS:" + this.averageParticleSpeed, 10, 20 );
+    text( "AVG S: " + this.averageSpeed, 10, 30 );
+    text( "H: " + this.h, 10, 40 );
+    text( "PI Y:" + this.pivot.y, 10, 50 );
+    text( "PI X: " + this.pivot.x, 10, 60 );
     text( "ORI: " + this.orientation, 10, 70 );
+    text( this.enabled ? "ENABLED" : "DISABLED", 10, 80 );
 
     // Print the pan
     noStroke();
@@ -550,7 +704,7 @@ abstract class Tracker {
     );
 
     // Print the speed
-    fill(255);
+    fill(this.enabled ? 0 : 255);
     rect(
       w - 20,
       0, 10,
@@ -569,6 +723,22 @@ abstract class Tracker {
   void sendInstrumentMessage(
     float amplitude
   ) {
+
+    // Vypnutí vypnutých trackerů
+    // Pokud není aktivní nebo nemá blob(y), pošli nuly
+    if (!this.enabled || this.blobs.size() == 0) {
+      OscMessage msg = controller.msg(this.instrument);
+      msg.add(0.0); // amplitudeAspect * amplitude
+      msg.add(0.0); // pan
+      msg.add(0.0); // h
+      msg.add(0.0); // averageSpeed
+      msg.add(0.0); // pivot.x
+      msg.add(0.0); // pivot.y
+      msg.add(0.0); // averageParticleSpeed
+      msg.add(0.0); // orientation
+      controller.send(msg);
+      return;
+    }
 
     amplitude = constrain( amplitude, 0, 1 );
 

@@ -124,4 +124,11 @@ DarknessControl {
 		});
 	}
 
+	setShiftRange {|number|
+		var range = (0..number);
+		this.tools.do({|item|
+			item.setShift(Pxrand(range, inf));
+		});
+	}
+
 }

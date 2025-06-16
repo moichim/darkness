@@ -16,7 +16,7 @@ s = Server.default;
 s.waitForBoot({
 
 
-	Pdefn( \master, 0.5 );
+	Pdefn( \master, 1 );
 
 	~in = 57133;
 	~out = 47120;
@@ -206,6 +206,87 @@ s.waitForBoot({
 	}).play;
 
 
+	// Vokálovitý zvuk: polyfonní VarSaw, formantové filtry, jemný chorus a reverb
+	// Andělský vokálový synth s výrazným reverbem a jemným chorusem
+	SynthDef(\polyLayeredSynth, {
+		|out = 0, freq = 440, amp = 1, atk = 0.15, sus = 0.5, rel = 2.5, pan = 0,
+		vibRate = 5, vibDepth = 0.02, depthEnd = 1, beatAmp = 0|
+
+		var sig, ampEnv, dry, chorus, revMix, outEnv;
+		var formantFreqs, formantRatios, nFormants, norm;
+
+		var panSpread = 0.05;
+
+		// beatAmp = beatAmp.linlin(-1, 1, 0, 1);
+
+		// Sborový základ: 3 SinOsc s jemným rozladěním
+		sig = (
+			Pan2.ar( SinOsc.ar(freq), pan - panSpread ) +
+			Pan2.ar( SinOsc.ar(freq * 1.005, 0.2pi), pan + panSpread ) +
+			Pan2.ar( LinXFade2.ar(
+				SinOsc.ar(freq * 0.997, 0.4pi),
+				Saw.ar(freq * 0.997, 0.4pi),
+				beatAmp
+			), pan + LFNoise1.kr(0.2).range(-1 * panSpread, panSpread) )
+		) / 3;
+
+		// Hlavní obálka
+		ampEnv = EnvGen.kr(
+			Env([0, 1.5, 1, 0], [atk, sus, rel], [-4, -4, -4]),
+			doneAction: 2
+		);
+		sig = sig * ampEnv * amp;
+
+		// 5 formantových frekvencí pro bohatší vokál
+		formantRatios = [ 0.75, 1, 1.25, 1.5, 2, 2.5, 3]; // např. 1, 5/4, 3/2, 2, 5/2
+		formantFreqs = formantRatios.collect { |r| freq * r };
+		nFormants = formantFreqs.size;
+
+		// Randomizace Q a frekvence, obálka pouze depthEnd
+		dry = Mix.fill(nFormants, { |i|
+			var q = 0.18 + LFNoise1.kr(0.5).range(-0.04, 0.04);
+			var freqOffset = LFNoise1.kr(0.3).range(-10, 10);
+			var freqEnv = EnvGen.kr(
+				Env(
+				[formantFreqs[i], formantFreqs[i] * depthEnd], // levels
+				[atk + sus + rel],                             // times
+				-4                                             // curve
+			)
+			);
+			var vibrato = SinOsc.kr(vibRate, 0, vibDepth * formantFreqs[i]);
+			BPF.ar(sig, freqEnv + vibrato + freqOffset, q)
+		}) / nFormants;
+
+		// Chorus efekt
+		chorus = Mix([
+			dry,
+			DelayC.ar(dry, 0.04, SinOsc.kr(0.23, 0, 0.018, 0.02)),
+			DelayC.ar(dry, 0.04, SinOsc.kr(0.17, 0, 0.012, 0.01))
+		]) / 3;
+
+		// Výrazný reverb
+		revMix = 0.55;
+		sig = (chorus * (1 - revMix)); // + (FreeVerb.ar(chorus, 0.98, 0.95, 0.7) * revMix);
+
+		// Výstupní obálka pro plynulé doznění reverbu (delší fade-out)
+		outEnv = EnvGen.kr(
+			Env([1, 1, 0], [atk + sus + rel, 1.2]), // fade-out 1.2s
+			doneAction: 2
+		);
+		sig = sig * outEnv;
+
+
+		// Panorama a limiter s výrazným zesílením
+		sig = Pan2.ar(sig, pan);
+
+		// Limiter na konci
+		sig = Limiter.ar(sig * 8, 0.99);
+
+		Out.ar(out, sig);
+
+	}).add;
+
+
 	// Počkejte, dokud není SynthDef nahrán
     s.sync;
 
@@ -324,6 +405,7 @@ s.waitForBoot({
 	~pulse.setPan(0);
 	~pulse.setOctave( 5 );
 	~pulse.setAmp( 1 );
+	// ~pulse.setMapper
 
 	// ~pulse.setVibDepth( 0.2 );
 	// ~pulse.setVibRate( 10 );
@@ -331,9 +413,63 @@ s.waitForBoot({
 
 	~pulse.setOctaveRange( 4, 7 );
 
+	~pulse.setMapper({|amp, pan, h, speed, pivotx, pivoty, orientation|
+		~pulse.setVibAmount( orientation.linlin(-1.0, 1.0, 0.1, 10.0) );
+		~pulse.setRel( orientation.linlin( -1.0, 1.0, 0.2, 1.0 ) );
+		~pulse.setAtk( orientation.linlin( -1.0, 1.0, 0.2, 0.02 ) );
+		~pulse.setDepthStart( pivotx.linlin( 0.0, 1.0, 6.0, 2.0 ) );
+		~pulse.setDepthEnd( pivoty.linlin( 0.0, 1.0, 1.2, 5.0 ) );
+		if (speed.notNil, {
+			~pulse.setVibRate( speed.linlin(0.0, 1.0, 10.0, 50.0) );
+		},{});
+	});
+
+	~pulse;
+
 	~pulse.listen;
 	// ~pulse.play;
-	// ~pulse.stop;
+	~pulse.stop;
+
+
+	// Pulse
+	~angels = DarknessToolSynth.new( "angels", \polyLayeredSynth, ~in, ~out );
+
+	~angels.setMelody( Pseq([0, 2, 4, 7, 10, 8], inf) );
+	~angels.setDur(1);
+	~angels.setShift(0);
+	~angels.setPan(0);
+	~angels.setOctave( 5 );
+	~angels.setAmp( 1 );
+
+	~angels.setDepthStart(Pseq([3, 2, 1.5], inf)); // Depth start
+	~angels.setDepthEnd(Pseq([1.5, 2, 3], inf)); // Depth end
+	~angels.setVibRate(Pseq([4, 6, 8], inf)); // Vibrato rate
+	~angels.setVibDepth(Pseq([0.05, 0.1, 0.15], inf)); // Vibrato depth
+	~angels.setBeatAmp(Pseq([0.4, 0.6, 0.8], inf)); // Beat amplitude
+	~angels.setBeatFreqRatio(Pseq([0.5, 1, 2], inf)); // Beat frequency ratio
+
+	~angels.setBeatAmp(-1);
+
+	~angels.setMapper({|amp, pan, h, speed, pivotx, pivoty, orientation|
+		// ~angels.setVibAmount( orientation.linlin(-1.0, 1.0, 0.1, 10.0) );
+		~angels.setBeatAmp( orientation );
+		// ~angels.setAtk( orientation.linlin( -1.0, 1.0, 0.2, 0.02 ) );
+		// ~angels.setDepthStart( pivotx.linlin( 0.0, 1.0, 6.0, 2.0 ) );
+		// ~angels.setDepthEnd( pivoty.linlin( 0.0, 1.0, 1.2, 5.0 ) );
+		if (speed.notNil, {
+			// ~angels.setVibRate( speed.linlin(0.0, 1.0, 10.0, 50.0) );
+		},{});
+	});
+
+	// ~angels.setVibDepth( 0.2 );
+	// ~angels.setVibRate( 10 );
+	// ~angels.setBeatAmp( 0.2 );
+
+	~angels.setOctaveRange( 4, 7 );
+
+	~angels.listen;
+	// ~angels.play;
+	~angels.stop;
 
 
 
@@ -589,12 +725,12 @@ s.waitForBoot({
 			code.switch(
 				0, { ~control.playEvent(\acordEvent); },
 				1, { ~control.playEvent(\mantraOne); },
-				2, { ~control.playEvent(\mantraTwo); },	
+				2, { ~control.playEvent(\mantraTwo); },
 		  		3, { ~control.playEvent(\mantraThree); },
 		  		4, { ~control.playEvent(\mantraFour); },
 				5, { ~control.playEvent(\mantraFive); },
 				6, { ~control.playEvent(\mantraSix); },
-				7, { ~control.playEvent(\mantraSeven); }			
+				7, { ~control.playEvent(\mantraSeven); }
 			);
 
 		},{
@@ -641,23 +777,17 @@ s.waitForBoot({
 		// code.postln;
 
 		case {code == 0} {
-
 			~control.applyRandomMelodies;
-
-			// Pdefn(\starShift, Pxrand(#[0,1,2,4],inf));
-			// Pdefn(\kytarShift, Pxrand(#[0,1,2,4],inf));
+			~control.setShiftRange(4); // nastaví shift 0..4
 		}
 		{code == 1} {
-			// Pdefn(\starShift, Pxrand(#[0,0,1,2],inf));
-			// Pdefn(\kytarShift, Pxrand(#[0,0,1,2],inf));
+			~control.setShiftRange(2); // nastaví shift 0..2
 		}
 		{code == 2} {
-			// Pdefn(\starShift, Pxrand(#[0,0,1],inf));
-			// Pdefn(\kytarShift, Pxrand(#[0,0,1],inf));
+			~control.setShiftRange(1); // nastaví shift 0..1
 		}
 		{code == 3} {
-			// Pdefn(\starShift, 0);
-			// Pdefn(\kytarShift, 0);
+			~control.setShiftRange(0); // nastaví shift 0
 		};
 
 		~phase = code;

@@ -14,6 +14,7 @@ class Story {
     ToolBell bell;
     ToolVoice voice;
     ToolPulse pulse;
+    ToolAngels angels;
 
     Story( Controller controller ) {
         this.controller = controller;
@@ -81,6 +82,18 @@ class Story {
 
         this.addTool( this.pulse );
 
+        color angelsColor = color( 168, 165, 44);
+        color angelsRenderColor = color( 151, 102, 207 );
+        this.angels = new ToolAngels(
+            angelsColor,
+            0.128,
+            0.384,
+            0.419,
+            angelsRenderColor
+        );
+
+        this.addTool( this.angels );
+
 
     }
 
@@ -121,7 +134,7 @@ class Story {
         int num = 0;
         
         for ( ToolAbstract tool : this.tools ) {
-            if ( tool.isPlaying == true ) {
+            if ( tool.isPlaying == true && tool.isEnabled() ) {
                 num++;
             }
         }

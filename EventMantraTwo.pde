@@ -46,6 +46,10 @@ class EventMantraTwo extends EventAbstract {
         this.story.pulse.normal().setImpact( 0.7 );
         this.story.pulse.normal().setMap( this.monkey );
 
+        this.story.angels.normal().on();
+        this.story.angels.normal().setImpact( 1.0 );
+        this.story.angels.normal().setMap( this.monkey );
+
     }
 
     public void onDeactivate() {
@@ -57,6 +61,7 @@ class EventMantraTwo extends EventAbstract {
         this.story.kytar.normal().off();
         this.story.bell.normal().off();
         this.story.pulse.normal().off();
+        this.story.angels.normal().off();
 
         this.story.sendEventEnd();
 

@@ -50,6 +50,10 @@ class EventMantraFive extends EventAbstract {
         this.story.voice.round().on();
         this.story.voice.round().configure(6);
 
+        this.story.angels.columns().on();
+        this.story.angels.columns().setImpact( 0.7 );
+        this.story.angels.columns().setNumber( (int) random( 2, 50 ) );
+
     }
 
     public void onDeactivate() {
@@ -64,6 +68,7 @@ class EventMantraFive extends EventAbstract {
         this.story.bell.colors().setThreshold(80);
         this.story.voice.colors().setThreshold(80);
         this.story.voice.round().off();
+        this.story.angels.columns().off();
 
     }
 

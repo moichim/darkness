@@ -97,7 +97,14 @@ void draw() {
         textSize( 100 );
         background(0);
         fill(255);
-        text( "Loading...", width / 2 - 200, height / 2 - 50 );
+        textAlign( CENTER );
+        text( "Loading", width / 2, height / 2 - 50 );
+
+        textSize( 20 );
+        text( "key 'c' = calibration", width / 2, height / 2 + 50 );
+
+        text( "© Jan Jáchim, 2025", width / 2, height / 2 + 100 );
+
         textSize( 15 );
 
         return;
