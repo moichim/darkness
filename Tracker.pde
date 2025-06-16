@@ -40,10 +40,13 @@ abstract class Tracker {
   float particleCount = 0;
 
   boolean closest = false;
+  boolean ready = false;
 
   RendererParticles particleRenderer = null;
   RendererCircles circleRenderer = null;
   RendererFolderBank folderBankRenderer = null;
+
+  float orientation = 0;
 
 
   Tracker(
@@ -55,15 +58,116 @@ abstract class Tracker {
     float brightness,
     String instrument
   ) {
-    this.setColor( r, g, b );
-    this.threshold = threshold;
-    this.thresholdSaturation = saturation;
-    this.thresholdBrightness = brightness;
+    // Look for the color configuration
+    JSONObject config = this.loadColorConfig( instrument, r, g, b, threshold, saturation, brightness );
+
+    float storedHue = config.getFloat( "hue" );
+    float storedSaturation = config.getFloat( "saturation" );
+    float storedBrightness = config.getFloat( "brightness" );
+
+    float storedR = config.getFloat( "r" );
+    float storedG = config.getFloat( "g" );
+    float storedB = config.getFloat( "b" );
+
+
+    this.setColor( storedR, storedG, storedB );
+    this.threshold = storedHue;
+    this.thresholdSaturation = storedSaturation;
+    this.thresholdBrightness = storedBrightness;
     this.emissionColor = this.trackColor;
     this.instrument = instrument;
     this.calculateTrasholds(this.trackColor);
 
+    this.ready = true;
+
   }
+
+  public JSONObject loadColorConfig(
+        String instrument,
+        float defaultR,
+        float defaultG,
+        float defaultB,
+        float defaultHue,
+        float defaultSaturation,
+        float defaultBrightness
+    ) {
+        String filename = this.getConfigFileName( instrument );
+        JSONObject obj = null;
+        try {
+            obj = loadJSONObject( filename );
+        } catch( Exception e ) {
+            obj = this.saveColorConfig( instrument, defaultR, defaultG, defaultB, defaultHue, defaultSaturation, defaultBrightness );
+        }
+
+        if (obj == null) {
+          // Pokud se stále nepodařilo vytvořit, vytvoř prázdný objekt s výchozími hodnotami
+          obj = new JSONObject();
+          obj.setFloat( "r", defaultR );
+          obj.setFloat( "g", defaultG );
+          obj.setFloat( "b", defaultB );
+          obj.setFloat( "hue", defaultHue );
+          obj.setFloat( "saturation", defaultSaturation );
+          obj.setFloat( "brightness", defaultBrightness );
+          saveJSONObject(obj, filename);
+      }
+
+        println( filename, obj );
+
+        return obj;
+    }
+
+    public String getConfigFileName( String inst ) {
+        return dataPath( "config_" + inst.replace("/", "") + ".json" );
+    }
+
+    public JSONObject saveColorConfig(
+        String instrument,
+        float r,
+        float g,
+        float b,
+        float trackHue,
+        float trackSaturation,
+        float trackBrightness
+    ) {
+        String filename = this.getConfigFileName( instrument );
+        JSONObject obj = new JSONObject();
+        obj.setFloat( "r", r );
+        obj.setFloat( "g", g );
+        obj.setFloat( "b", b );
+        obj.setFloat( "hue", trackHue );
+        obj.setFloat( "saturation", trackSaturation );
+        obj.setFloat( "brightness", trackBrightness );
+        saveJSONObject( obj, filename );
+        return obj;
+    }
+
+    protected void persist() {
+      
+      if ( this.ready == true ) {
+        this.saveColorConfig( this.instrument, red( this.trackColor), green(this.trackColor), blue(this.trackColor), this.threshold, this.thresholdSaturation, this.thresholdBrightness );
+      }
+      
+    }
+
+
+    public void setThresholdHue( float value ) {
+      this.threshold = value;
+      this.persist();
+    }
+
+    public void setThresholdSaturation( float value ) {
+      this.thresholdSaturation = value;
+      this.persist();
+    }
+
+    public void setThresholdBrightness( float value ) {
+      this.thresholdBrightness = value;
+      this.persist();
+    }
+
+
+
+
 
   protected void addRenderer(
     RendererAbstract renderer
@@ -92,6 +196,7 @@ abstract class Tracker {
     this.trackColor = col;
     this.emissionColor = col;
     this.calculateTrasholds(this.trackColor);
+    this.persist();
   }
 
   void setColor( float r, float g, float b ) {
@@ -101,6 +206,7 @@ abstract class Tracker {
     this.trackColor = color( r, g, b );
     this.emissionColor = this.trackColor;
     this.calculateTrasholds(this.trackColor);
+    this.persist();
   }
 
   public void preprocessPixels() {
@@ -303,11 +409,42 @@ abstract class Tracker {
       float pivotX = 0;
       float pivotY = 0;
 
+      PVector orientationMin = new PVector( controller.mapping.output.x, controller.mapping.output.y );
+      PVector orientationMax = new PVector(0,0);
+
       for ( Blob blob : this.blobs ) {
         speedSum += blob.movement;
         pivotX += blob.center.x;
         pivotY += blob.center.y;
+
+        orientationMin.x = min( orientationMin.x, blob.center.x - (blob.width / 2) );
+        orientationMin.y = min( orientationMin.y, blob.center.y - ( blob.height / 2 ) );
+
+        orientationMax.x = max( orientationMax.x, blob.center.x + ( blob.width / 2 ) );
+        orientationMax.y = max( orientationMax.y, blob.center.y + ( blob.height / 2 ) );
+
       }
+
+      float dimensionX = orientationMax.x - orientationMin.x;
+      float dimensionY = orientationMax.y - orientationMin.y;
+
+      boolean isHorizontal = dimensionX > dimensionY;
+      float mapTo = isHorizontal ? 1 : -1;
+
+      float a = min( dimensionX, dimensionY );
+      float b = max( dimensionX, dimensionY );
+
+      float clear = a * 3.0;
+      b = constrain( b, 0, clear );
+
+      float aspect = map( b, 0.0, clear, 0.0, mapTo );
+      // aspect = constrain( aspect, 0.0, mapTo );
+      this.orientation = aspect;
+
+
+      float orientation = (dimensionX - dimensionY) / max(dimensionX, dimensionY);
+      orientation = constrain(orientation, -1, 1);
+      // this.orientation = orientation;
 
       float speed = speedSum / this.blobs.size();
 
@@ -387,6 +524,7 @@ abstract class Tracker {
     // Print the name of the instrument
     fill( this.trackColor );
     textSize( 10 );
+    textAlign( LEFT );
     text( this.instrument + " : " + this.blobs.size() + " - r:" + red(this.trackColor) + " g:" + green( this.trackColor ) + " b:" + blue( this.trackColor ), 50, 10 );
     // fill(0);
     text( this.averageParticleSpeed, 10, 20 );
@@ -394,6 +532,7 @@ abstract class Tracker {
     text( this.threshold, 10, 30 );
     text( this.thresholdSaturation, 10, 40 );
     text( this.thresholdBrightness, 10, 50 );
+    text( "ORI: " + this.orientation, 10, 70 );
 
     // Print the pan
     noStroke();
@@ -403,9 +542,9 @@ abstract class Tracker {
 
     // Print the amplitude
     rectMode(CORNER);
-    rect( 
-      w - 10, 
-      0, 
+    rect(
+      w - 10,
+      0,
       10,
       map( this.amplitudeAspect, 0, 1, 0, h )
     );
@@ -451,12 +590,16 @@ abstract class Tracker {
     msg.add(this.pivot.x);
     msg.add(this.pivot.y);
 
+    if (frameCount % 100 == 0) {
+      println( this, this.pivot.x, this.pivot.y );
+    }
+
     // Lastly, add average particle speed
     msg.add(
       map(
-        constrain( 
-          Float.isNaN( this.averageParticleSpeed ) ? 0 : this.averageParticleSpeed, 
-          controller.minSpeed(), 
+        constrain(
+          Float.isNaN( this.averageParticleSpeed ) ? 0 : this.averageParticleSpeed,
+          controller.minSpeed(),
           controller.maxSpeed()
         ),
         controller.minSpeed(),
@@ -465,6 +608,9 @@ abstract class Tracker {
         1
       )
     );
+
+    // Add orientation -1 = horizontal, 1 = vertical, 0 = square
+    msg.add( this.orientation );
 
     // Sent the message at the end
     controller.send( msg );

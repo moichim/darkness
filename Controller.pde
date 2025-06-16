@@ -21,9 +21,9 @@ class Controller {
 
 
   protected float bga = 15;
-  protected boolean displayTrackers = true;
-  protected boolean displayCamera = true;
-  protected boolean displayFps = true;
+  public boolean displayTrackers = false;
+  public boolean displayCamera = false;
+  public boolean displayFps = false;
   protected float colorDeviationThreshold = 100;
   protected float minSpeed = 4;
   protected float maxSpeed = 20;
@@ -222,9 +222,9 @@ class Controller {
 
     this.bga = this.state.getByIndex(0).asFloat();
 
-    this.displayTrackers = (boolean) this.state.getByIndex(1).getValue();
-    this.displayCamera = (boolean) this.state.getByIndex(2).getValue();
-    this.displayFps = (boolean) this.state.getByIndex(3).getValue();
+    // this.displayTrackers = (boolean) this.state.getByIndex(1).getValue();
+    // this.displayCamera = (boolean) this.state.getByIndex(2).getValue();
+    // this.displayFps = (boolean) this.state.getByIndex(3).getValue();
     this.colorDeviationThreshold = this.state.getByIndex(4).asFloat();
     this.minSpeed = this.state.getByIndex( 5 ).asFloat();
     this.maxSpeed = this.state.getByIndex( 6 ).asFloat();
@@ -261,7 +261,6 @@ class Controller {
     OscMessage msg
   ) {
     this.osc.send( msg, "127.0.0.1", 57133 );
-    // println( msg );
   }
 
   public void syncBlip(
@@ -274,7 +273,6 @@ class Controller {
     msg.add( constrain( amp, 0, 1 ) );
     msg.add( 
       freq
-      // constrain( freq, this.blipFreqMin, this.blipFreqMax ) 
     );
     if ( this.trackers.recording ) {
       this.send(msg);
@@ -348,7 +346,7 @@ class Controller {
             }
 
             if ( key == 'c' ) {
-              this.trackers.colors.show();
+              this.trackers.createColorDialog();
             }
 
             if ( key == 'x' ) {
