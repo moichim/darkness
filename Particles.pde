@@ -39,10 +39,8 @@ class Particles {
 
         // Remove the dead or reached
         if ( p.phase == LIFE.DEAD || p.phase == LIFE.REACHED ) {
-          // println( "Point", i, "from", this.points.size(), "just died" );
           // p.blob.particles.remove( p );
           this.points.remove( p );
-          // this.points.remove( p );
         }
 
         // Reassign the lost

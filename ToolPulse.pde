@@ -1,8 +1,6 @@
-class ToolKytar extends ToolAbstract {
+class ToolPulse extends ToolAbstract {
 
-    PImage monkey;
-
-    ToolKytar(
+    ToolPulse(
         color trackColor,
         float hue,
         float saturation,
@@ -14,17 +12,17 @@ class ToolKytar extends ToolAbstract {
             hue,
             saturation,
             brightness,
-            "/kytar",
+            "/pulse",
             renderColor
         );
+
+        // Configure the particle renderer
 
         RendererCircles circles = new RendererCircles(
             this,
             renderColor
         );
         this.addRenderer( circles );
-        this.monkey = loadImage("normals/countryside_raw.png");
-        this.colors().setImpact(0.05);
         
     }
 
@@ -138,15 +136,11 @@ class ToolKytar extends ToolAbstract {
         this.columns().setImpact( 0.5 );
     }
 
-    public void onEventOn() {
-
-    }
-    public void onEventOff() {
-        
-    }
+    public void onEventOn() {}
+    public void onEventOff() {}
 
     protected void onUpdateTool() {
-
+        // Update the tool here
     }
 
     protected void onRefresh() {}

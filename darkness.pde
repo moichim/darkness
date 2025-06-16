@@ -1,13 +1,8 @@
-// Daniel Shiffman
-// http://codingtra.in
-// http://patreon.com/codingtrain
-// Code for: https://youtu.be/r0lvsMPGEoY
-
 import processing.video.*;
 import uibooster.*;
 import uibooster.model.*;
 import oscP5.*;
-import java.awt.Color;  // Java Color třída
+import java.awt.Color;
 
 
 Capture video;
@@ -28,8 +23,8 @@ boolean isReady = false;
 
 int maxFrameRate = 30;
 int idealFrameRate = 15;
-float maxSpeedAspect = 0.9;
-float speedMultiplicator = 1.2;
+float maxSpeedAspect = 0.7;
+float speedMultiplicator = 1;
 void setSpeedMultiplocator(float value) {
     speedMultiplicator = constrain(value,1, 5);
 }
@@ -37,8 +32,10 @@ float delta;
 
 void setup() {
     
-    // fullScreen();
-    size( 1920, 1080 );
+    fullScreen();
+    // size( 1920, 1080 );
+
+    background(0);
     
     frameRate(maxFrameRate);
 
@@ -74,16 +71,14 @@ void setup() {
 
     story.start();
     
-    controller.trackers.createColorDialog();
+    
 
     
     image(video, 0, 0);
     
-    background(0);
-    
     video.loadPixels();
     
-    controller.trackers.startRecording();
+    
     
     // controller.scStart();
 
@@ -94,7 +89,23 @@ void captureEvent(Capture video) {
     video.read();
 }
 
+boolean initialised = false;
+
 void draw() {
+
+    if ( initialised == false && frameCount < 100 ) {
+        textSize( 100 );
+        background(0);
+        fill(255);
+        text( "Loading...", width / 2 - 200, height / 2 - 50 );
+        textSize( 15 );
+
+        return;
+    } else if (initialised == false ) {
+        initialised = true;
+        controller.trackers.startRecording();
+        // controller.trackers.createColorDialog();
+    }
 
     float fr = (float) constrain(frameRate, idealFrameRate, maxFrameRate);
 
@@ -125,8 +136,6 @@ void draw() {
     
     
     controller.drawDebug();
-
-    // println( frameCount );
 
     
     

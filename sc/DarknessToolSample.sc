@@ -1,4 +1,4 @@
-DarknessTool {
+DarknessToolSample {
 
 	var <>name;
 
@@ -25,10 +25,20 @@ DarknessTool {
 	var <>ampFn;
 	var <>panFn;
 
+	var <>bpfFreq;
+	var <>bpfQ;
+	var <>bpfMapper; // anonymní funkce pro mapping
+
 	classvar <processing;
 
 	var <>octaveMin = 2;
 	var <>octaveMax = 6;
+
+	var <>durPrevious;
+
+	var <>acceptsDur = true;
+
+	var <>clock;
 
 
 
@@ -41,6 +51,7 @@ DarknessTool {
 		instance.init;
 
 		processing = NetAddr.new( NetAddr.localAddr.hostname, sendingPort );
+		instance.clock = TempoClock.new(0.5);
 
 		^instance;
 
@@ -61,6 +72,9 @@ DarknessTool {
 		this.pattern = this.symbol("Pattern");
 		this.listener = this.symbol("Listener");
 
+		this.bpfFreq = this.symbol("BpfFreq");
+  		this.bpfQ = this.symbol("BpfQ");
+
 		// Inicializace výchozích hodnot
 		Pdefn( this.buf, 0 );
 		Pdefn( this.dur, 1 );
@@ -70,6 +84,9 @@ DarknessTool {
 		Pdefn( this.melody, 0 );
 		Pdefn( this.octave, 3 );
 		Pdefn( this.scale, Scale.minorPentatonic );
+
+		Pdefn( this.bpfFreq, 0 );
+		Pdefn( this.bpfQ, 0.707 );
 
 		// Inicializace vzorku
 		Pbindef.new(this.pattern,
@@ -81,8 +98,10 @@ DarknessTool {
 			\scale, Pdefn( this.scale ),
 			\octave, Pdefn(this.octave ) ,
 			\pan, Pdefn( this.pan ),
+			\bpfFreq, Pdefn( this.bpfFreq ),
+			\bpfQ, Pdefn( this.bpfQ ),
 			\onNote, Pfunc({
-				this.name.postln;
+				// this.name.postln;
 				processing.sendMsg(this.msg);
 			})
 		);
@@ -91,13 +110,31 @@ DarknessTool {
 
 		// Inicializace listeneru
 		OSCdef.newMatching(this.listener, { |msg, time, addr, recvPort|
-		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4], pivotx = msg[5], pivoty=msg[6];
+		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[7], pivotx = msg[5], pivoty=msg[6];
 
 			this.setAmp( amp );
 
 			this.setPan( pan );
+			// [this.name, speed, speed.asStringPrec(2).asFloat.linexp(0.0, 1.0, 1, 6.0).min(4).max(1)].postln;
 
-			this.setOctave( pivoty );
+			this.setTempo( speed.asStringPrec(2).asFloat.linexp(0.0, 1.0, 1, 6.0).min(6).max(1) );
+
+			this.mapOctave( pivoty );
+
+			if(this.bpfMapper.notNil, {
+				this.bpfMapper.value(msg);
+			}, {
+				this.setBpf(0, 0.707);
+			});
+
+			if (speed.notNil, {
+				// speed.postln;
+			},{});
+
+			if (this.acceptsDur, {
+				// this.setTempo( pivotx.linlin(0.0, 1.0, 0.5, 2.0).min(2).max(0.5) );
+			},{});
+			
 
 		},
 		this.msg,
@@ -115,7 +152,7 @@ DarknessTool {
 
 	play {
 
-		Pbindef(this.pattern).play;
+		Pbindef(this.pattern).play(this.clock);
 		"Spouštím".postln;
 
 	}
@@ -127,6 +164,16 @@ DarknessTool {
 
 	}
 
+	setTempo { |tempo|
+
+	this.clock.tempo = tempo;
+		if (this.acceptsDur == true, {
+			// this.clock.tempo = tempo;
+		},{
+			// this.clock.tempo = 1;
+		});
+	}
+
 	setBuf {
 		|value|
 		Pdefn( this.buf, value );
@@ -135,6 +182,14 @@ DarknessTool {
 	setDur {
 		|value|
 		Pdefn( this.dur, value );
+		this.durPrevious = value;
+	}
+
+	resetDur {
+		if(this.durPrevious.notNil, {
+			this.setDur( this.durPrevious );
+			this.durPrevious = nil;
+		},{});
 	}
 
 	setAmp {| value |
@@ -160,7 +215,7 @@ DarknessTool {
 			};
 		} {
 			if (this.isPlaying.not) {
-				Pbindef(this.pattern).play;
+				Pbindef(this.pattern).play(this.clock);
 				("[" ++ this.name ++ "] started due to sufficient amp").postln;
 			};
 		};
@@ -193,6 +248,8 @@ DarknessTool {
 
 		sanitized = value.min(this.octaveMax).max( this.octaveMin ).floor.asInteger;
 
+		[sanitized, this.name].postln;
+
 		Pdefn( this.octave, sanitized );
 	}
 
@@ -210,7 +267,7 @@ DarknessTool {
 	}
 
 	setOctaveRange {|min,max|
-		this.octaveMin = min.min(max).min(10).max(0).floor.asInteger;
+		this.octaveMin = min.min(max).min(15).max(0).floor.asInteger;
 		this.octaveMax = max.max(min).max(0).floor.asInteger;
 	}
 
@@ -225,6 +282,21 @@ DarknessTool {
 		Pbindef( this.pattern ).set(\pan, sanitized);
 	}
 
+
+	setBpfFreq { |value|
+        Pdefn(this.bpfFreq, value);
+    }
+    setBpfQ { |value|
+        Pdefn(this.bpfQ, value);
+    }
+	setBpf { |freq, q|
+		this.setBpfFreq(freq);
+		this.setBpfQ(q);
+	}
+	setBpfMapper { |func|
+		bpfMapper = func;
+	}
+
 	isPlaying {
 		var player = Pbindef(this.pattern).player;
 		var isPlaying = player.notNil and: { player.isPlaying };
@@ -233,6 +305,11 @@ DarknessTool {
 
 	listen {
 		OSCdef(this.listener).enable;
+		( "Started listening " ++ this.msg ).postln;
+	}
+
+	stopListening {
+		OSCdef(this.listener).disable;
 		( "Started listening " ++ this.msg ).postln;
 	}
 
