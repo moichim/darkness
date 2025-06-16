@@ -110,7 +110,17 @@ DarknessControl {
 
 	playMelody {|key|
 		if(this.melodies.includesKey(key), {
-			this.melodies.at(key).apply;
+			this.melodies.at(key).playEntireMelody;
+		});
+	}
+
+	applyRandomMelodies {
+		var keys = this.melodies.keys;
+		if(keys.size > 0, {
+			var key = keys.choose;
+			this.applyMelodiesOnly(key);
+		}, {
+			"No melodies available to play.".postln;
 		});
 	}
 

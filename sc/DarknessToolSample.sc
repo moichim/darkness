@@ -110,7 +110,7 @@ DarknessToolSample {
 
 		// Inicializace listeneru
 		OSCdef.newMatching(this.listener, { |msg, time, addr, recvPort|
-		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[4], pivotx = msg[5], pivoty=msg[6];
+		var amp = msg[1], pan = msg[2], h = msg[3], speed = msg[7], pivotx = msg[5], pivoty=msg[6];
 
 			this.setAmp( amp );
 

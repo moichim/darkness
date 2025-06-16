@@ -23,7 +23,7 @@ abstract class EventAbstract {
         push();
         translate(20, 100);
         fill( col );
-        ellipse( 0, 0, 20, 20 );
+        // ellipse( 0, 0, 20, 20 );
         pop();
     }
 
@@ -31,7 +31,7 @@ abstract class EventAbstract {
         push();
         translate(20, 100);
         fill( col );
-        rect( 100, 0, 20, 20 );
+        // rect( 100, 0, 20, 20 );
         pop();
     }
 

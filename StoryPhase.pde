@@ -44,6 +44,8 @@ class StoryPhase {
 
         this.sendInstrumentMessages();
 
+        /*
+
         push();
 
         fill( 255 );
@@ -51,6 +53,8 @@ class StoryPhase {
         text( this.current.code() + " ticks:" + this.ticks, width - 200, height- 20 );
 
         pop();
+
+        */
 
     }
 

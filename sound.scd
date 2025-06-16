@@ -376,7 +376,8 @@ s.waitForBoot({
 	.addTool( ~bell )
 	.addTool( ~kytar )
 	.addTool( ~piano )
-	.addTool( ~voice );
+	.addTool( ~voice )
+	.addTool( ~pulse );
 
 	~control.addSample(\akord, ~akord);
 
@@ -586,10 +587,14 @@ s.waitForBoot({
 			"Playing buffered content".postln;
 
 			code.switch(
-				1, { ~control.playEvent(\acordEvent); },
-				2, { ~control.playEvent(\vinetou) },
-				3, { ~control.playMelody(\mantraFour) },
-				4, { ~control.playMelody(\matraFive) }
+				0, { ~control.playEvent(\acordEvent); },
+				1, { ~control.playEvent(\mantraOne); },
+				2, { ~control.playEvent(\mantraTwo); },	
+		  		3, { ~control.playEvent(\mantraThree); },
+		  		4, { ~control.playEvent(\mantraFour); },
+				5, { ~control.playEvent(\mantraFive); },
+				6, { ~control.playEvent(\mantraSix); },
+				7, { ~control.playEvent(\mantraSeven); }			
 			);
 
 		},{
@@ -636,20 +641,23 @@ s.waitForBoot({
 		// code.postln;
 
 		case {code == 0} {
-			Pdefn(\starShift, Pxrand(#[0,1,2,4],inf));
-			Pdefn(\kytarShift, Pxrand(#[0,1,2,4],inf));
+
+			~control.applyRandomMelodies;
+
+			// Pdefn(\starShift, Pxrand(#[0,1,2,4],inf));
+			// Pdefn(\kytarShift, Pxrand(#[0,1,2,4],inf));
 		}
 		{code == 1} {
-			Pdefn(\starShift, Pxrand(#[0,0,1,2],inf));
-			Pdefn(\kytarShift, Pxrand(#[0,0,1,2],inf));
+			// Pdefn(\starShift, Pxrand(#[0,0,1,2],inf));
+			// Pdefn(\kytarShift, Pxrand(#[0,0,1,2],inf));
 		}
 		{code == 2} {
-			Pdefn(\starShift, Pxrand(#[0,0,1],inf));
-			Pdefn(\kytarShift, Pxrand(#[0,0,1],inf));
+			// Pdefn(\starShift, Pxrand(#[0,0,1],inf));
+			// Pdefn(\kytarShift, Pxrand(#[0,0,1],inf));
 		}
 		{code == 3} {
-			Pdefn(\starShift, 0);
-			Pdefn(\kytarShift, 0);
+			// Pdefn(\starShift, 0);
+			// Pdefn(\kytarShift, 0);
 		};
 
 		~phase = code;
