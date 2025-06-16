@@ -174,32 +174,11 @@ DarknessToolSynth {
 
 			this.mapOctave( pivoty );
 
-			// [this.name, "orientation", orientation,"speedAvg", speedAvg, "speed", speed].postln;
-
-            if (orientation.notNil, {
-			    // this.setVibAmount( orientation.linlin(-1.0, 1.0, 0.1, 10.0) );
-                // this.setRel( orientation.linlin(-1.0, 1.0, 0.2, 1) );
-                // this.setAtk( orientation.linlin(-1.0, 1.0, 0.2, 0.02) );
-			},{});
-
 			if(this.mapper.notNil, {
 				this.mapper.value(amp, pan, h, speed, pivotx, pivoty, orientation);
 			}, {});
 
-
-            if (speed.notNil, {
-			    // this.setVibRate( speed.linlin(0.0, 1.0, 10.0, 50.0) );
-			},{});
-
-            // this.setDepthStart( pivotx.linlin(0.0, 1.0, 6.0, 2.0) );
-            // this.setDepthEnd( pivoty.linlin(0.0, 1.0, 1.2, 5.0) );
-            
-
 			this.setTempo( speedAvg.asStringPrec(2).asFloat.linexp(0.0, 1.0, 1, 1.5).min(1.5).max(1) );
-            // this.setRelMax( speedAvg.max(1.0).linlin(0.0, 1.0, 0.5, 2.5) );
-
-			
-			
 
 		},
 		this.msg,
@@ -218,14 +197,14 @@ DarknessToolSynth {
 	play {
 
 		Pbindef(this.pattern).play(this.clock);
-		"Spouštím".postln;
+		["Spouštím", this.name].postln;
 
 	}
 
 	stop {
 
 		Pbindef(this.pattern).stop;
-		"Zastavuji".postln;
+		["Zastavuji", this.name].postln;
 
 	}
 
@@ -312,8 +291,6 @@ DarknessToolSynth {
 		};
 
 		sanitized = value.min(this.octaveMax).max( this.octaveMin ).floor.asInteger;
-
-		[sanitized, this.name].postln;
 
 		Pdefn( this.octave, sanitized );
 	}

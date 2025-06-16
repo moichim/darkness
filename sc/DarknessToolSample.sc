@@ -102,7 +102,6 @@ DarknessToolSample {
 			\bpfFreq, Pdefn( this.bpfFreq ),
 			\bpfQ, Pdefn( this.bpfQ ),
 			\onNote, Pfunc({
-				// this.name.postln;
 				processing.sendMsg(this.msg);
 			})
 		);
@@ -116,7 +115,6 @@ DarknessToolSample {
 			this.setAmp( amp );
 
 			this.setPan( pan );
-			// [this.name, speed, speed.asStringPrec(2).asFloat.linexp(0.0, 1.0, 1, 6.0).min(4).max(1)].postln;
 
 			this.setTempo( speed.asStringPrec(2).asFloat.linexp(0.0, 1.0, 1, 6.0).min(6).max(1) );
 
@@ -129,14 +127,6 @@ DarknessToolSample {
 			if(this.mapper.notNil, {
 				this.mapper.value(amp, pan, h, speed, pivotx, pivoty, orientation);
 			}, {});
-
-			if (speed.notNil, {
-				// speed.postln;
-			},{});
-
-			if (this.acceptsDur, {
-				// this.setTempo( pivotx.linlin(0.0, 1.0, 0.5, 2.0).min(2).max(0.5) );
-			},{});
 			
 
 		},
@@ -156,14 +146,14 @@ DarknessToolSample {
 	play {
 
 		Pbindef(this.pattern).play(this.clock);
-		"Spouštím".postln;
+		["Spouštím", this.name].postln;
 
 	}
 
 	stop {
 
 		Pbindef(this.pattern).stop;
-		"Zastavuji".postln;
+		["Zastavuji", this.name].postln;
 
 	}
 

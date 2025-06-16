@@ -13,8 +13,6 @@ DarknessMelody {
     }
 
     addLine {|tool, dur, melody, octave|
-        melody.postln;
-        melody.notNil.postln;
         if( melody.notNil, { 
             this.melodies.put( tool, melody ) 
         }, {});
@@ -30,7 +28,6 @@ DarknessMelody {
 
         ["Applying melody", this].postln;
 
-        this.durs.keys.do { | key | [key].postln };
         this.durs.keys.do { | key | key.setDur(this.durs.at(key)) };
         this.melodies.keys.do { | key | key.setMelody(this.melodies.at(key)) };
         this.octaves.keys.do { | key | key.setOctave(this.octaves.at(key)) };

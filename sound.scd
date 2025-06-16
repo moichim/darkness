@@ -382,8 +382,6 @@ s.waitForBoot({
 		// freq = pivotx.linlin(0, 1, 1000, 100);
 		freq = orientation.linlin(-1, 1, 1000, 80);
 
-		[orientation, pivotx, freq, q].postln;
-
 		~piano.setBpf(freq, 0.707);
 
 	});
@@ -717,10 +715,8 @@ s.waitForBoot({
 	OSCdef.newMatching(\event, { |msg, time, addr, recvPort|
 		var start = msg[1], code = msg[2];
 
-		[start, code].postln;
-
 		if(start == true, {
-			"Playing buffered content".postln;
+			["Playing buffered content", code ].postln;
 
 			code.switch(
 				0, { ~control.playEvent(\acordEvent); },
@@ -773,8 +769,7 @@ s.waitForBoot({
 	OSCdef.newMatching(\phase, { |msg, time, addr, recvPort|
 		var code = msg[1];
 
-		"Phase changed".postln;
-		// code.postln;
+		["Phase changed", code].postln;
 
 		case {code == 0} {
 			~control.applyRandomMelodies;

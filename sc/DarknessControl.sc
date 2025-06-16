@@ -28,14 +28,12 @@ DarknessControl {
 
 	playAll {
 		this.tools.do({| item |
-			item.postln;
 			item.play;
 		});
 	}
 
 	stopAll {
 		this.tools.do({| item |
-			item.postln;
 			item.stop;
 		});
 	}
@@ -89,11 +87,10 @@ DarknessControl {
 	}
 
 	playEvent {|name|
-		name.postln;
 		if(this.event.isNil and: {this.events.includesKey(name)}, {
 			this.event = this.events.at(name);
 			this.event.start;
-			this.event.postln;
+			["Playing event:", this.event].postln;
 		},{});
 	}
 
