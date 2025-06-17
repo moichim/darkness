@@ -2,6 +2,8 @@ class ToolKytar extends ToolAbstract {
 
     PImage monkey;
 
+    RendererSequence sequence;
+
     ToolKytar(
         color trackColor,
         float hue,
@@ -23,6 +25,15 @@ class ToolKytar extends ToolAbstract {
             renderColor
         );
         this.addRenderer( circles );
+
+        this.sequence = new RendererSequence( this, "animations/head_1" );
+        this.addRenderer( this.sequence );
+
+        // this.sequence
+            // .setLoop( true )
+            // .start();;
+
+
         this.monkey = loadImage("normals/countryside_raw.png");
         this.colors().setImpact(0.05);
         
@@ -32,13 +43,18 @@ class ToolKytar extends ToolAbstract {
 
         this.random().setImpact( this.getRandomFloat(0.2,0.9) );
         this.random().setSpread( this.getRandomFloat( 12, 20 ) );
+
     }
-    public void onMutedOff() {}
+    public void onMutedOff() {
+
+    }
 
     public static final String EFFECT_COLOR = "one_effect_color";
     public static final String EFFECT_GRID = "one_effect_grid";
 
     public void onOneOn() {
+
+        this.sequence.setLoop( true ).start();
 
         // Rise the random colors
 
@@ -81,6 +97,9 @@ class ToolKytar extends ToolAbstract {
     }
 
     public void onOneOff() {
+
+        this.sequence.stop();
+        
         // Cleanup after color changes
         this.colors().setThreshold( 80 );
         this.removeEffect( ToolKytar.EFFECT_COLOR );
