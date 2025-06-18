@@ -36,9 +36,6 @@ class Controller {
   protected float mutualMinDistance = 100;
   protected float mutualMaxDistance = 500;
 
-
-
-
   Controller(
     Capture video,
     int outputWidth,

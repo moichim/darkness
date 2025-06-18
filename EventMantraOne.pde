@@ -26,6 +26,11 @@ class EventMantraOne extends EventAbstract {
 
         this.story.sendEventStart( this.getCode() );
 
+        this.story.kytar.flowers
+            .setLoop(true)
+            .setSpeed(2)
+            .start();
+
         this.renderStart( color(255,0,0) );
 
         this.story.piano.circle().on();
@@ -57,6 +62,8 @@ class EventMantraOne extends EventAbstract {
     }
 
     public void onDeactivate() {
+
+        this.story.kytar.flowers.stop();
 
         this.renderEnd( color(255,0,0) );
 

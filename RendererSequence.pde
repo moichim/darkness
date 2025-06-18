@@ -13,6 +13,9 @@ class RendererSequence extends RendererAbstract {
 
     protected boolean loop = false;
 
+    protected int speed = 1;
+    protected float alpha = 255;
+
     PImage current;
 
     RendererSequence(
@@ -48,6 +51,16 @@ class RendererSequence extends RendererAbstract {
         return this;
     }
 
+    RendererSequence setAlpha( float value ) {
+        this.alpha = value;
+        return this;
+    }
+
+    RendererSequence setSpeed( int value ) {
+        this.speed = value;
+        return this;
+    }
+
     void loadFolder() {
 
         File dir = new File( dataPath( this.folder ) );
@@ -60,6 +73,8 @@ class RendererSequence extends RendererAbstract {
             if ( f.getName().toLowerCase().endsWith(".png") ) {
 
                 this.images.add( loadImage( f.getAbsolutePath() ) );
+
+                println( f.getAbsolutePath() );
 
             }
 
@@ -74,37 +89,7 @@ class RendererSequence extends RendererAbstract {
     void updateInBlob( Blob blob ) {
     }
 
-    void updateInTracker( Tracker tracker ) {
-
-        // println( this.images.size() );
-
-        if ( this.playing == true ) {
-
-            println( this.images.size(), this.tick, this.current.width, this.current.height );
-
-            // Check if the end is reached
-            if ( this.tick > this.images.size() - 1) {
-                if ( this.loop ) {
-                    this.tick = 0;
-                } else {
-                    this.stop();
-                    return;
-                }
-            } 
-            // Play the current image
-            else {
-
-                this.current = this.images.get( this.tick );
-
-                this.tick++;
-
-                
-
-            }
-
-        }
-
-    }
+    void updateInTracker( Tracker tracker ) {}
 
     void drawInTracker() {
 
@@ -113,33 +98,39 @@ class RendererSequence extends RendererAbstract {
 
         if ( this.playing == true ) {
 
-            println( this.images.size(), this.tick, this.current.width, this.current.height );
+            // println( this.images.size(), this.tick, this.current.width, this.current.height );
 
-            // Check if the end is reached
-            if ( this.tick > this.images.size() - 1) {
-                if ( this.loop ) {
-                    this.tick = 0;
-                } else {
-                    this.stop();
-                    return;
+            // Update the frame only whenever the frameCount is divisable by speed
+            if ( frameCount % this.speed == 0 ) {
+
+                // Check if the end is reached
+                if ( this.tick > this.images.size() - 1) {
+                    if ( this.loop ) {
+                        this.tick = 0;
+                    } else {
+                        this.stop();
+                        return;
+                    }
+                } 
+                // Play the current image
+                else {
+
+                    this.current = this.images.get( this.tick );
+
+                    this.tick++;       
+
                 }
-            } 
-            // Play the current image
-            else {
-
-                this.current = this.images.get( this.tick );
-
-                this.tick++;       
 
             }
 
         }
 
         if ( this.current != null && this.playing == true ) {
-            blendMode( REPLACE );
-            tint( this.tracker.emissionColor );
+            blendMode( SCREEN );
+            tint( this.tracker.emissionColor, 126 );
             image( this.current, 0, 0);
             blendMode( BLEND );
+            noTint();
         }
     }
 

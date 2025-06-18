@@ -2,7 +2,8 @@ class ToolKytar extends ToolAbstract {
 
     PImage monkey;
 
-    RendererSequence sequence;
+    RendererSequence head;
+    RendererSequence flowers;
 
     ToolKytar(
         color trackColor,
@@ -26,13 +27,17 @@ class ToolKytar extends ToolAbstract {
         );
         this.addRenderer( circles );
 
-        this.sequence = new RendererSequence( this, "animations/head_1" );
-        this.addRenderer( this.sequence );
+        this.head = new RendererSequence( 
+            this, 
+            "animations/head"
+        );
+        this.addRenderer( this.head );
 
-        // this.sequence
-            // .setLoop( true )
-            // .start();;
-
+        this.flowers = new RendererSequence( 
+            this, 
+            "animations/flower"
+        );
+        this.addRenderer( this.flowers );
 
         this.monkey = loadImage("normals/countryside_raw.png");
         this.colors().setImpact(0.05);
@@ -53,8 +58,6 @@ class ToolKytar extends ToolAbstract {
     public static final String EFFECT_GRID = "one_effect_grid";
 
     public void onOneOn() {
-
-        this.sequence.setLoop( true ).start();
 
         // Rise the random colors
 
@@ -97,8 +100,6 @@ class ToolKytar extends ToolAbstract {
     }
 
     public void onOneOff() {
-
-        this.sequence.stop();
         
         // Cleanup after color changes
         this.colors().setThreshold( 80 );
