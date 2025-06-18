@@ -1,0 +1,3 @@
+run.display.hidpi=false
+run.options.renderer=P2D
+run.options.jvm=-Xmx2G

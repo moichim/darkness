@@ -23,6 +23,12 @@ class ToolKytar extends ToolAbstract {
             renderColor
         );
         this.addRenderer( circles );
+
+        RendererBlobWaves blobWaves = new RendererBlobWaves(
+            this
+        );
+        this.addRenderer( blobWaves );
+
         this.monkey = loadImage("normals/countryside_raw.png");
         this.colors().setImpact(0.05);
         

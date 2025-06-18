@@ -250,6 +250,11 @@ class Particle {
 
   public void draw() {
 
+    RendererParticles renderer = this.getRenderer();
+    if (renderer != null && renderer.isHidden()) {
+        return; // Pokud je renderer skrytý, nevykresluj částici
+    }
+
     push();
 
     strokeWeight(2);
