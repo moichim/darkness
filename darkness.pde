@@ -88,7 +88,7 @@ boolean initialised = false;
 
 void draw() {
 
-    smooth();
+    // smooth();
 
     if ( initialised == false && frameCount < 100 ) {
         

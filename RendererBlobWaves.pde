@@ -45,8 +45,8 @@ class RendererBlobWaves extends RendererAbstract {
             float angle = i * angleStep;
 
             float noiseVal = noise(
-                noiseSeedOffset + cos(angle) * 0.8 + frameCount * 0.02,
-                noiseSeedOffset + sin(angle) * 0.8 + frameCount * 0.02
+                noiseSeedOffset + cos(angle) * 0.5 + frameCount * 0.02,
+                noiseSeedOffset + sin(angle) * 0.5 + frameCount * 0.02
             );
 
             // Výrazné prolínání v okolí hlavních bodů
