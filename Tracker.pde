@@ -74,12 +74,14 @@ abstract class Tracker {
     float storedG = config.getFloat( "g" );
     float storedB = config.getFloat( "b" );
 
+    float storedEmissionColor = config.getInt( "renderColor" );
+
 
     this.setColor( storedR, storedG, storedB );
     this.threshold = storedHue;
     this.thresholdSaturation = storedSaturation;
     this.thresholdBrightness = storedBrightness;
-    this.emissionColor = this.trackColor;
+    this.emissionColor = (int) storedEmissionColor;
 
     this.applyJson( config );
     
@@ -185,7 +187,6 @@ abstract class Tracker {
     JSONObject backup = this.loadJson( "_backup" );
     if (backup != null) {
       this.applyJson( backup );
-      // this.setColor( this.r, this.g, this.b );
       this.storeCurrent();
       println("Applied backup from", filename);
     } else {
@@ -198,7 +199,6 @@ abstract class Tracker {
     JSONObject backup = this.loadJson( "_factory" );
     if (backup != null) {
       this.applyJson( backup );
-      // this.setColor( this.r, this.g, this.b );
       this.storeCurrent();
       println("Applied backup from", filename);
     } else {
@@ -335,7 +335,7 @@ abstract class Tracker {
     this.g = green( col );
     this.b = blue( col );
     this.trackColor = col;
-    this.emissionColor = col;
+    // this.emissionColor = col;
     this.calculateTrasholds(this.trackColor);
     this.persist();
   }
@@ -345,8 +345,39 @@ abstract class Tracker {
     this.g = g;
     this.b = b;
     this.trackColor = color( r, g, b );
-    this.emissionColor = this.trackColor;
+    // this.emissionColor = this.trackColor;
     this.calculateTrasholds(this.trackColor);
+    this.persist();
+  }
+
+  void setEmissionColor( color col ) {
+    this.emissionColor = col;
+    // Najdi ParticleRenderer v seznamu rendererů a nastav mu barvu
+    for (RendererAbstract renderer : renderers) {
+        // Nastav barvu pro všechny známé typy rendererů
+        if (renderer instanceof RendererParticles) {
+            ((RendererParticles)renderer).renderColor = col;
+        }
+        if (renderer instanceof RendererCircles) {
+            ((RendererCircles)renderer).renderColor = col;
+        }
+        if (renderer instanceof RendererRayParticles) {
+            ((RendererRayParticles)renderer).rayColor = col;
+        }
+    }
+  }
+
+  void setEmissionColor(  float r, float g, float b ) {
+    this.setEmissionColor( color( r, g, b ) );
+  }
+
+  void storeEmissionColor( color col ) {
+    this.setEmissionColor( col );
+    this.persist();
+  }
+
+  void storeEmissionColor( float r, float g, float b ) {
+    this.setEmissionColor( r, g, b );
     this.persist();
   }
 
@@ -355,11 +386,7 @@ abstract class Tracker {
   }
 
 
-  public void assignToClosest(
-
-  ) {
-
-  }
+  public void assignToClosest() {}
 
 
 

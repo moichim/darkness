@@ -99,9 +99,8 @@ class RendererParticles extends RendererAbstract {
     }
 
     void updateInTracker( Tracker tracker ) {
-        // Update the drivers
         this.driverRandom.update();
-        this.driverJump.update(); // This seems not to be necessary
+        this.driverJump.update();
     }
 
     void updateInBlob( Blob blob ) {

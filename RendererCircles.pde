@@ -27,7 +27,11 @@ class RendererCircles extends RendererAbstract {
 
         float diameter = max( blob.movement, 20 );
 
-        ellipse( 0, 0, diameter, diameter );
+        float maxOffset = min(diameter, 100);
+
+        if ( frameCount % 5 == 0 ) {
+            ellipse( blob.width / 2, blob.height/2, blob.width/2, blob.height/2 );
+        }
 
         int amount = (int) map( blob.movement, 0, 100, 0, 10 );
 
@@ -38,8 +42,8 @@ class RendererCircles extends RendererAbstract {
             fill( col );
             noStroke();
 
-            float x = random( -diameter, diameter );
-            float y = random( -diameter, diameter );
+            float x = random( -maxOffset, maxOffset );
+            float y = random( -maxOffset, maxOffset );
 
             float w = random( 5, 20 );// map( random(), 0, 1, 5, 20 );
 

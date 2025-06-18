@@ -35,7 +35,7 @@ class RendererBlobWaves extends RendererAbstract {
         float waveAmplitude = baseRadius * 3; // výraznější vlnění
 
         noFill();
-        stroke(tracker.particleRenderer.getColor());
+        stroke(tracker.emissionColor);
         strokeWeight(2);
 
         beginShape();

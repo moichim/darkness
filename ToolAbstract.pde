@@ -18,6 +18,7 @@ abstract class ToolAbstract extends Tracker {
         float saturation,
         float brightness,
         String instrument,
+        /** @deprecated not used anymore!! */
         color renderColor
     ) {
         super(
@@ -30,7 +31,7 @@ abstract class ToolAbstract extends Tracker {
             instrument
         );
 
-        this.particleRenderer = new RendererParticles( this, renderColor );
+        this.particleRenderer = new RendererParticles( this, this.emissionColor );
         this.addRenderer( this.particleRenderer );
 
         // Configure the following movement

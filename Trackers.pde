@@ -124,14 +124,26 @@ class Trackers extends ArrayList<Tracker> {
     FormBuilder builder = ui.createForm( "Instrument: " + tracker.instrument );
     builder.startRow();
 
+    String emission = "emission_" + tracker.instrument;
+
+    Color e = new Color(
+      (int) red( tracker.emissionColor ),
+      (int) green( tracker.emissionColor ),
+      (int) blue( tracker.emissionColor )
+      );
+    builder.addColorPicker( emission, e );
+
     builder.endRow();
-    String col = "color_" + tracker.instrument;
+    String col = "track_" + tracker.instrument;
     Color c = new Color(
       (int) red( tracker.trackColor ),
       (int) green( tracker.trackColor ),
       (int) blue( tracker.trackColor )
       );
     builder.addColorPicker( col, c );
+
+    
+
     builder.addSlider( "hue_" + tracker.instrument, 0, 1000, (int) (tracker.threshold * 1000), 500, 0 );
     builder.addSlider( "sat_" + tracker.instrument, 0, 1000, (int) (tracker.thresholdSaturation * 1000), 500, 0 );
     builder.addSlider( "bri_" + tracker.instrument, 0, 1000, (int) (tracker.thresholdBrightness * 1000), 500, 0 );
@@ -143,6 +155,11 @@ class Trackers extends ArrayList<Tracker> {
       if ( element.getLabel().equals( col ) ) {
         Color c_ = (Color) value;
         tracker.setColor( c_.getRed(), c_.getGreen(), c_.getBlue() );
+      }
+
+      if ( element.getLabel().equals( emission ) ) {
+        Color c_ = (Color) value;
+        tracker.setEmissionColor( c_.getRed(), c_.getGreen(), c_.getBlue() );
       }
 
       if ( element.getLabel().equals( "hue_" + tracker.instrument ) ) {
