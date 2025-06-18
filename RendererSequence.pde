@@ -1,0 +1,141 @@
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+class RendererSequence extends RendererAbstract {
+
+    protected String folder;
+
+    ArrayList<PImage> images = new ArrayList<PImage>();
+
+    protected boolean playing = false;
+    protected int tick = 0;
+
+    protected boolean loop = false;
+
+    protected int speed = 1;
+    protected float alpha = 255;
+
+    PImage current;
+
+    RendererSequence(
+        Tracker tracker,
+        String folder
+    ) {
+
+        super( tracker );
+        this.folder = folder;
+
+        this.loadFolder();
+
+    }
+
+    void start() {
+        if ( ! this.playing ) {
+            this.playing = true;
+            this.tick = 0;
+        }
+    }
+
+    void stop() {
+
+        if ( this.playing ) {
+            this.playing = false;
+            this.tick = 0;
+        }
+
+    }
+
+    RendererSequence setLoop( boolean value ) {
+        this.loop = value;
+        return this;
+    }
+
+    RendererSequence setAlpha( float value ) {
+        this.alpha = value;
+        return this;
+    }
+
+    RendererSequence setSpeed( int value ) {
+        this.speed = value;
+        return this;
+    }
+
+    void loadFolder() {
+
+        File dir = new File( dataPath( this.folder ) );
+        File[] files = dir.listFiles( (d, name) -> name.endsWith(".png") );
+
+        Arrays.sort( files, (f1, f2) -> f1.getName().compareTo(f2.getName()) );
+
+        for ( File f: files ) {
+
+            if ( f.getName().toLowerCase().endsWith(".png") ) {
+
+                this.images.add( loadImage( f.getAbsolutePath() ) );
+
+                println( f.getAbsolutePath() );
+
+            }
+
+        }
+
+        if ( this.images.size() > 0 ) {
+            this.current = this.images.get(0);
+        }
+
+    }
+
+    void updateInBlob( Blob blob ) {
+    }
+
+    void updateInTracker( Tracker tracker ) {}
+
+    void drawInTracker() {
+
+
+        // println( this.images.size() );
+
+        if ( this.playing == true ) {
+
+            // println( this.images.size(), this.tick, this.current.width, this.current.height );
+
+            // Update the frame only whenever the frameCount is divisable by speed
+            if ( frameCount % this.speed == 0 ) {
+
+                // Check if the end is reached
+                if ( this.tick > this.images.size() - 1) {
+                    if ( this.loop ) {
+                        this.tick = 0;
+                    } else {
+                        this.stop();
+                        return;
+                    }
+                } 
+                // Play the current image
+                else {
+
+                    this.current = this.images.get( this.tick );
+
+                    this.tick++;       
+
+                }
+
+            }
+
+        }
+
+        if ( this.current != null && this.playing == true ) {
+            blendMode( SCREEN );
+            tint( this.tracker.emissionColor, 126 );
+            image( this.current, 0, 0);
+            blendMode( BLEND );
+            noTint();
+        }
+    }
+
+    void drawInBlob( Blob blob ) {
+
+    }
+
+}

@@ -18,11 +18,10 @@ class ToolPiano extends ToolAbstract {
 
         // Configure the particle renderer
 
-        RendererCircles circles = new RendererCircles(
-            this,
-            renderColor
+        RendererBlobWaves waves = new RendererBlobWaves(
+            this
         );
-        this.addRenderer( circles );
+        this.addRenderer( waves );
         
     }
 

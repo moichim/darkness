@@ -1,7 +1,7 @@
 class EventAcord extends EventAbstract {
 
     public int getDuration() {
-        return 13 * (int) round( frameRate );
+        return 6 * (int) round( frameRate );
     }
 
     PImage monkey;
@@ -50,9 +50,18 @@ class EventAcord extends EventAbstract {
         this.story.angels.columns().setImpact( 0.7 );
         this.story.angels.columns().setNumber( (int) random( 4, 100 ) );
 
+
+        this.story.kytar.head
+            .setLoop( true )
+            .setSpeed( 3 )
+            .setAlpha( 80 )
+            .start();
+
     }
 
     public void onDeactivate() {
+
+        this.story.kytar.head.stop();
 
         this.renderEnd( color(255,0,0) );
 

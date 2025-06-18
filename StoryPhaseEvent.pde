@@ -14,9 +14,8 @@ class StoryPhaseEvent extends StoryPhaseAbstract {
 
         super(story);
 
-        // this.events.add( new EventRandom( story ) );
         this.events.add( new EventAcord( this.story ) );
-        // this.events.add( new EventVinetou( this.story ) );
+        
         this.events.add( new EventMantraOne( this.story ) );
         this.events.add( new EventMantraTwo( this.story ) );
         this.events.add( new EventMantraThree( this.story ) );
@@ -24,7 +23,6 @@ class StoryPhaseEvent extends StoryPhaseAbstract {
         this.events.add( new EventMantraFive( this.story ) );
         this.events.add( new EventMantraSix( this.story ) );
         this.events.add( new EventMantraSeven( this.story ) );
-        // this.events.add( new EventMiddle( story ) );
 
     }
 
