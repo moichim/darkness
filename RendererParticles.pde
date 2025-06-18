@@ -24,6 +24,8 @@ class RendererParticles extends RendererAbstract {
     DriverApproach driverApproach;
     DriverColor driverColor;
 
+    protected boolean hidden = false;
+
 
     RendererParticles(
         Tracker tracker,
@@ -45,6 +47,14 @@ class RendererParticles extends RendererAbstract {
         this.driverApproach = new DriverApproach( tracker );
         this.driverColor = new DriverColor( tracker );
 
+    }
+
+    public void setHidden(boolean value) {
+        this.hidden = value;
+    }
+
+    public boolean isHidden() {
+        return this.hidden;
     }
 
 

@@ -17,12 +17,11 @@ class ToolPulse extends ToolAbstract {
         );
 
         // Configure the particle renderer
+        // this.particleRenderer.setHidden( true );
 
-        RendererCircles circles = new RendererCircles(
-            this,
-            renderColor
-        );
-        this.addRenderer( circles );
+        RendererRayParticles rays = new RendererRayParticles( this );
+
+        this.addRenderer( rays );
         
     }
 

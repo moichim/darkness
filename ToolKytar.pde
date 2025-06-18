@@ -27,6 +27,12 @@ class ToolKytar extends ToolAbstract {
         );
         this.addRenderer( circles );
 
+        RendererBlobWaves blobWaves = new RendererBlobWaves(
+            this
+        );
+        this.addRenderer( blobWaves );
+
+
         this.head = new RendererSequence( 
             this, 
             "animations/head"

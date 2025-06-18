@@ -16,13 +16,21 @@ class ToolAngels extends ToolAbstract {
             renderColor
         );
 
+        this.particleRenderer.setHidden( true );
+
         // Configure the particle renderer
 
-        RendererCircles circles = new RendererCircles(
+        // RendererCircles circles = new RendererCircles( this );
+        // this.addRenderer( circles );
+
+        RendererBlobImagePixels pixels = new RendererBlobImagePixels(
             this,
-            renderColor
+            "normals/flower_central.png",
+            100,
+            5
         );
-        this.addRenderer( circles );
+
+        this.addRenderer( pixels );
         
     }
 

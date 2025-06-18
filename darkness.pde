@@ -120,6 +120,8 @@ void draw() {
     
     controller.particles.draw();
     controller.trackers.render();
+
+    
     
     controller.listenKeyboard();
     
