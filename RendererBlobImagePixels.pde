@@ -1,12 +1,24 @@
 class RendererBlobImagePixels extends RendererAbstract {
 
-    PImage img;
+    PImage[] images;
+    int currentImageIndex = 0;
     float dotDiameter;
 
-    RendererBlobImagePixels(Tracker tracker, String imagePath, int pixelCount, float dotDiameter) {
+    RendererBlobImagePixels(Tracker tracker, String[] imagePaths, int pixelCount, float dotDiameter) {
         super(tracker);
-        this.img = loadImage(imagePath);
+        images = new PImage[imagePaths.length];
+        for (int i = 0; i < imagePaths.length; i++) {
+            images[i] = loadImage(imagePaths[i]);
+        }
         this.dotDiameter = dotDiameter;
+    }
+
+    void shuffle() {
+        int newIndex;
+        do {
+            newIndex = int(random(images.length));
+        } while (newIndex == currentImageIndex && images.length > 1);
+        currentImageIndex = newIndex;
     }
 
     void updateInTracker(Tracker tracker) {}
@@ -17,6 +29,8 @@ class RendererBlobImagePixels extends RendererAbstract {
 
     void drawInBlob(Blob blob) {
         push();
+
+        PImage img = images[currentImageIndex];
 
         float halfW = blob.width * 0.5;
         float halfH = blob.height * 0.5;
@@ -36,8 +50,8 @@ class RendererBlobImagePixels extends RendererAbstract {
                 float px = map(x, imgStartX, imgEndX, -halfW, halfW);
                 float py = map(y, imgStartY, imgEndY, -halfH, halfH);
 
-                float distNorm = sqrt(sq(px) + sq(py)) / radius; // 0 ve středu, 1 na okraji
-                float prob = lerp(1.0, 0.0, pow(distNorm, 2)); // Kvadraticky méně pravděpodobné u okraje
+                float distNorm = sqrt(sq(px) + sq(py)) / radius;
+                float prob = lerp(1.0, 0.0, pow(distNorm, 2));
 
                 if (distNorm > 1.0) continue;
 
@@ -55,5 +69,4 @@ class RendererBlobImagePixels extends RendererAbstract {
 
         pop();
     }
-// ...existing code...
 }

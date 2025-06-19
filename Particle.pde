@@ -124,7 +124,7 @@ class Particle {
       this.movementFollow.setTarget( blob );
       this.movementApproach.on();
       this.movementApproach.setTarget( blob );
-      this.movementColor.setTarget( blob.tracker.trackColor );
+      this.movementColor.setTarget( blob.tracker.particleRenderer.getColor() );
     }
   }
 
@@ -137,7 +137,7 @@ class Particle {
     this.movementApproach.setTarget( externalBlob );
     this.movementApproach.on();
     if ( externalBlob.tracker != null ) {
-      this.movementColor.setTarget( externalBlob.tracker.trackColor );
+      this.movementColor.setTarget( externalBlob.tracker.particleRenderer.getColor() );
     }
   }
 

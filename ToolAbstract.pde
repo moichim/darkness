@@ -31,8 +31,7 @@ abstract class ToolAbstract extends Tracker {
             instrument
         );
 
-        this.particleRenderer = new RendererParticles( this, this.emissionColor );
-        this.addRenderer( this.particleRenderer );
+        
 
         // Configure the following movement
         this.follow().setImpact( 0.3 );

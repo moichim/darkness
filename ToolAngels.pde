@@ -1,5 +1,7 @@
 class ToolAngels extends ToolAbstract {
 
+    RendererBlobImagePixels pixels;
+
     ToolAngels(
         color trackColor,
         float hue,
@@ -23,18 +25,27 @@ class ToolAngels extends ToolAbstract {
         // RendererCircles circles = new RendererCircles( this );
         // this.addRenderer( circles );
 
-        RendererBlobImagePixels pixels = new RendererBlobImagePixels(
-            this,
+        String[] imagePaths = {
             "normals/flower_central.png",
+            "scenes/Selsky_les.jpg",
+            "scenes/vesmir.jpg",
+            "scenes/more_1.jpg"
+        };
+
+        this.pixels = new RendererBlobImagePixels(
+            this,
+            imagePaths,
             100,
             5
         );
 
-        this.addRenderer( pixels );
+        this.addRenderer( this.pixels );
         
     }
 
     public void onMutedOn() {
+
+        this.pixels.shuffle();
 
         this.random().setImpact( this.getRandomFloat(0.2,0.9) );
         this.random().setSpread( this.getRandomFloat( 12, 20 ) );
@@ -122,6 +133,9 @@ class ToolAngels extends ToolAbstract {
 
     }
     public void onMultipleOff() {
+
+        this.pixels.shuffle();
+
         // Cleanup after color changes
         this.colors().setThreshold( 80 );
         this.colors().resetRendererColor();

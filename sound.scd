@@ -518,7 +518,7 @@ s.waitForBoot({
 	~control.addEvent(\acordEvent, DarknessEvent.new({
 		"started".postln;
 		Pdefn(\master, 0.5);
-		~control.playSample( \akord, 0.3 );
+		~control.playSample( \akord, 0.15 );
 	},{
 		Pdefn(\master, 1);
 	}));

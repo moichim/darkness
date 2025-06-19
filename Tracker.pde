@@ -63,6 +63,8 @@ abstract class Tracker {
 
     this.instrument = instrument;
 
+    
+
     // Look for the color configuration
     JSONObject config = this.loadColorConfig( instrument, r, g, b, threshold, saturation, brightness, color( r,g,b ) );
 
@@ -88,6 +90,9 @@ abstract class Tracker {
     this.calculateTrasholds(this.trackColor);
 
     this.ready = true;
+
+    this.particleRenderer = new RendererParticles( this, this.emissionColor );
+    this.addRenderer( this.particleRenderer );
 
   }
 
@@ -165,7 +170,7 @@ abstract class Tracker {
     // Pokud měníš barvu, aktualizuj trackColor a emissionColor
     if (obj.hasKey("r") && obj.hasKey("g") && obj.hasKey("b")) {
       this.trackColor = color(this.r, this.g, this.b);
-      this.emissionColor = this.trackColor;
+      // this.emissionColor = this.trackColor;
       this.calculateTrasholds(this.trackColor);
     }
   }

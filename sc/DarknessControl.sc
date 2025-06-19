@@ -111,11 +111,16 @@ DarknessControl {
 		});
 	}
 
+
 	applyRandomMelodies {
 		var keys = this.melodies.keys;
 		if(keys.size > 0, {
 			var key = keys.choose;
-			this.applyMelodiesOnly(key);
+			var melody = this.melodies.at(key);
+			if ( melody.notNil, {
+				melody.applyMelodiesOnly;
+				["Applying random melody:", key].postln;
+			}, {} );
 		}, {
 			"No melodies available to play.".postln;
 		});
