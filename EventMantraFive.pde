@@ -1,7 +1,7 @@
 class EventMantraFive extends EventAbstract {
 
     public int getDuration() {
-        return 2000;
+        return 20 * (int) round( frameRate );
     }
 
     EventMantraFive(

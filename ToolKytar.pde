@@ -3,7 +3,6 @@ class ToolKytar extends ToolAbstract {
     PImage monkey;
 
     RendererSequence head;
-    RendererSequence flowers;
 
     ToolKytar(
         color trackColor,
@@ -38,12 +37,6 @@ class ToolKytar extends ToolAbstract {
             "animations/head_2"
         );
         this.addRenderer( this.head );
-        
-        this.flowers = new RendererSequence( 
-            this, 
-            "animations/flower"
-        );
-        this.addRenderer( this.flowers );
 
         this.monkey = loadImage("normals/countryside_raw.png");
         this.colors().setImpact(0.05);

@@ -1,7 +1,7 @@
 class EventMantraOne extends EventAbstract {
 
     public int getDuration() {
-        return 13 * (int) round( frameRate );
+        return 20 * (int) round( frameRate );
     }
 
     PImage monkey;
@@ -25,11 +25,6 @@ class EventMantraOne extends EventAbstract {
     public void onActivate() {
 
         this.story.sendEventStart( this.getCode() );
-
-        this.story.kytar.flowers
-            .setLoop(true)
-            .setSpeed(2)
-            .start();
 
         this.renderStart( color(255,0,0) );
 
@@ -62,8 +57,6 @@ class EventMantraOne extends EventAbstract {
     }
 
     public void onDeactivate() {
-
-        this.story.kytar.flowers.stop();
 
         this.renderEnd( color(255,0,0) );
 

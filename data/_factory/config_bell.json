@@ -1,11 +1,11 @@
 {
   "saturation": 0.5059999823570251,
   "r": 184,
-  "b": 19,
+  "b": 25,
   "brightness": 0.4480000138282776,
-  "g": 12,
+  "g": 19,
   "hue": 0.10999999940395355,
   "instrument": "/bell",
-  "renderColor": -4715501,
+  "renderColor": -259328,
   "enabled": true
 }

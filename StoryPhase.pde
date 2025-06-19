@@ -44,23 +44,13 @@ class StoryPhase {
 
         this.sendInstrumentMessages();
 
-        /*
-
-        push();
-
-        fill( 255 );
-
-        text( this.current.code() + " ticks:" + this.ticks, width - 200, height- 20 );
-
-        pop();
-
-        */
-
     }
 
     protected void determinePhase() {
 
         int numPlayingTools = this.story.getNumPlayingTools();
+        boolean hasKytar = this.story.kytar.isPlaying && this.story.kytar.isEnabled();
+        boolean hasBell = this.story.bell.isPlaying && this.story.bell.isEnabled();
 
         // If there are jo particles, set muted
         if ( numPlayingTools <= 0 ) {
@@ -73,17 +63,20 @@ class StoryPhase {
         // If there are more than one tools playing, proceed...
         else if ( numPlayingTools > 1 ) {
 
-            if ( this.current != this.event ) {
-                if ( this.ticks > this.eventPhaseLimit ) {
-                    this.holdPhaseActive( this.event );
+            // Podmínka pro EVENT: alespoň 3 nástroje a jeden z nich je kytar
+            if (numPlayingTools >= 3 && ( hasKytar || hasBell ) ) {
+                if ( this.current != this.event ) {
+                    if ( this.ticks > this.eventPhaseLimit ) {
+                        this.holdPhaseActive( this.event );
+                    } else {
+                        this.holdPhaseActive( this.multiple );
+                    }
                 } else {
-                    this.holdPhaseActive( this.multiple );
+                    this.holdPhaseActive( this.event );
                 }
             } else {
-                this.holdPhaseActive( this.event );
+                this.holdPhaseActive( this.multiple );
             }
-
-            
 
         }
 

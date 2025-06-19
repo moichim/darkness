@@ -414,7 +414,7 @@ s.waitForBoot({
 	// ~pulse.setVibRate( 10 );
 	// ~pulse.setBeatAmp( 0.2 );
 
-	~pulse.setOctaveRange( 4, 7 );
+	~pulse.setOctaveRange( 3, 7 );
 
 	~pulse.setMapper({|amp, pan, h, speed, pivotx, pivoty, orientation|
 		~pulse.setVibAmount( orientation.linlin(-1.0, 1.0, 0.1, 10.0) );
@@ -468,7 +468,8 @@ s.waitForBoot({
 	// ~angels.setVibRate( 10 );
 	// ~angels.setBeatAmp( 0.2 );
 
-	~angels.setOctaveRange( 4, 7 );
+	~angels.setOctaveRange( 2, 7 );
+
 
 	~angels.listen;
 	// ~angels.play;
@@ -755,43 +756,49 @@ s.waitForBoot({
 
 	~nocniProud = DarknessMelody.new();
 
-	~nocniProud.addLine(~bell,
-		melody: Pseq([0, 4, 7, 9, 7, 4, 2, 0], inf),
-		dur: Pseq([0.5, 1, 0.5, 1, 0.5, 1, 0.5, 2], inf),
-		octave: 6
-	);
+~nocniProud.addLine(~bell,
+    melody: Pseq([0, 4, 7, 9, 7, 4, 2, 0], inf),
+    dur: Pseq([0.5, 0.25, 0.5, 0.25, 0.5, 0.25, 0.5, 1], inf),
+    octave: 6,
+    pan: 0.1
+);
 
-	~nocniProud.addLine(~kytar,
-		melody: Pseq([7, 9, 4, 2, 0, 2, 4, 7], inf),
-		dur: Pseq([1, 0.5, 1, 0.5, 1, 0.5, 1, 2], inf),
-		octave: 5
-	);
+~nocniProud.addLine(~kytar,
+    melody: Pseq([7, 9, 4, 2, 0, 2, 4, 7], inf),
+    dur: Pseq([0.5, 0.5, 0.25, 0.25, 0.5, 0.5, 1, 0.5], inf),
+    octave: 5,
+    pan: -0.2
+);
 
-	~nocniProud.addLine(~piano,
-		melody: Pseq([0, 2, 4, 7, 9, 7, 4, 2], inf),
-		dur: Pseq([1, 0.5, 0.5, 1, 0.5, 0.5, 1, 2], inf),
-		octave: 6
-	);
+~nocniProud.addLine(~piano,
+    melody: Pseq([0, 2, 4, 7, 9, 7, 4, 2], inf),
+    dur: Pseq([0.5, 0.5, 0.25, 0.5, 0.25, 0.5, 0.5, 1], inf),
+    octave: 5,
+    pan: 0
+);
 
-	~nocniProud.addLine(~voice,
-		melody: Pseq([9, 7, 4, 2, 0, 2, 4, 7], inf),
-		dur: Pseq([2, 1, 1, 2, 1, 1, 2, 2], inf),
-		octave: 7
-	);
+~nocniProud.addLine(~voice,
+    melody: Pseq([9, 7, 4, 2, 0, 2, 4, 7], inf),
+    dur: Pseq([1, 0.5, 0.5, 1, 0.5, 0.5, 1, 1], inf),
+    octave: 6,
+    pan: 0.3
+);
 
-	~nocniProud.addLine(~pulse,
-		melody: Pseq([0, 7, 4, 9, 2, 4, 7, 0], inf),
-		dur: Pseq([1, 1, 0.5, 1, 0.5, 1, 1, 2], inf),
-		octave: 5
-	);
+~nocniProud.addLine(~pulse,
+    melody: Pseq([0, 7, 4, 9, 2, 4, 7, 0], inf),
+    dur: Pseq([0.25, 0.25, 0.5, 0.25, 0.25, 0.5, 0.5, 1], inf),
+    octave: 4,
+    pan: -0.3
+);
 
-	~nocniProud.addLine(~angels,
-		melody: Pseq([0, 9, 7, 4, 2, 4, 7, 9], inf), // C, A, G, E, D, E, G, A
-		dur: Pseq([2, 2, 1, 1, 2, 1, 1, 2], inf),
-		octave: 4
-	);
+~nocniProud.addLine(~angels,
+    melody: Pseq([9, 7, 4, 2, 0, 2, 4, 7], inf),
+    dur: Pseq([0.5, 0.5, 1, 0.5, 0.5, 1, 0.5, 1], inf),
+    octave: 5,
+    pan: 0.4
+);
 
-	~control.addMelody(\nocniProud, ~nocniProud);
+~control.addMelody(\nocniProud, ~nocniProud);
 
 
 	~melancholySky = DarknessMelody.new();
@@ -1104,12 +1111,18 @@ s.waitForBoot({
 		case {code == 0} {
 			~control.applyRandomMelodies;
 			~control.setShiftRange(4); // nastaví shift 0..4
+			~control.stopMelody();
+			~control.endEvent();
 		}
 		{code == 1} {
 			~control.setShiftRange(2); // nastaví shift 0..2
+			~control.stopMelody();
+			~control.endEvent();
 		}
 		{code == 2} {
 			~control.setShiftRange(1); // nastaví shift 0..1
+			~control.stopMelody();
+			~control.endEvent();
 		}
 		{code == 3} {
 			~control.setShiftRange(0); // nastaví shift 0

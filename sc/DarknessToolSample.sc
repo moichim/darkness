@@ -45,7 +45,7 @@ DarknessToolSample : DarknessToolBase {
             \pan, Pdefn(this.pan),
             \bpfFreq, Pdefn(this.bpfFreq),
             \bpfQ, Pdefn(this.bpfQ),
-            \onNote, Pfunc({ processing.sendMsg(this.msg); this.msg.postln; })
+            \onNote, Pfunc({ processing.sendMsg(this.msg); })
         );
         ("Initialised Pbindef" ++ this.name).postln;
     }

@@ -1,7 +1,7 @@
 class EventMantraTwo extends EventAbstract {
 
     public int getDuration() {
-        return 13 * (int) round( frameRate );
+        return 20 * (int) round( frameRate );
     }
 
     PImage monkey;

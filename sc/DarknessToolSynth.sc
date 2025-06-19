@@ -81,7 +81,7 @@ DarknessToolSynth : DarknessToolBase {
             \beatAmp, Pdefn(this.beatAmp),
             \beatFreqRatio, Pdefn(this.beatFreqRatio),
             \beatRel, Pdefn(this.beatRel),
-            \onNote, Pfunc({ processing.sendMsg(this.msg); this.msg.postln; })
+            \onNote, Pfunc({ processing.sendMsg(this.msg); })
         );
         ("Initialised Pbindef " ++ this.name).postln;
 		this.pattern.postln;

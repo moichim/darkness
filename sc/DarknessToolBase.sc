@@ -7,6 +7,7 @@ DarknessToolBase {
 
     // ...existing variables...
     var lastTempo, lastDur;
+    var lastOctaveMin, lastOctaveMax; // pro uložení posledních hodnot před přehráním melodie
     var <>oscTempoEnabled = true; // přepínač pro OSC tempo
 
     classvar <processing;
@@ -44,9 +45,29 @@ DarknessToolBase {
 
 
     playMelody { |dur, melody, octave|
+
+        // Zastav případný běžící pattern
+        this.stop;
+
         // Ulož poslední hodnoty
         lastTempo = this.clock.tempo;
         lastDur = Pdefn(this.dur).source;
+        lastOctaveMin = this.octaveMin;
+        lastOctaveMax = this.octaveMax;
+
+        // Nastav rozsah oktáv podle typu nástroje a cílové oktávy
+        if (octave.notNil, {
+            var min, max;
+            if (this.isKindOf(DarknessToolSample), {
+                min = (octave - 1).max(3);
+                max = (octave + 1).min(7);
+            }, {
+                // pro synthy
+                min = (octave - 1).max(3);
+                max = (octave + 1).min(7);
+            } );
+            this.setOctaveRange(min, max);
+        } );
 
         // Nastav tempo na 1 a vypni OSC tempo
         this.clock.tempo = 1;
@@ -56,13 +77,30 @@ DarknessToolBase {
         if (melody.notNil, { this.setMelody(melody); }, {});
         if (octave.notNil, { this.setOctave(octave); },{});
         if (dur.notNil, { this.setDur(dur); },{});
+
+        // Vytvoř pattern s aktuálními hodnotami
+        this.makePattern;
+
+        // Spusť pattern znovu
+        this.play;
     }
 
     stopMelody {
+
+        this.stop;
+
         // Obnov poslední tempo a dur
         if (lastTempo.notNil, { this.clock.tempo = lastTempo; },{});
         if (lastDur.notNil, { this.setDur(lastDur); },{});
+        if (lastOctaveMin.notNil and: { lastOctaveMax.notNil }, {
+            this.setOctaveRange(lastOctaveMin, lastOctaveMax);
+        } );
         oscTempoEnabled = true; // Zapni OSC tempo
+
+        // Vytvoř pattern s aktuálními hodnotami
+        this.makePattern;
+
+        this.play;
     }
 
 

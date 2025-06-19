@@ -77,7 +77,7 @@ DarknessControl {
 		this.samples.at(name).postln;
 		Synth.new(\sampler, [
 			\buf, this.samples.at(name).bufnum,
-			\amp, amp.min(0.0).max(1.0)
+			\amp, amp.min(1.0).max(0.0)
 		]);
 	}
 
@@ -105,8 +105,31 @@ DarknessControl {
 		this.melodies.put(key, value);
 	}
 
+	getKytar {
+		^this.tools.detect { |tool| tool.name == \kytar }
+	}
+
+
+	forceKytarOn {
+		var kytar = this.getKytar;
+		if(kytar.notNil and: { kytar.isPlaying.not }) {
+			kytar.setAmp(0.3);
+			kytar.stopListening;
+			kytar.play;
+		} {}
+	}
+
+	restoreKytar {
+		var kytar = this.getKytar;
+		if(kytar.notNil) {
+			kytar.listen;
+		}
+	}
+
+
 	playMelody {|key|
 		if(this.melodies.includesKey(key), {
+			this.forceKytarOn;
 			this.melodies.at(key).playEntireMelody;
 		});
 	}
@@ -115,6 +138,7 @@ DarknessControl {
 		this.tools.do { |tool|
 			tool.stopMelody;
 		};
+		this.restoreKytar;
 	}
 
 
