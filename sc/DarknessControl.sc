@@ -10,7 +10,7 @@ DarknessControl {
 	*new {
 		var instance = super.new();
 
-		instance.tools = Array.new(4);
+		instance.tools = Array.new(6);
 		instance.samples = Dictionary.new;
 		instance.events = Dictionary.new;
 		instance.melodies = Dictionary.new;
@@ -109,6 +109,12 @@ DarknessControl {
 		if(this.melodies.includesKey(key), {
 			this.melodies.at(key).playEntireMelody;
 		});
+	}
+
+	stopMelody {
+		this.tools.do { |tool|
+			tool.stopMelody;
+		};
 	}
 
 

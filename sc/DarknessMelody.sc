@@ -26,11 +26,26 @@ DarknessMelody {
 
     playEntireMelody {
 
+
+        // Získej všechny nástroje, které mají alespoň jednu hodnotu
+        var allTools = (this.durs.keys ++ this.melodies.keys ++ this.octaves.keys).asSet;
+
+        allTools.do { |tool|
+            var dur = this.durs.at(tool);
+            var melody = this.melodies.at(tool);
+            var octave = this.octaves.at(tool);
+            tool.playMelody(dur, melody, octave);
+        };
+
         ["Applying melody", this].postln;
+
+        /*
 
         this.durs.keys.do { | key | key.setDur(this.durs.at(key)) };
         this.melodies.keys.do { | key | key.setMelody(this.melodies.at(key)) };
         this.octaves.keys.do { | key | key.setOctave(this.octaves.at(key)) };
+
+        */
     }
 
     applyMelodiesOnly {

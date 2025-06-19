@@ -162,4 +162,6 @@ void oscEvent(OscMessage theOscMessage) {
 
     story.listenOsc( theOscMessage );
 
+    println( theOscMessage.addrPattern() );
+
 }

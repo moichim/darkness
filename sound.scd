@@ -305,6 +305,7 @@ s.waitForBoot({
 	~s3 = Buffer.read(s, ~path.value( "star/star_3.aiff" ));
 
 	~bell = DarknessToolSample.new("bell", ~in, ~out);
+	~bell.init;
 	~bell.setBuf( ~s1.bufnum );
 	~bell
 	.setOctave(6)
@@ -330,6 +331,7 @@ s.waitForBoot({
 	~k1 = Buffer.read(s, ~path.value( "string/string_cut.aiff" ));
 
 	~kytar = DarknessToolSample.new("kytar",~in,~out);
+	~kytar.init;
 	~kytar
 	.setBuf(~k1.bufnum)
 	.setOctave(4)
@@ -361,6 +363,7 @@ s.waitForBoot({
 	~p1 = Buffer.read(s, ~path.value( "piano/c.wav" ));
 
 	~piano = DarknessToolSample.new("piano", ~in, ~out);
+	~piano.init;
 	~piano
 	.setDur(1)
 	.setMelody(Pseq([0, 2, 4, 4, 5, 12],inf))
@@ -395,7 +398,9 @@ s.waitForBoot({
 
 
 	// Pulse
-	~pulse = DarknessToolSynth.new( "pulse", \beatLayered, ~in, ~out );
+	~pulse = DarknessToolSynth.new( "pulse", ~in, ~out );
+	~pulse.setSynth(\beatLayered);
+	~pulse.init;
 
 	~pulse.setMelody( Pseq([0, 4, 2, 6], inf) );
 	~pulse.setDur(1);
@@ -422,16 +427,16 @@ s.waitForBoot({
 		},{});
 	});
 
-	~pulse;
-
 	~pulse.listen;
 	// ~pulse.play;
 	~pulse.stop;
 
 
 	// Pulse
-	~angels = DarknessToolSynth.new( "angels", \polyLayeredSynth, ~in, ~out );
+	~angels = DarknessToolSynth.new( "angels", ~in, ~out );
 
+	~angels.setSynth(\polyLayeredSynth);
+	~angels.init;
 	~angels.setMelody( Pseq([0, 2, 4, 7, 10, 8], inf) );
 	~angels.setDur(1);
 	~angels.setShift(0);
@@ -488,6 +493,7 @@ s.waitForBoot({
 	~voice3 = Buffer.read(s, ~path.value( "voice/07_c2_rev_3.aiff" ));
 
 	~voice = DarknessToolSample.new("voice", ~in, ~out );
+	~voice.init;
 	~voice
 	.setDur(1)
 	.setOctave(6)
@@ -511,7 +517,8 @@ s.waitForBoot({
 	.addTool( ~kytar )
 	.addTool( ~piano )
 	.addTool( ~voice )
-	.addTool( ~pulse );
+	.addTool( ~pulse )
+	.addTool( ~angels );
 
 	~control.addSample(\akord, ~akord);
 
@@ -696,14 +703,336 @@ s.waitForBoot({
 	*/
 
 
-	~control.addMelody( \mantraOne, ~mantraOne );
-	~control.addMelody( \mantraTwo, ~mantraTwo );
-	~control.addMelody( \mantraThree, ~mantraThree );
-	~control.addMelody( \mantraFour, ~mantraFour );
-	~control.addMelody( \mantraFive, ~mantraFive );
-	~control.addMelody( \mantraSix, ~mantraSix );
-	~control.addMelody( \mantraSeven, ~mantraSeven );
 
+	~mojeNovaPisnicka = DarknessMelody.new();
+
+	~mojeNovaPisnicka.addLine(~bell,
+		melody: Pseq([0, 4, 7, 9, 7, 4, 2, 0], inf),
+		dur: Pseq([0.25, 0.25, 0.5, 0.25, 0.25, 0.5, 0.5, 1], inf),
+		octave: 6,
+		pan: 0.2
+	);
+
+	~mojeNovaPisnicka.addLine(~kytar,
+		melody: Pseq([0, 2, 4, 5, 7, 9, 7, 5], inf),
+		dur: Pseq([0.5, 0.5, 0.25, 0.25, 0.5, 0.5, 1, 0.5], inf),
+		octave: 5,
+		pan: -0.2
+	);
+
+	~mojeNovaPisnicka.addLine(~piano,
+		melody: Pseq([0, 3, 5, 8, 10, 8, 5, 3], inf),
+		dur: Pseq([0.5, 0.25, 0.25, 0.5, 0.5, 0.25, 0.25, 1], inf),
+		octave: 6,
+		pan: 0
+	);
+
+	~mojeNovaPisnicka.addLine(~voice,
+		melody: Pseq([0, 5, 7, 12, 7, 5, 0, 2], inf),
+		dur: Pseq([1, 0.5, 0.5, 1, 0.5, 0.5, 1, 1], inf),
+		octave: 7,
+		pan: 0.3
+	);
+
+	~mojeNovaPisnicka.addLine(~pulse,
+		melody: Pseq([0, 2, 4, 7, 5, 4, 2, 0], inf),
+		dur: Pseq([0.5, 0.5, 0.25, 0.25, 0.5, 0.5, 1, 0.5], inf),
+		octave: 5,
+		pan: -0.3
+	);
+
+	// Doplněno: angels
+	~mojeNovaPisnicka.addLine(~angels,
+		melody: Pseq([9, 7, 4, 2, 0, 2, 4, 7], inf), // A G E D C D E G
+		dur: Pseq([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5], inf),
+		octave: 6,
+		pan: 0.4
+	);
+
+	~control.addMelody(\mojeNovaPisnicka, ~mojeNovaPisnicka);
+
+
+
+	~nocniProud = DarknessMelody.new();
+
+	~nocniProud.addLine(~bell,
+		melody: Pseq([0, 4, 7, 9, 7, 4, 2, 0], inf),
+		dur: Pseq([0.5, 1, 0.5, 1, 0.5, 1, 0.5, 2], inf),
+		octave: 6
+	);
+
+	~nocniProud.addLine(~kytar,
+		melody: Pseq([7, 9, 4, 2, 0, 2, 4, 7], inf),
+		dur: Pseq([1, 0.5, 1, 0.5, 1, 0.5, 1, 2], inf),
+		octave: 5
+	);
+
+	~nocniProud.addLine(~piano,
+		melody: Pseq([0, 2, 4, 7, 9, 7, 4, 2], inf),
+		dur: Pseq([1, 0.5, 0.5, 1, 0.5, 0.5, 1, 2], inf),
+		octave: 6
+	);
+
+	~nocniProud.addLine(~voice,
+		melody: Pseq([9, 7, 4, 2, 0, 2, 4, 7], inf),
+		dur: Pseq([2, 1, 1, 2, 1, 1, 2, 2], inf),
+		octave: 7
+	);
+
+	~nocniProud.addLine(~pulse,
+		melody: Pseq([0, 7, 4, 9, 2, 4, 7, 0], inf),
+		dur: Pseq([1, 1, 0.5, 1, 0.5, 1, 1, 2], inf),
+		octave: 5
+	);
+
+	~nocniProud.addLine(~angels,
+		melody: Pseq([0, 9, 7, 4, 2, 4, 7, 9], inf), // C, A, G, E, D, E, G, A
+		dur: Pseq([2, 2, 1, 1, 2, 1, 1, 2], inf),
+		octave: 4
+	);
+
+	~control.addMelody(\nocniProud, ~nocniProud);
+
+
+	~melancholySky = DarknessMelody.new();
+
+	~melancholySky.addLine(~bell,
+		melody: Pseq([9, 7, 4, 2, 0, 2, 4, 7], inf), // A G E D C D E G
+		dur: Pseq([0.5, 0.5, 1, 0.5, 0.5, 1, 0.5, 2], inf),
+		octave: 6
+	);
+
+	~melancholySky.addLine(~kytar,
+		melody: Pseq([0, 2, 4, 7, 9, 7, 4, 2], inf), // C D E G A G E D
+		dur: Pseq([1, 0.5, 0.5, 1, 0.5, 0.5, 1, 2], inf),
+		octave: 5
+	);
+
+	~melancholySky.addLine(~piano,
+		melody: Pseq([4, 2, 0, 2, 4, 7, 9, 7], inf), // E D C D E G A G
+		dur: Pseq([0.5, 1, 0.5, 1, 0.5, 1, 0.5, 2], inf),
+		octave: 6
+	);
+
+	~melancholySky.addLine(~voice,
+		melody: Pseq([7, 9, 7, 4, 2, 0, 2, 4], inf), // G A G E D C D E
+		dur: Pseq([2, 1, 1, 2, 1, 1, 2, 2], inf),
+		octave: 7
+	);
+
+	~melancholySky.addLine(~pulse,
+		melody: Pseq([0, 4, 7, 9, 7, 4, 2, 0], inf), // C E G A G E D C
+		dur: Pseq([0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 1, 0.5], inf),
+		octave: 5
+	);
+
+	~melancholySky.addLine(~angels,
+		melody: Pseq([9, 7, 4, 2, 0, 2, 4, 7], inf), // A G E D C D E G
+		dur: Pseq([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5], inf),
+		octave: 8
+	);
+
+	~control.addMelody(\melancholySky, ~melancholySky);
+
+
+
+
+
+
+	~distantHorizons = DarknessMelody.new();
+
+	~distantHorizons.addLine(~bell,
+		melody: Pseq([0, 7, 4, 9, 2, 0, 9, 7], inf), // C G E A D C A G
+		dur: Pseq([1, 0.25, 0.5, 0.25, 1, 0.5, 0.25, 1], inf),
+		octave: 7
+	);
+
+	~distantHorizons.addLine(~kytar,
+		melody: Pseq([4, 2, 0, 2, 4, 7, 9, 7], inf), // E D C D E G A G
+		dur: Pseq([0.5, 0.5, 1, 0.5, 0.5, 1, 0.5, 2], inf),
+		octave: 5
+	);
+
+	~distantHorizons.addLine(~piano,
+		melody: Pseq([9, 0, 2, 4, 7, 4, 2, 0], inf), // A C D E G E D C
+		dur: Pseq([0.25, 0.25, 0.5, 0.5, 1, 0.5, 0.5, 1], inf),
+		octave: 6
+	);
+
+	~distantHorizons.addLine(~voice,
+		melody: Pseq([7, 9, 7, 4, 2, 0, 2, 4], inf), // G A G E D C D E
+		dur: Pseq([2, 0.5, 1, 0.5, 2, 0.5, 1, 0.5], inf),
+		octave: 7
+	);
+
+	~distantHorizons.addLine(~pulse,
+		melody: Pseq([0, 2, 4, 7, 9, 7, 4, 2], inf), // C D E G A G E D
+		dur: Pseq([0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 1, 0.5], inf),
+		octave: 5
+	);
+
+	~distantHorizons.addLine(~angels,
+		melody: Pseq([9, 4, 0, 7, 2, 9, 4, 7], inf), // A E C G D A E G
+		dur: Pseq([1, 0.5, 0.5, 1, 0.5, 1, 0.5, 2], inf),
+		octave: 8
+	);
+
+	~control.addMelody(\distantHorizons, ~distantHorizons);
+
+
+
+
+
+
+	~freshJourney = DarknessMelody.new();
+
+	~freshJourney.addLine(~bell,
+		melody: Pseq([0, 2, 4, 7, 4, 2, 0, 7], inf), // C D E G E D C G
+		dur: Pseq([0.5, 0.5, 0.5, 1, 0.5, 0.5, 0.5, 1], inf),
+		octave: 6,
+		pan: 0.1
+	);
+
+	~freshJourney.addLine(~kytar,
+		melody: Pseq([4, 7, 9, 7, 4, 2, 0, 2], inf), // E G A G E D C D
+		dur: Pseq([1, 0.5, 0.5, 1, 0.5, 0.5, 1, 1], inf),
+		octave: 5,
+		pan: -0.2
+	);
+
+	~freshJourney.addLine(~piano,
+		melody: Pseq([0, 4, 7, 9, 7, 4, 2, 0], inf), // C E G A G E D C
+		dur: Pseq([0.5, 0.5, 1, 0.5, 0.5, 1, 0.5, 1], inf),
+		octave: 5,
+		pan: 0
+	);
+
+	~freshJourney.addLine(~voice,
+		melody: Pseq([7, 9, 7, 4, 2, 0, 2, 4], inf), // G A G E D C D E
+		dur: Pseq([1, 0.5, 1, 0.5, 1, 0.5, 1, 1], inf),
+		octave: 6,
+		pan: 0.3
+	);
+
+	~freshJourney.addLine(~pulse,
+		melody: Pseq([0, 2, 4, 7, 9, 7, 4, 2], inf), // C D E G A G E D
+		dur: Pseq([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1], inf),
+		octave: 5,
+		pan: -0.3
+	);
+
+	~freshJourney.addLine(~angels,
+		melody: Pseq([4, 7, 9, 7, 4, 2, 0, 2], inf), // E G A G E D C D
+		dur: Pseq([1, 0.5, 0.5, 1, 0.5, 0.5, 1, 1], inf),
+		octave: 6,
+		pan: 0.4
+	);
+
+	~control.addMelody(\freshJourney, ~freshJourney);
+
+
+
+
+
+	// ...někde za ostatními mantrami...
+	~sunnySteps = DarknessMelody.new();
+
+	~sunnySteps.addLine(~bell,
+		melody: Pseq([0, 4, 7, 4, 2, 0, 2, 7], inf), // C E G E D C D G
+		dur: Pseq([0.5, 0.5, 1, 0.5, 0.5, 1, 0.5, 1], inf),
+		octave: 6,
+		pan: 0.1
+	);
+
+	~sunnySteps.addLine(~kytar,
+		melody: Pseq([2, 4, 7, 9, 7, 4, 2, 0], inf), // D E G A G E D C
+		dur: Pseq([1, 0.5, 0.5, 1, 0.5, 0.5, 1, 1], inf),
+		octave: 5,
+		pan: -0.2
+	);
+
+	~sunnySteps.addLine(~piano,
+		melody: Pseq([0, 2, 4, 7, 9, 7, 4, 2], inf), // C D E G A G E D
+		dur: Pseq([0.5, 1, 0.5, 1, 0.5, 1, 0.5, 1], inf),
+		octave: 5,
+		pan: 0
+	);
+
+	~sunnySteps.addLine(~voice,
+		melody: Pseq([7, 9, 7, 4, 2, 0, 2, 4], inf), // G A G E D C D E
+		dur: Pseq([1, 0.5, 1, 0.5, 1, 0.5, 1, 1], inf),
+		octave: 6,
+		pan: 0.3
+	);
+
+	~sunnySteps.addLine(~pulse,
+		melody: Pseq([0, 2, 4, 7, 9, 7, 4, 2], inf), // C D E G A G E D
+		dur: Pseq([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1], inf),
+		octave: 5,
+		pan: -0.3
+	);
+
+	~sunnySteps.addLine(~angels,
+		melody: Pseq([2, 4, 7, 9, 7, 4, 2, 0], inf), // D E G A G E D C
+		dur: Pseq([1, 0.5, 0.5, 1, 0.5, 0.5, 1, 1], inf),
+		octave: 6,
+		pan: 0.4
+	);
+
+	~control.addMelody(\sunnySteps, ~sunnySteps);
+
+
+
+
+
+
+	~pulseBass = DarknessMelody.new();
+
+	~pulseBass.addLine(~bell,
+		melody: Pseq([4, 7, 9, 7, 4, 2, 0, 2], inf), // E G A G E D C D
+		dur: Pseq([1, 1, 1, 1, 1, 1, 1, 2], inf),
+		octave: 6,
+		pan: 0.1
+	);
+
+	~pulseBass.addLine(~kytar,
+		melody: Pseq([0, 2, 4, 7, 4, 2, 0, 7], inf), // C D E G E D C G
+		dur: Pseq([1, 0.5, 0.5, 1, 0.5, 0.5, 1, 1], inf),
+		octave: 5,
+		pan: -0.2
+	);
+
+	~pulseBass.addLine(~piano,
+		melody: Pseq([2, 4, 7, 9, 7, 4, 2, 0], inf), // D E G A G E D C
+		dur: Pseq([0.5, 1, 0.5, 1, 0.5, 1, 0.5, 1], inf),
+		octave: 5,
+		pan: 0
+	);
+
+	~pulseBass.addLine(~voice,
+		melody: Pseq([7, 9, 7, 4, 2, 0, 2, 4], inf), // G A G E D C D E
+		dur: Pseq([2, 1, 1, 2, 1, 1, 2, 2], inf),
+		octave: 6,
+		pan: 0.3
+	);
+
+	// Hlavní basová linka - pouze pulse
+	~pulseBass.addLine(~pulse,
+		melody: Pseq([0, 0, 4, 4, 7, 7, 9, 9], inf), // C C E E G G A A
+		dur: Pseq([1, 1, 1, 1, 1, 1, 1, 2], inf),
+		octave: 4,
+		pan: -0.3
+	);
+
+	// Angels jako vyšší doprovod
+	~pulseBass.addLine(~angels,
+		melody: Pseq([9, 7, 4, 2, 0, 2, 4, 7], inf), // A G E D C D E G
+		dur: Pseq([1, 1, 1, 1, 1, 1, 1, 2], inf),
+		octave: 6,
+		pan: 0.4
+	);
+
+	~control.addMelody(\pulseBass, ~pulseBass);
 
 
 
@@ -720,18 +1049,19 @@ s.waitForBoot({
 
 			code.switch(
 				0, { ~control.playEvent(\acordEvent); },
-				1, { ~control.playEvent(\mantraOne); },
-				2, { ~control.playEvent(\mantraTwo); },
-		  		3, { ~control.playEvent(\mantraThree); },
-		  		4, { ~control.playEvent(\mantraFour); },
-				5, { ~control.playEvent(\mantraFive); },
-				6, { ~control.playEvent(\mantraSix); },
-				7, { ~control.playEvent(\mantraSeven); }
+				1, { ~control.playMelody(\mojeNovaPisnicka); },
+				2, { ~control.playMelody(\nocniProud); },
+		  		3, { ~control.playMelody(\melancholySky); },
+		  		4, { ~control.playMelody(\distantHorizons); },
+				5, { ~control.playMelody(\freshJourney); },
+				6, { ~control.playMelody(\sunnySteps); },
+				7, { ~control.playMelody(\pulseBass); }
 			);
 
 		},{
 			Pdefn(\master, 1);
 			~control.endEvent();
+			~control.stopMelody();
 		});
 
 
